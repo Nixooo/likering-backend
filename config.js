@@ -1,9 +1,32 @@
 // Configuración de la API para Likering
 // Backend: Node.js + Express + PostgreSQL (Aiven) - Desplegado en Render.com
 
-// URL del backend - Siempre usa Render en producción
-// Si necesitas desarrollo local, cambia temporalmente a 'http://localhost:3000/api'
-const API_BASE_URL = 'https://likering-backend.onrender.com/api';
+// Detectar si estamos en desarrollo local
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// ============================================
+// ⚠️ CONFIGURACIÓN DEL BACKEND - IMPORTANTE ⚠️
+// ============================================
+// Si cambiaste el nombre del servicio en Render.com, actualiza esta URL:
+// 1. Ve a tu dashboard de Render.com
+// 2. Busca tu servicio Web (backend)
+// 3. Copia la URL que aparece (ej: https://tu-servicio.onrender.com)
+// 4. Reemplaza la URL abajo con tu URL real
+// ============================================
+
+const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com'; // ⚠️ CAMBIA ESTA URL SI ES NECESARIO
+const LOCAL_BACKEND_URL = 'http://localhost:3000';
+
+const API_BASE_URL = isLocalhost 
+    ? `${LOCAL_BACKEND_URL}/api`
+    : `${RENDER_BACKEND_URL}/api`;
+
+// Log para debugging (solo en desarrollo)
+if (isLocalhost) {
+    console.log('🔧 Modo desarrollo - API URL:', API_BASE_URL);
+} else {
+    console.log('🌐 Modo producción - API URL:', API_BASE_URL);
+}
 
 const API = {
     // ==================== AUTENTICACIÓN ====================
@@ -17,10 +40,24 @@ const API = {
                 },
                 body: JSON.stringify({ username, password })
             });
+            
+            if (!response.ok) {
+                console.error(`❌ Error HTTP: ${response.status} ${response.statusText}`);
+                console.error(`📍 URL intentada: ${API_BASE_URL}/login`);
+                return { 
+                    success: false, 
+                    message: `Error del servidor (${response.status}). Verifica que el backend esté funcionando en: ${API_BASE_URL}` 
+                };
+            }
+            
             return await response.json();
         } catch (error) {
-            console.error('Error en login:', error);
-            return { success: false, message: 'Error de conexión' };
+            console.error('❌ Error en login:', error);
+            console.error(`📍 URL intentada: ${API_BASE_URL}/login`);
+            return { 
+                success: false, 
+                message: `Error de conexión. No se pudo conectar a: ${API_BASE_URL}. Verifica que el backend esté desplegado y funcionando.` 
+            };
         }
     },
 
@@ -374,8 +411,50 @@ const API = {
     }
 };
 
+// Función para verificar que el backend esté disponible
+async function checkBackendHealth() {
+    try {
+        const healthUrl = API_BASE_URL.replace('/api', '/api/health');
+        const response = await fetch(healthUrl, { 
+            method: 'GET',
+            signal: AbortSignal.timeout(5000) // Timeout de 5 segundos
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Backend disponible:', data);
+            return true;
+        } else {
+            console.warn('⚠️ Backend respondió con error:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ No se pudo conectar al backend:', error.message);
+        console.error('📍 URL intentada:', API_BASE_URL.replace('/api', '/api/health'));
+        console.error('💡 Verifica que:');
+        console.error('   1. El backend esté desplegado en Render.com');
+        console.error('   2. La URL en config.js sea correcta');
+        console.error('   3. El servicio no esté dormido (puede tardar ~30 segundos en despertar)');
+        return false;
+    }
+}
+
+// Verificar salud del backend al cargar (solo en producción)
+if (typeof window !== 'undefined' && !isLocalhost) {
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            checkBackendHealth().then(isHealthy => {
+                if (!isHealthy) {
+                    console.warn('⚠️ El backend no está disponible. Algunas funciones pueden no funcionar.');
+                }
+            });
+        }, 1000); // Esperar 1 segundo después de cargar
+    });
+}
+
 // Exportar para uso global
 if (typeof window !== 'undefined') {
     window.API = API;
+    window.checkBackendHealth = checkBackendHealth;
 }
 
