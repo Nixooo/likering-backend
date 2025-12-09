@@ -851,9 +851,16 @@
                 isFollowing = Boolean(followingValue);
             }
             
+            // Verificar localStorage como fuente de verdad principal
+            const videoUsername = video.user ? video.user.replace('@', '') : '';
+            const isFollowingInStorage = isUserFollowed(videoUsername);
+            
+            // Usar localStorage si está disponible, sino usar el valor del backend
+            const finalIsFollowing = isFollowingInStorage || isFollowing;
+            
             // Debug log para verificar
             if (loggedInUser && video.user && video.user !== `@${loggedInUser.username}`) {
-                console.log(`[FETCH] Video @${video.user.substring(1)}: is_following_user raw =`, followingValue, 'tipo:', typeof followingValue, 'convertido a:', isFollowing);
+                console.log(`[FETCH] Video @${video.user.substring(1)}: backend=${isFollowing}, localStorage=${isFollowingInStorage}, final=${finalIsFollowing}`);
             }
             
             return {
@@ -862,7 +869,7 @@
                 videoId: video.video_id || video.videoId,
                 profileImg: video.profile_img || video.profileImg,
                 isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
-                isFollowingUser: isFollowing // Asegurar que sea booleano
+                isFollowingUser: finalIsFollowing // Usar el valor combinado
             };
         });
     } catch (error) {
@@ -1971,6 +1978,11 @@
                     // También actualizar videosToPlayQueue para futuros videos
                     videosToPlayQueue = videosToPlayQueue.map(video => {
                         const updatedData = updatedVideos.find(v => v.videoId === video.videoId);
+                        if (updatedData) {
+                            const videoUsername = video.user ? video.user.replace('@', '') : '';
+                            const isFollowingInStorage = isUserFollowed(videoUsername);
+                            updatedData.isFollowingUser = isFollowingInStorage || updatedData.isFollowingUser;
+                        }
                         return updatedData || video;
                     });
                 }
