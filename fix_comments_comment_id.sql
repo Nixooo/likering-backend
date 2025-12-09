@@ -58,14 +58,22 @@ BEGIN
     END IF;
 END $$;
 
--- Paso 5: Si hay filas sin comment_id_temp, generar valores únicos
-UPDATE comments 
-SET comment_id_temp = 'comment_' || COALESCE(
-    (SELECT MAX(CAST(SUBSTRING(comment_id_temp FROM 9) AS INTEGER)) 
-     FROM comments 
-     WHERE comment_id_temp ~ '^comment_[0-9]+$'), 0
-) + ROW_NUMBER() OVER ()::text
-WHERE comment_id_temp IS NULL;
+-- Paso 5: Si hay filas sin comment_id_temp, generar valores únicos usando un CTE
+WITH numbered_comments AS (
+    SELECT 
+        ctid,
+        COALESCE(
+            (SELECT MAX(CAST(SUBSTRING(comment_id_temp FROM 9) AS INTEGER)) 
+             FROM comments 
+             WHERE comment_id_temp ~ '^comment_[0-9]+$'), 0
+        ) + ROW_NUMBER() OVER (ORDER BY ctid) as new_num
+    FROM comments
+    WHERE comment_id_temp IS NULL
+)
+UPDATE comments c
+SET comment_id_temp = 'comment_' || nc.new_num::text
+FROM numbered_comments nc
+WHERE c.ctid = nc.ctid AND c.comment_id_temp IS NULL;
 
 -- Paso 6: Eliminar la columna antigua comment_id (si es INTEGER)
 DO $$
