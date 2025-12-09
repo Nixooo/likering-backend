@@ -350,10 +350,26 @@ app.get('/api/videos/all', async (req, res) => {
         }
 
         const videos = videosResult.rows.map(video => {
-            // Convertir is_following_user explícitamente
-            const isFollowing = video.is_following_user === true || 
-                               video.is_following_user === 'true' ||
-                               (video.is_following_user !== null && video.is_following_user !== undefined && video.is_following_user !== false);
+            // Convertir is_following_user explícitamente - manejar undefined/null
+            let isFollowing = false;
+            const followingValue = video.is_following_user;
+            
+            // Si es undefined o null, significa que no hay coincidencia en el JOIN
+            if (followingValue === undefined || followingValue === null) {
+                isFollowing = false;
+            } else if (followingValue === true || followingValue === 'true' || followingValue === 1 || followingValue === '1') {
+                isFollowing = true;
+            } else if (followingValue === false || followingValue === 'false' || followingValue === 0 || followingValue === '0') {
+                isFollowing = false;
+            } else {
+                // Para cualquier otro valor, convertir a booleano
+                isFollowing = Boolean(followingValue);
+            }
+            
+            // Log para debug
+            if (username && video.user && video.user !== username) {
+                console.log(`[BACKEND] Video @${video.user}: is_following_user =`, followingValue, 'tipo:', typeof followingValue, 'convertido a:', isFollowing);
+            }
             
             return {
                 videoId: video.video_id,
