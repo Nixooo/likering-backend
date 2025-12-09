@@ -1299,7 +1299,10 @@
             followButton.textContent = '+';
             followButton.dataset.targetUser = videoData.user.substring(1); // Guardar el usuario objetivo
             
-            const isMyVideo = loggedInUser && videoData.user === `@${loggedInUser.username}`;
+            // Verificar si es el propio video - normalizar ambos valores
+            const videoUsername = videoData.user ? videoData.user.replace('@', '') : '';
+            const loggedInUsername = loggedInUser ? loggedInUser.username : '';
+            const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
             // Verificar si ya sigue al usuario - manejar todos los casos posibles
             const isFollowingValue = videoData.isFollowingUser;
             const isAlreadyFollowing = isFollowingValue === true || 
