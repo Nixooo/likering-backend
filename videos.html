@@ -836,8 +836,8 @@
             visualizaciones: parseInt(video.visualizaciones) || 0,
             videoId: video.video_id || video.videoId,
             profileImg: video.profile_img || video.profileImg,
-            isLikedByCurrentUser: video.is_liked_by_current_user || false,
-            isFollowingUser: video.is_following_user || false
+            isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
+            isFollowingUser: Boolean(video.is_following_user) // Asegurar que sea booleano
         }));
     } catch (error) {
         console.error("Error al cargar metadatos de videos:", error);
@@ -1274,14 +1274,14 @@
             followButton.dataset.targetUser = videoData.user.substring(1); // Guardar el usuario objetivo
             
             const isMyVideo = loggedInUser && videoData.user === `@${loggedInUser.username}`;
-            // Verificar si ya sigue al usuario - manejar diferentes tipos de valores
-            const isAlreadyFollowing = videoData.isFollowingUser === true || 
-                                     videoData.isFollowingUser === 'true' ||
-                                     String(videoData.isFollowingUser).toLowerCase() === 'true';
+            // Verificar si ya sigue al usuario - convertir a booleano explícitamente
+            const isAlreadyFollowing = Boolean(videoData.isFollowingUser) === true;
 
             if (isMyVideo || isAlreadyFollowing) {
                 followButton.style.display = 'none';
                 followButton.style.visibility = 'hidden';
+                followButton.style.opacity = '0';
+                followButton.style.pointerEvents = 'none';
             } else {
                  // ==== MODIFICADO: El botón ahora abre el modal de confirmación ====
                  followButton.addEventListener('click', (e) => {
