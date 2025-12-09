@@ -93,12 +93,22 @@ app.post('/api/register', async (req, res) => {
     try {
         const { username, password, imageUrl } = req.body;
 
+        console.log('📝 Intento de registro:', { username, hasPassword: !!password, hasImageUrl: !!imageUrl });
+
         if (!username || !password || !imageUrl) {
             return res.json({ success: false, message: 'Todos los campos son requeridos' });
         }
 
         if (username.length < 3) {
             return res.json({ success: false, message: 'El nombre de usuario debe tener al menos 3 caracteres' });
+        }
+
+        // Verificar conexión a la base de datos
+        try {
+            await pool.query('SELECT 1');
+        } catch (dbError) {
+            console.error('❌ Error de conexión a la base de datos:', dbError);
+            return res.json({ success: false, message: 'Error de conexión a la base de datos. Verifica las credenciales.' });
         }
 
         // Verificar si el usuario ya existe
@@ -117,6 +127,7 @@ app.post('/api/register', async (req, res) => {
         );
 
         const newUser = result.rows[0];
+        console.log('✅ Usuario registrado exitosamente:', username);
 
         const userData = {
             username: newUser.username,
@@ -129,8 +140,26 @@ app.post('/api/register', async (req, res) => {
 
         res.json({ success: true, data: userData });
     } catch (error) {
-        console.error('Error en registro:', error);
-        res.json({ success: false, message: 'Error al registrar usuario' });
+        console.error('❌ Error en registro:', error);
+        console.error('Error details:', {
+            message: error.message,
+            code: error.code,
+            detail: error.detail
+        });
+        
+        // Mensaje más específico según el tipo de error
+        let errorMessage = 'Error al registrar usuario';
+        if (error.code === '23505') { // Violación de unique constraint
+            errorMessage = 'El usuario ya existe';
+        } else if (error.code === '23503') { // Foreign key violation
+            errorMessage = 'Error en la relación de datos';
+        } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+            errorMessage = 'Error de conexión a la base de datos. Verifica las credenciales en Render.';
+        } else if (error.message) {
+            errorMessage = `Error: ${error.message}`;
+        }
+        
+        res.json({ success: false, message: errorMessage });
     }
 });
 
