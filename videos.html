@@ -1201,21 +1201,18 @@
        async function handleLikeClick(likeArea, videoId) {
     const iconDiv = likeArea.querySelector('.icon');
     const countSpan = likeArea.querySelector('.count');
-    let currentLikes = parseInt(countSpan.textContent) || 0;
-    const isCurrentlyLiked = iconDiv.classList.contains('liked');
     
-    // Toggle visual inmediato
-    if (isCurrentlyLiked) {
-        // Quitar like
-        iconDiv.classList.remove('liked');
-        countSpan.textContent = Math.max(0, currentLikes - 1);
-        removeLikedVideo(videoId);
-    } else {
-        // Agregar like
-        iconDiv.classList.add('liked');
-        countSpan.textContent = currentLikes + 1;
-        saveLikedVideo(videoId);
+    // Si ya tiene like, no hacer nada
+    if (iconDiv.classList.contains('liked')) {
+        return;
     }
+    
+    let currentLikes = parseInt(countSpan.textContent) || 0;
+    
+    // Agregar like visualmente
+    iconDiv.classList.add('liked');
+    countSpan.textContent = currentLikes + 1;
+    saveLikedVideo(videoId);
     
     try {
         const result = await API.likeVideo(videoId, loggedInUser.username);
@@ -1227,26 +1224,16 @@
             }
         } else {
             // Revertir si falla
-            if (isCurrentlyLiked) {
-                iconDiv.classList.add('liked');
-                saveLikedVideo(videoId);
-            } else {
-                iconDiv.classList.remove('liked');
-                removeLikedVideo(videoId);
-            }
+            iconDiv.classList.remove('liked');
             countSpan.textContent = currentLikes;
+            removeLikedVideo(videoId);
         }
     } catch (error) {
         console.error("Error al registrar el like:", error);
         // Revertir si falla
-        if (isCurrentlyLiked) {
-            iconDiv.classList.add('liked');
-            saveLikedVideo(videoId);
-        } else {
-            iconDiv.classList.remove('liked');
-            removeLikedVideo(videoId);
-        }
+        iconDiv.classList.remove('liked');
         countSpan.textContent = currentLikes;
+        removeLikedVideo(videoId);
     }
 }
 
