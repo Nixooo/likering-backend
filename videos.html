@@ -1238,6 +1238,7 @@
 
         function replenishVideoQueue() {
             console.log("Cola de reproducción vacía. Rellenando y re-barajando...");
+            // Asegurar que allVideosMasterList esté actualizado antes de rellenar
             videosToPlayQueue = [...allVideosMasterList];
             shuffleArray(videosToPlayQueue);
             const currentVideo = loadedVideoElements[currentVideoIndex];
@@ -1647,6 +1648,8 @@
                 document.querySelector('.my-avatar-comment').style.backgroundImage = `url('${loggedInUser.imageUrl}')`;
             }
             loadingSpinner.style.display = 'block';
+            
+            // SIEMPRE obtener los datos más recientes del backend al inicializar
             allVideosMasterList = await fetchAllVideoMetadata();
             
             if (allVideosMasterList.length > 0) {
@@ -1655,10 +1658,19 @@
                     videosToPlayQueue = [...allVideosMasterList];
                     shuffleArray(videosToPlayQueue);
                 }
+                
+                // Asegurar que videosToPlayQueue tenga los datos actualizados
+                videosToPlayQueue = videosToPlayQueue.map(video => {
+                    const updatedVideo = allVideosMasterList.find(v => v.videoId === video.videoId);
+                    return updatedVideo || video;
+                });
+                
                 const initialLoadCount = Math.min(3, videosToPlayQueue.length);
                 for (let i = 0; i < initialLoadCount; i++) {
                     const videoData = videosToPlayQueue.shift();
-                    const newVideoElement = createVideoElement(videoData);
+                    // Asegurar que el videoData tenga los datos más recientes
+                    const latestVideoData = allVideosMasterList.find(v => v.videoId === videoData.videoId) || videoData;
+                    const newVideoElement = createVideoElement(latestVideoData);
                     videoContainer.appendChild(newVideoElement);
                     loadedVideoElements.push(newVideoElement);
                 }
@@ -1682,7 +1694,9 @@
                     if (videosToPlayQueue.length === 0) replenishVideoQueue();
                     const nextVideoData = videosToPlayQueue.shift();
                     if (nextVideoData) {
-                        const newVideoElement = createVideoElement(nextVideoData);
+                        // Asegurar que el videoData tenga los datos más recientes de allVideosMasterList
+                        const latestVideoData = allVideosMasterList.find(v => v.videoId === nextVideoData.videoId) || nextVideoData;
+                        const newVideoElement = createVideoElement(latestVideoData);
                         videoContainer.appendChild(newVideoElement);
                         loadedVideoElements.push(newVideoElement);
                     }
@@ -1831,8 +1845,21 @@
         initialize();
         
         // Recargar estado de seguimiento cuando se vuelve a la página
+        // También usar 'pageshow' para detectar cuando se vuelve desde el cache del navegador
         window.addEventListener('focus', async () => {
             console.log('[DEBUG] Window focused. Re-fetching video metadata and updating follow status.');
+            await refreshFollowStatus();
+        });
+        
+        window.addEventListener('pageshow', async (event) => {
+            // event.persisted es true si la página se cargó desde el cache
+            if (event.persisted) {
+                console.log('[DEBUG] Page loaded from cache. Re-fetching video metadata.');
+                await refreshFollowStatus();
+            }
+        });
+        
+        async function refreshFollowStatus() {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')); // Recargar por si cambió
             if (loggedInUser) {
                 const updatedVideos = await fetchAllVideoMetadata();
@@ -1853,7 +1880,7 @@
                             const loggedInUsername = loggedInUser ? loggedInUser.username : '';
                             const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
                             
-                            // Verificar si ya se sigue
+                            // Verificar si ya se sigue - convertir explícitamente a booleano
                             const isFollowingValue = videoData.isFollowingUser;
                             const isAlreadyFollowing = isFollowingValue === true || 
                                                      isFollowingValue === 'true' ||
@@ -1868,6 +1895,7 @@
                                 if (followBtn) {
                                     followBtn.remove();
                                     videoData.followButtonElement = null;
+                                    videoData.isFollowingUser = true; // Asegurar que esté en true
                                     console.log(`[DEBUG] Botón de seguir para @${videoUsername} eliminado al volver a la página.`);
                                 }
                             } else {
@@ -1902,7 +1930,7 @@
                     });
                 }
             }
-        });
+        }
     });
 
 </script>
