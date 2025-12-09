@@ -142,7 +142,7 @@
 
                 const loginSuccessful = await attemptLogin(rememberedUser.username, rememberedUser.password, true);
                 if (loginSuccessful) {
-                    window.location.href = 'Videos.html';
+                    window.location.href = 'videos.html';
                     return;
                 } else {
                     localStorage.removeItem('rememberedUser');
@@ -191,7 +191,7 @@
                     } else {
                         localStorage.removeItem('rememberedUser');
                     }
-                    window.location.href = 'Videos.html';
+                    window.location.href = 'videos.html';
                 } else {
                     loginBtn.disabled = false;
                     loginBtn.textContent = 'Iniciar Sesión';
@@ -259,7 +259,7 @@
                     if (result.success) {
                         alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
                         localStorage.setItem('loggedInUser', JSON.stringify(result.data));
-                        window.location.href = 'Videos.html';
+                        window.location.href = 'videos.html';
                     } else {
                         alert(result.message || 'Error al registrar usuario');
                     }

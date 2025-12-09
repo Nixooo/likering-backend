@@ -558,7 +558,7 @@
     <div class="app-screen">
         <div class="profile-header">
             <div class="header-top-row">
-                <a href="Videos.html" class="header-icon"><i class="fas fa-arrow-left"></i></a>
+                <a href="videos.html" class="header-icon"><i class="fas fa-arrow-left"></i></a>
             </div>
             <div class="profile-top-section">
                 <div class="profile-user-details">
@@ -796,7 +796,7 @@
         videoGridContainer.innerHTML = gridHTML;
         videoGridContainer.querySelectorAll('.video-thumbnail').forEach(thumb => {
             thumb.addEventListener('click', () => {
-                window.location.href = `Videos.html?user=${thumb.dataset.user}&videoId=${thumb.dataset.videoId}`;
+                window.location.href = `videos.html?user=${thumb.dataset.user}&videoId=${thumb.dataset.videoId}`;
             });
         });
     }
