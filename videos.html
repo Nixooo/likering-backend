@@ -1281,6 +1281,11 @@
                                      String(isFollowingValue).toLowerCase() === 'true' ||
                                      Boolean(isFollowingValue) === true;
 
+            // Debug: solo para usuarios que no son el propio
+            if (loggedInUser && !isMyVideo) {
+                const targetUsername = videoData.user.substring(1);
+                console.log(`[DEBUG] Video de @${targetUsername}: isFollowingUser =`, isFollowingValue, 'tipo:', typeof isFollowingValue, 'isAlreadyFollowing:', isAlreadyFollowing, 'isMyVideo:', isMyVideo);
+            }
 
             if (isMyVideo || isAlreadyFollowing) {
                 // No agregar el botón si ya lo sigue o es su propio video
