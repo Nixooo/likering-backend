@@ -58,7 +58,14 @@ function generateId(prefix) {
 
 async function getUserByUsername(username) {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-    return result.rows[0];
+    const user = result.rows[0];
+    if (user) {
+        // Normalizar: asegurar que siempre tenga 'id' (usar user_id si id no existe)
+        if (!user.id && user.user_id) {
+            user.id = user.user_id;
+        }
+    }
+    return user;
 }
 
 async function getUserById(userId) {
@@ -418,7 +425,9 @@ app.post('/api/videos/save', async (req, res) => {
             return res.json({ success: false, message: 'Usuario no encontrado' });
         }
 
-        if (!user.id) {
+        // Normalizar ID: usar user_id si id no existe
+        const userId = user.id || user.user_id;
+        if (!userId) {
             console.log('❌ Usuario sin ID:', user);
             return res.json({ success: false, message: 'Error: Usuario sin ID válido' });
         }
@@ -428,7 +437,7 @@ app.post('/api/videos/save', async (req, res) => {
 
         console.log('📝 Insertando video:', {
             videoId,
-            userId: user.id,
+            userId: userId,
             username: usuario,
             videoUrl: videoUrl.substring(0, 50) + '...',
             thumbnailUrl: thumbnailUrl ? thumbnailUrl.substring(0, 50) + '...' : 'null'
@@ -437,7 +446,7 @@ app.post('/api/videos/save', async (req, res) => {
         const result = await pool.query(
             `INSERT INTO videos (video_id, user_id, username, titulo, descripcion, video_url, thumbnail_url, music_url, music_name)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-            [videoId, user.id, usuario, titulo || '', descripcion || '', videoUrl, thumbnailUrl || videoUrl, musicUrl || '', musicName]
+            [videoId, userId, usuario, titulo || '', descripcion || '', videoUrl, thumbnailUrl || videoUrl, musicUrl || '', musicName]
         );
 
         console.log('✅ Video guardado exitosamente:', result.rows[0].video_id);
@@ -522,9 +531,10 @@ app.post('/api/videos/like', async (req, res) => {
         }
 
         // Agregar like
+        const userId = user.id || user.user_id;
         await pool.query(
             'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
-            [videoId, user.id, username]
+            [videoId, userId, username]
         );
 
         // Actualizar contador de likes del video
@@ -562,9 +572,10 @@ app.post('/api/videos/view', async (req, res) => {
 
         if (existingView.rows.length === 0) {
             // Agregar visualización
+            const userId = user.id || user.user_id;
             await pool.query(
                 'INSERT INTO video_views (video_id, user_id, username) VALUES ($1, $2, $3)',
-                [videoId, user.id, username]
+                [videoId, userId, username]
             );
 
             // Actualizar contador
@@ -645,10 +656,11 @@ app.post('/api/comments/add', async (req, res) => {
         }
 
         const commentId = generateId('comment');
+        const userId = user.id || user.user_id;
 
         await pool.query(
             'INSERT INTO comments (comment_id, video_id, user_id, username, image_url, comment_text) VALUES ($1, $2, $3, $4, $5, $6)',
-            [commentId, videoId, user.id, username, user.image_url || '', commentText]
+            [commentId, videoId, userId, username, user.image_url || '', commentText]
         );
 
         // Actualizar contador de comentarios
@@ -765,9 +777,11 @@ app.post('/api/follow', async (req, res) => {
         }
 
         // Agregar seguimiento
+        const followerId = follower.id || follower.user_id;
+        const targetId = target.id || target.user_id;
         await pool.query(
             'INSERT INTO follows (follower_id, follower_username, following_id, following_username) VALUES ($1, $2, $3, $4)',
-            [follower.id, followerUsername, target.id, targetUsername]
+            [followerId, followerUsername, targetId, targetUsername]
         );
 
         res.json({ success: true, message: `Ahora sigues a @${targetUsername}` });
