@@ -221,3 +221,4 @@ SELECT
 FROM information_schema.columns
 WHERE table_name = 'comments' AND column_name = 'video_id';
 
+

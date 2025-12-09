@@ -346,8 +346,8 @@ app.get('/api/videos/all', async (req, res) => {
             comments: parseInt(video.comments) || 0,
             visualizaciones: parseInt(video.visualizaciones) || 0,
             profileImg: video.profile_img || '',
-            isLikedByCurrentUser: video.is_liked_by_current_user || false,
-            isFollowingUser: video.is_following_user || false
+            isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
+            isFollowingUser: Boolean(video.is_following_user)
         }));
 
         res.json({ success: true, data: videos });

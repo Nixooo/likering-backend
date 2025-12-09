@@ -76,3 +76,4 @@ O mantener la detección pero asegurarte de que funcione correctamente.
 - URL profesional
 - Deploy automático en cada push a GitHub
 
+

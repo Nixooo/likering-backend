@@ -865,7 +865,19 @@
 
         function displayComments(comments) {
             commentsList.innerHTML = '';
-            commentsCountHeader.textContent = `${comments.length} comentario${comments.length !== 1 ? 's' : ''}`;
+            const count = comments.length;
+            commentsCountHeader.textContent = `${count} comentario${count !== 1 ? 's' : ''}`;
+            
+            // Actualizar el contador en el video también
+            const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
+            if (currentVideoData) {
+                currentVideoData.comments = count;
+                const commentCountSpan = loadedVideoElements[currentVideoIndex]
+                    ?.querySelector('.bottom-left-actions .interaction-area:nth-child(3) .count');
+                if (commentCountSpan) {
+                    commentCountSpan.textContent = count;
+                }
+            }
 
             if (comments.length === 0) {
                 commentsList.innerHTML = '<p style="text-align:center;color:#888;">Sé el primero en comentar.</p>';
@@ -1119,11 +1131,22 @@
         
         if (result.success) {
             commentInput.value = '';
-            currentVideoData.comments = (currentVideoData.comments || 0) + 1;
+            // No incrementar manualmente, el backend ya lo hace
+            // Recargar comentarios para obtener el contador actualizado
+            await loadComments(currentVideoData.videoId);
+            // Actualizar contador desde la respuesta del servidor o recargar el video
             const commentCountSpan = loadedVideoElements[currentVideoIndex]
                 .querySelector('.bottom-left-actions .interaction-area:nth-child(3) .count');
-            if (commentCountSpan) commentCountSpan.textContent = currentVideoData.comments;
-            await loadComments(currentVideoData.videoId);
+            if (commentCountSpan) {
+                // El contador se actualiza automáticamente cuando se recargan los comentarios
+                // O podemos obtenerlo del header de comentarios
+                const commentsHeader = document.getElementById('comments-count');
+                if (commentsHeader) {
+                    const count = parseInt(commentsHeader.textContent.match(/\d+/)?.[0] || '0');
+                    commentCountSpan.textContent = count;
+                    currentVideoData.comments = count;
+                }
+            }
         } else { 
             throw new Error(result.message); 
         }
@@ -1250,7 +1273,10 @@
             followButton.textContent = '+';
             
             const isMyVideo = loggedInUser && videoData.user === `@${loggedInUser.username}`;
-            const isAlreadyFollowing = videoData.isFollowingUser === true || videoData.isFollowingUser === 'true';
+            // Verificar si ya sigue al usuario - manejar diferentes tipos de valores
+            const isAlreadyFollowing = videoData.isFollowingUser === true || 
+                                     videoData.isFollowingUser === 'true' ||
+                                     String(videoData.isFollowingUser).toLowerCase() === 'true';
 
             if (isMyVideo || isAlreadyFollowing) {
                 followButton.style.display = 'none';

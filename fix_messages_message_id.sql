@@ -85,3 +85,4 @@ WHERE table_name = 'messages'
 AND column_name IN ('id', 'message_id')
 ORDER BY ordinal_position;
 
+
