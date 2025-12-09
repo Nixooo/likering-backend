@@ -798,45 +798,101 @@ app.get('/api/messages/conversations', async (req, res) => {
     try {
         const { user } = req.query;
 
+        console.log('📨 Obteniendo conversaciones para:', user);
+
         if (!user) {
             return res.json({ success: false, message: 'Usuario requerido', data: [] });
         }
 
+        // Consulta mejorada: obtener el último mensaje de cada conversación
         const result = await pool.query(`
-            SELECT DISTINCT
-                CASE 
-                    WHEN m.from_username = $1 THEN m.to_username
-                    ELSE m.from_username
-                END as other_user,
-                CASE 
-                    WHEN m.from_username = $1 THEN m.to_user_id
-                    ELSE m.from_user_id
-                END as other_user_id,
-                m.message_text as last_message,
-                m.created_at as last_message_time,
-                COUNT(CASE WHEN m.from_username = $1 AND m.read = false THEN 1 END) as unread_count
-            FROM messages m
-            WHERE m.from_username = $1 OR m.to_username = $1
-            GROUP BY other_user, other_user_id, last_message, last_message_time
-            ORDER BY last_message_time DESC
+            WITH conversation_messages AS (
+                SELECT 
+                    CASE 
+                        WHEN m.from_username = $1 THEN m.to_username
+                        ELSE m.from_username
+                    END as other_user,
+                    CASE 
+                        WHEN m.from_username = $1 THEN m.to_user_id
+                        ELSE m.from_user_id
+                    END as other_user_id,
+                    m.message_text,
+                    m.created_at,
+                    m.read,
+                    m.from_username,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY 
+                            CASE 
+                                WHEN m.from_username = $1 THEN m.to_username
+                                ELSE m.from_username
+                            END
+                        ORDER BY m.created_at DESC
+                    ) as rn
+                FROM messages m
+                WHERE m.from_username = $1 OR m.to_username = $1
+            ),
+            unread_counts AS (
+                SELECT 
+                    CASE 
+                        WHEN m.from_username = $1 THEN m.to_username
+                        ELSE m.from_username
+                    END as other_user,
+                    COUNT(*) as unread_count
+                FROM messages m
+                WHERE m.to_username = $1 AND m.read = false
+                GROUP BY 
+                    CASE 
+                        WHEN m.from_username = $1 THEN m.to_username
+                        ELSE m.from_username
+                    END
+            )
+            SELECT 
+                cm.other_user,
+                cm.other_user_id,
+                cm.message_text as last_message,
+                cm.created_at as last_message_time,
+                COALESCE(uc.unread_count, 0) as unread_count
+            FROM conversation_messages cm
+            LEFT JOIN unread_counts uc ON cm.other_user = uc.other_user
+            WHERE cm.rn = 1
+            ORDER BY cm.created_at DESC
         `, [user]);
+
+        console.log('📨 Conversaciones encontradas:', result.rows.length);
 
         // Obtener imágenes de perfil
         const conversations = await Promise.all(result.rows.map(async (row) => {
-            const userData = await getUserByUsername(row.other_user);
-            return {
-                username: row.other_user,
-                lastMessage: row.last_message,
-                lastMessageTime: row.last_message_time,
-                unreadCount: parseInt(row.unread_count) || 0,
-                imageUrl: userData?.image_url || ''
-            };
+            try {
+                const userData = await getUserByUsername(row.other_user);
+                return {
+                    username: row.other_user,
+                    lastMessage: row.last_message || '',
+                    lastMessageTime: row.last_message_time,
+                    unreadCount: parseInt(row.unread_count) || 0,
+                    imageUrl: userData?.image_url || ''
+                };
+            } catch (err) {
+                console.error('Error obteniendo datos de usuario:', row.other_user, err);
+                return {
+                    username: row.other_user,
+                    lastMessage: row.last_message || '',
+                    lastMessageTime: row.last_message_time,
+                    unreadCount: parseInt(row.unread_count) || 0,
+                    imageUrl: ''
+                };
+            }
         }));
 
+        console.log('✅ Conversaciones procesadas:', conversations.length);
         res.json({ success: true, data: conversations });
     } catch (error) {
-        console.error('Error al obtener conversaciones:', error);
-        res.json({ success: false, message: 'Error al obtener conversaciones', data: [] });
+        console.error('❌ Error al obtener conversaciones:', error);
+        console.error('❌ Detalles:', {
+            message: error.message,
+            code: error.code,
+            detail: error.detail
+        });
+        res.json({ success: false, message: 'Error al obtener conversaciones: ' + (error.message || 'Error desconocido'), data: [] });
     }
 });
 
