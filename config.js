@@ -142,6 +142,16 @@ const API = {
         }
     },
 
+    async checkFollow(followerUsername, targetUsername) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/follow/check?followerUsername=${encodeURIComponent(followerUsername)}&targetUsername=${encodeURIComponent(targetUsername)}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error al verificar seguimiento:', error);
+            return { success: false, isFollowing: false };
+        }
+    },
+
     async followUser(followerUsername, targetUsername) {
         try {
             const response = await fetch(`${API_BASE_URL}/follow`, {

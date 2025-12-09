@@ -616,7 +616,7 @@ app.get('/api/comments', async (req, res) => {
                 c.comment_id,
                 c.username,
                 c.comment_text,
-                c.edited,
+                COALESCE(c.is_edited, c.edited, false) as is_edited,
                 c.created_at,
                 u.image_url
             FROM comments c
@@ -629,7 +629,7 @@ app.get('/api/comments', async (req, res) => {
             commentId: comment.comment_id,
             username: comment.username,
             commentText: comment.comment_text,
-            edited: comment.edited || false,
+            edited: comment.is_edited || false,
             timestamp: comment.created_at,
             imageUrl: comment.image_url || ''
         }));
@@ -659,8 +659,8 @@ app.post('/api/comments/add', async (req, res) => {
         const userId = user.id || user.user_id;
 
         await pool.query(
-            'INSERT INTO comments (comment_id, video_id, user_id, username, image_url, comment_text) VALUES ($1, $2, $3, $4, $5, $6)',
-            [commentId, videoId, userId, username, user.image_url || '', commentText]
+            'INSERT INTO comments (comment_id, video_id, user_id, username, comment_text) VALUES ($1, $2, $3, $4, $5)',
+            [commentId, videoId, userId, username, commentText]
         );
 
         // Actualizar contador de comentarios
@@ -695,10 +695,19 @@ app.post('/api/comments/edit', async (req, res) => {
             return res.json({ success: false, message: 'Comentario no encontrado o no tienes permiso' });
         }
 
-        await pool.query(
-            'UPDATE comments SET comment_text = $1, edited = true, updated_at = CURRENT_TIMESTAMP WHERE comment_id = $2',
-            [newText, commentId]
-        );
+        // Intentar actualizar con is_edited primero, si no existe usar edited
+        try {
+            await pool.query(
+                'UPDATE comments SET comment_text = $1, is_edited = true, updated_at = CURRENT_TIMESTAMP WHERE comment_id = $2',
+                [newText, commentId]
+            );
+        } catch (err) {
+            // Si is_edited no existe, usar edited
+            await pool.query(
+                'UPDATE comments SET comment_text = $1, edited = true, updated_at = CURRENT_TIMESTAMP WHERE comment_id = $2',
+                [newText, commentId]
+            );
+        }
 
         res.json({ success: true, message: 'Comentario editado' });
     } catch (error) {
@@ -745,6 +754,27 @@ app.post('/api/comments/delete', async (req, res) => {
 });
 
 // ==================== RUTAS DE SEGUIDORES ====================
+
+// Verificar si un usuario sigue a otro
+app.get('/api/follow/check', async (req, res) => {
+    try {
+        const { followerUsername, targetUsername } = req.query;
+
+        if (!followerUsername || !targetUsername) {
+            return res.json({ success: false, message: 'Usuarios requeridos', isFollowing: false });
+        }
+
+        const result = await pool.query(
+            'SELECT * FROM follows WHERE follower_username = $1 AND following_username = $2',
+            [followerUsername, targetUsername]
+        );
+
+        res.json({ success: true, isFollowing: result.rows.length > 0 });
+    } catch (error) {
+        console.error('Error al verificar seguimiento:', error);
+        res.json({ success: false, message: 'Error al verificar seguimiento', isFollowing: false });
+    }
+});
 
 // Seguir usuario
 app.post('/api/follow', async (req, res) => {

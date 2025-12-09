@@ -200,6 +200,16 @@
         overflow: hidden;
     }
 
+    .follow-btn.following {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .follow-btn.following:hover {
+        background-color: var(--bg-tertiary);
+    }
+
     .follow-btn {
         background: var(--plan-color-principal);
         color: white;
@@ -604,7 +614,7 @@
             }
         }
         
-        function displayProfileData(userData) {
+        async function displayProfileData(userData) {
             document.body.className = `plan-${userData.plan.toLowerCase()}`;
             document.getElementById('profile-username').textContent = `@${userData.username}`;
             document.getElementById('profile-picture').style.backgroundImage = `url('${userData.imageUrl}')`;
@@ -612,10 +622,41 @@
             document.getElementById('following-count').textContent = userData.following || '0'; 
             document.getElementById('likes-count').textContent = userData.likes || '0';
             document.getElementById('profile-bio').textContent = `PLAN ${userData.plan.toUpperCase()}`;
+            
+            // Verificar si el usuario logueado ya sigue a este perfil
+            if (loggedInUser && loggedInUser.username !== userData.username) {
+                try {
+                    const followCheck = await API.checkFollow(loggedInUser.username, userData.username);
+                    if (followCheck.success && followCheck.isFollowing) {
+                        updateFollowButton(true);
+                    } else {
+                        updateFollowButton(false);
+                    }
+                } catch (error) {
+                    console.error('Error al verificar seguimiento:', error);
+                    updateFollowButton(false);
+                }
+            } else if (loggedInUser && loggedInUser.username === userData.username) {
+                // Es tu propio perfil, ocultar botón de seguir
+                document.getElementById('follow-btn').style.display = 'none';
+            } else {
+                updateFollowButton(false);
+            }
+        }
+        
+        function updateFollowButton(isFollowing) {
+            const followBtn = document.getElementById('follow-btn');
+            if (isFollowing) {
+                followBtn.innerHTML = '<i class="fas fa-check"></i> Siguiendo';
+                followBtn.classList.add('following');
+            } else {
+                followBtn.innerHTML = '<i class="fas fa-user-plus"></i> Seguir';
+                followBtn.classList.remove('following');
+            }
         }
 
         function setupEventListeners() {
-            document.getElementById('follow-btn').addEventListener('click', () => {
+            document.getElementById('follow-btn').addEventListener('click', async () => {
                 if (!loggedInUser) {
                     alert('Debes iniciar sesión para seguir a otros usuarios.');
                     window.location.href = 'index.html';
@@ -625,7 +666,36 @@
                     alert('No puedes seguirte a ti mismo.');
                     return;
                 }
-                alert('Funcionalidad de seguir en desarrollo.');
+                
+                const followBtn = document.getElementById('follow-btn');
+                const isFollowing = followBtn.classList.contains('following');
+                
+                if (isFollowing) {
+                    // Ya lo sigues, no hacer nada o implementar dejar de seguir
+                    return;
+                }
+                
+                // Seguir al usuario
+                followBtn.disabled = true;
+                followBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siguiendo...';
+                
+                try {
+                    const result = await API.followUser(loggedInUser.username, currentUser.username);
+                    
+                    if (result.success) {
+                        updateFollowButton(true);
+                        // Actualizar contador de seguidores
+                        const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
+                        document.getElementById('followers-count').textContent = followersCount + 1;
+                    } else {
+                        alert(result.message || 'Error al seguir usuario');
+                    }
+                } catch (error) {
+                    console.error('Error al seguir:', error);
+                    alert('Error al seguir usuario. Inténtalo de nuevo.');
+                } finally {
+                    followBtn.disabled = false;
+                }
             });
 
             document.getElementById('message-btn').addEventListener('click', () => {
