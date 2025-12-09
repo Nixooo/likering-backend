@@ -316,6 +316,8 @@ app.get('/api/videos/all', async (req, res) => {
         const queryUsername = username || '';
         console.log(`[BACKEND DEBUG] getAllVideos called with username: "${queryUsername}"`);
         
+        // Usar una subconsulta para verificar si el usuario sigue a cada creador de video
+        // Esto asegura que siempre devuelva un booleano explícito
         const videosResult = await pool.query(`
             SELECT 
                 v.video_id,
@@ -330,17 +332,19 @@ app.get('/api/videos/all', async (req, res) => {
                 v.visualizaciones,
                 u.image_url as profile_img,
                 CASE WHEN vl.username IS NOT NULL THEN true ELSE false END as is_liked_by_current_user,
-                COALESCE(
-                    CASE 
-                        WHEN $1 != '' AND f.follower_username IS NOT NULL AND f.follower_username = $1 THEN true
-                        ELSE false
-                    END,
-                    false
-                )::BOOLEAN as is_following_user
+                CASE 
+                    WHEN $1 = '' THEN false
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM follows f 
+                        WHERE f.follower_username = $1 
+                        AND f.following_username = v.username
+                    ) THEN true
+                    ELSE false
+                END as is_following_user
             FROM videos v
             LEFT JOIN users u ON u.username = v.username
-            LEFT JOIN video_likes vl ON vl.video_id = v.video_id AND ($1 != '' AND vl.username = $1)
-            LEFT JOIN follows f ON ($1 != '' AND f.follower_username = $1 AND f.following_username = v.username)
+            LEFT JOIN video_likes vl ON vl.video_id = v.video_id AND vl.username = $1
             LEFT JOIN (
                 SELECT video_id, COUNT(*) as real_count
                 FROM comments
