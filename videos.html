@@ -1304,17 +1304,22 @@
             const videoUsername = videoData.user ? videoData.user.replace('@', '') : '';
             const loggedInUsername = loggedInUser ? loggedInUser.username : '';
             const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
-            // Verificar si ya sigue al usuario - manejar todos los casos posibles
+            
+            // Verificar si ya sigue al usuario - PRIMERO verificar localStorage, luego backend
+            const isFollowingInStorage = isUserFollowed(videoUsername);
             const isFollowingValue = videoData.isFollowingUser;
-            const isAlreadyFollowing = isFollowingValue === true || 
-                                     isFollowingValue === 'true' ||
-                                     String(isFollowingValue).toLowerCase() === 'true' ||
-                                     Boolean(isFollowingValue) === true;
+            const isFollowingFromBackend = isFollowingValue === true || 
+                                          isFollowingValue === 'true' ||
+                                          String(isFollowingValue).toLowerCase() === 'true' ||
+                                          Boolean(isFollowingValue) === true;
+            
+            // Usar localStorage como fuente de verdad principal, backend como respaldo
+            const isAlreadyFollowing = isFollowingInStorage || isFollowingFromBackend;
 
             // Debug: solo para usuarios que no son el propio
             if (loggedInUser && !isMyVideo) {
                 const targetUsername = videoData.user.substring(1);
-                console.log(`[DEBUG] Video de @${targetUsername}: isFollowingUser =`, isFollowingValue, 'tipo:', typeof isFollowingValue, 'isAlreadyFollowing:', isAlreadyFollowing, 'isMyVideo:', isMyVideo);
+                console.log(`[DEBUG] Video de @${targetUsername}: localStorage=${isFollowingInStorage}, backend=${isFollowingValue}, final=${isAlreadyFollowing}, isMyVideo=${isMyVideo}`);
             }
 
             if (isMyVideo || isAlreadyFollowing) {
@@ -1324,6 +1329,10 @@
                 // Asegurar que isFollowingUser esté en true si ya se sigue
                 if (isAlreadyFollowing && !isMyVideo) {
                     videoData.isFollowingUser = true;
+                    // Asegurar que también esté en localStorage
+                    if (!isFollowingInStorage) {
+                        saveFollowedUser(videoUsername);
+                    }
                 }
             } else {
                 // Agregar el botón y el event listener
@@ -1504,6 +1513,36 @@
             }, 300);
         }
 
+       // Funciones para manejar el estado de seguimiento en localStorage
+        function getFollowedUsers() {
+            if (!loggedInUser) return new Set();
+            const key = `followedUsers_${loggedInUser.username}`;
+            const stored = localStorage.getItem(key);
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        }
+
+        function saveFollowedUser(username) {
+            if (!loggedInUser) return;
+            const key = `followedUsers_${loggedInUser.username}`;
+            const followed = getFollowedUsers();
+            followed.add(username);
+            localStorage.setItem(key, JSON.stringify([...followed]));
+        }
+
+        function removeFollowedUser(username) {
+            if (!loggedInUser) return;
+            const key = `followedUsers_${loggedInUser.username}`;
+            const followed = getFollowedUsers();
+            followed.delete(username);
+            localStorage.setItem(key, JSON.stringify([...followed]));
+        }
+
+        function isUserFollowed(username) {
+            if (!loggedInUser) return false;
+            const followed = getFollowedUsers();
+            return followed.has(username);
+        }
+
        async function executeFollow() {
     if (!targetUserToFollow || !loggedInUser) return;
 
@@ -1511,6 +1550,11 @@
 
     try {
         const result = await API.followUser(loggedInUser.username, targetUserToFollow);
+        
+        // Guardar en localStorage INMEDIATAMENTE
+        if (result.success) {
+            saveFollowedUser(targetUserToFollow);
+        }
         
             // ELIMINAR el botón INMEDIATAMENTE - hacerlo de forma síncrona antes de cualquier otra cosa
             const currentWrapper = loadedVideoElements[currentVideoIndex];
@@ -1540,6 +1584,7 @@
         } else {
             if (result.message && result.message.includes("Ya sigues")) {
                 // Ya estaba oculto, pero asegurarse
+                saveFollowedUser(targetUserToFollow); // Guardar por si acaso
                 updateAllVideosFollowStatus(targetUserToFollow, true);
             }
             showFollowModal(result.message || 'Error al seguir');
