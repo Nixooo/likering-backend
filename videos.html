@@ -1340,16 +1340,24 @@
             const loggedInUsername = loggedInUser ? loggedInUser.username : '';
             const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
             
-            // Verificar si ya sigue al usuario - PRIMERO verificar localStorage, luego backend
-            const isFollowingInStorage = isUserFollowed(videoUsername);
+            // Verificar si ya sigue al usuario - PRIMERO verificar backend (fuente de verdad), luego localStorage
             const isFollowingValue = videoData.isFollowingUser;
             const isFollowingFromBackend = isFollowingValue === true || 
                                           isFollowingValue === 'true' ||
                                           String(isFollowingValue).toLowerCase() === 'true' ||
                                           Boolean(isFollowingValue) === true;
+            const isFollowingInStorage = isUserFollowed(videoUsername);
             
-            // Usar localStorage como fuente de verdad principal, backend como respaldo
-            const isAlreadyFollowing = isFollowingInStorage || isFollowingFromBackend;
+            // Priorizar backend sobre localStorage (backend es fuente de verdad)
+            const isAlreadyFollowing = isFollowingFromBackend || isFollowingInStorage;
+            
+            // Sincronizar localStorage con backend
+            if (isFollowingFromBackend && !isFollowingInStorage) {
+                saveFollowedUser(videoUsername);
+            } else if (!isFollowingFromBackend && isFollowingInStorage) {
+                // Si el backend dice que no se sigue pero localStorage dice que sí, usar backend
+                removeFollowedUser(videoUsername);
+            }
 
             // Debug: solo para usuarios que no son el propio
             if (loggedInUser && !isMyVideo) {
@@ -1997,12 +2005,20 @@
                             const loggedInUsername = loggedInUser ? loggedInUser.username : '';
                             const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
                             
-                            // Verificar localStorage PRIMERO, luego backend para follows
-                            const isFollowingInStorage = isUserFollowed(videoUsername);
+                            // Verificar backend PRIMERO (fuente de verdad), luego localStorage para follows
                             const isFollowingFromBackend = updatedData.isFollowingUser;
+                            const isFollowingInStorage = isUserFollowed(videoUsername);
                             
-                            // Usar localStorage como fuente de verdad principal
-                            const isAlreadyFollowing = isFollowingInStorage || isFollowingFromBackend;
+                            // Priorizar backend sobre localStorage (backend es fuente de verdad)
+                            const isAlreadyFollowing = isFollowingFromBackend || isFollowingInStorage;
+                            
+                            // Sincronizar localStorage con backend
+                            if (isFollowingFromBackend && !isFollowingInStorage) {
+                                saveFollowedUser(videoUsername);
+                            } else if (!isFollowingFromBackend && isFollowingInStorage) {
+                                // Si el backend dice que no se sigue pero localStorage dice que sí, usar backend
+                                removeFollowedUser(videoUsername);
+                            }
                             
                             // Actualizar el estado de seguimiento
                             videoData.isFollowingUser = isAlreadyFollowing;
@@ -2081,8 +2097,19 @@
                         const updatedData = updatedVideos.find(v => v.videoId === video.videoId);
                         if (updatedData) {
                             const videoUsername = video.user ? video.user.replace('@', '') : '';
+                            const isFollowingFromBackend = updatedData.isFollowingUser;
                             const isFollowingInStorage = isUserFollowed(videoUsername);
-                            updatedData.isFollowingUser = isFollowingInStorage || updatedData.isFollowingUser;
+                            
+                            // Priorizar backend sobre localStorage (backend es fuente de verdad)
+                            updatedData.isFollowingUser = isFollowingFromBackend || isFollowingInStorage;
+                            
+                            // Sincronizar localStorage con backend
+                            if (isFollowingFromBackend && !isFollowingInStorage) {
+                                saveFollowedUser(videoUsername);
+                            } else if (!isFollowingFromBackend && isFollowingInStorage) {
+                                // Si el backend dice que no se sigue pero localStorage dice que sí, usar backend
+                                removeFollowedUser(videoUsername);
+                            }
                             
                             // Actualizar likes también - priorizar backend
                             const isLikedFromBackend = updatedData.isLikedByCurrentUser;

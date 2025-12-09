@@ -626,15 +626,30 @@
             // Verificar si el usuario logueado ya sigue a este perfil
             if (loggedInUser && loggedInUser.username !== userData.username) {
                 try {
+                    // Verificar localStorage PRIMERO
+                    const isFollowingInStorage = isUserFollowed(userData.username);
+                    
+                    // Luego verificar backend
                     const followCheck = await API.checkFollow(loggedInUser.username, userData.username);
-                    if (followCheck.success && followCheck.isFollowing) {
-                        updateFollowButton(true);
-                    } else {
-                        updateFollowButton(false);
+                    const isFollowingFromBackend = followCheck.success && followCheck.isFollowing;
+                    
+                    // Priorizar backend sobre localStorage (backend es fuente de verdad)
+                    const isFollowing = isFollowingFromBackend || isFollowingInStorage;
+                    
+                    // Sincronizar localStorage con backend
+                    if (isFollowingFromBackend && !isFollowingInStorage) {
+                        saveFollowedUser(userData.username);
+                    } else if (!isFollowingFromBackend && isFollowingInStorage) {
+                        // Si el backend dice que no se sigue pero localStorage dice que sí, usar backend
+                        removeFollowedUser(userData.username);
                     }
+                    
+                    updateFollowButton(isFollowing);
                 } catch (error) {
                     console.error('Error al verificar seguimiento:', error);
-                    updateFollowButton(false);
+                    // En caso de error, usar localStorage como respaldo
+                    const isFollowingInStorage = isUserFollowed(userData.username);
+                    updateFollowButton(isFollowingInStorage);
                 }
             } else if (loggedInUser && loggedInUser.username === userData.username) {
                 // Es tu propio perfil, ocultar botón de seguir
@@ -644,6 +659,36 @@
             }
         }
         
+        // Funciones para manejar el estado de seguimiento en localStorage
+        function getFollowedUsers() {
+            if (!loggedInUser) return new Set();
+            const key = `followedUsers_${loggedInUser.username}`;
+            const stored = localStorage.getItem(key);
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        }
+
+        function saveFollowedUser(username) {
+            if (!loggedInUser) return;
+            const key = `followedUsers_${loggedInUser.username}`;
+            const followed = getFollowedUsers();
+            followed.add(username);
+            localStorage.setItem(key, JSON.stringify([...followed]));
+        }
+
+        function removeFollowedUser(username) {
+            if (!loggedInUser) return;
+            const key = `followedUsers_${loggedInUser.username}`;
+            const followed = getFollowedUsers();
+            followed.delete(username);
+            localStorage.setItem(key, JSON.stringify([...followed]));
+        }
+
+        function isUserFollowed(username) {
+            if (!loggedInUser) return false;
+            const followed = getFollowedUsers();
+            return followed.has(username);
+        }
+
         function updateFollowButton(isFollowing) {
             const followBtn = document.getElementById('follow-btn');
             if (isFollowing) {
@@ -683,6 +728,8 @@
                         const result = await API.unfollowUser(loggedInUser.username, currentUser.username);
                         
                         if (result.success) {
+                            // Eliminar de localStorage INMEDIATAMENTE
+                            removeFollowedUser(currentUser.username);
                             updateFollowButton(false);
                             // Actualizar contador de seguidores
                             const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
@@ -705,6 +752,8 @@
                         const result = await API.followUser(loggedInUser.username, currentUser.username);
                         
                         if (result.success) {
+                            // Guardar en localStorage INMEDIATAMENTE
+                            saveFollowedUser(currentUser.username);
                             updateFollowButton(true);
                             // Actualizar contador de seguidores
                             const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
