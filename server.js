@@ -350,25 +350,36 @@ app.get('/api/videos/all', async (req, res) => {
         }
 
         const videos = videosResult.rows.map(video => {
-            // Convertir is_following_user explícitamente - manejar undefined/null
+            // Convertir is_following_user explícitamente - manejar todos los casos
+            // El CAST en SQL debería devolver un booleano, pero por si acaso manejamos todos los casos
             let isFollowing = false;
             const followingValue = video.is_following_user;
             
-            // Si es undefined o null, significa que no hay coincidencia en el JOIN
-            if (followingValue === undefined || followingValue === null) {
-                isFollowing = false;
-            } else if (followingValue === true || followingValue === 'true' || followingValue === 1 || followingValue === '1') {
+            // Log para debug ANTES de procesar
+            if (username && video.user && video.user !== username) {
+                console.log(`[BACKEND RAW] Video @${video.user}: is_following_user =`, followingValue, 'tipo:', typeof followingValue, 'valor:', JSON.stringify(followingValue));
+            }
+            
+            // Convertir explícitamente - PostgreSQL puede devolver true/false como boolean, string, o null
+            if (followingValue === true || followingValue === 'true' || followingValue === 'True' || followingValue === 'TRUE') {
                 isFollowing = true;
-            } else if (followingValue === false || followingValue === 'false' || followingValue === 0 || followingValue === '0') {
+            } else if (followingValue === 1 || followingValue === '1' || followingValue === 't' || followingValue === 'T') {
+                isFollowing = true;
+            } else if (followingValue === false || followingValue === 'false' || followingValue === 'False' || followingValue === 'FALSE') {
+                isFollowing = false;
+            } else if (followingValue === 0 || followingValue === '0' || followingValue === 'f' || followingValue === 'F') {
+                isFollowing = false;
+            } else if (followingValue === null || followingValue === undefined) {
+                // Si es null o undefined, significa que no hay coincidencia en el JOIN = no se sigue
                 isFollowing = false;
             } else {
-                // Para cualquier otro valor, convertir a booleano
+                // Para cualquier otro valor, intentar convertir a booleano
                 isFollowing = Boolean(followingValue);
             }
             
-            // Log para debug
+            // Log para debug DESPUÉS de procesar
             if (username && video.user && video.user !== username) {
-                console.log(`[BACKEND] Video @${video.user}: is_following_user =`, followingValue, 'tipo:', typeof followingValue, 'convertido a:', isFollowing);
+                console.log(`[BACKEND PROCESSED] Video @${video.user}: is_following_user =`, followingValue, '→', isFollowing);
             }
             
             return {
@@ -384,7 +395,7 @@ app.get('/api/videos/all', async (req, res) => {
                 visualizaciones: parseInt(video.visualizaciones) || 0,
                 profileImg: video.profile_img || '',
                 isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
-                isFollowingUser: isFollowing
+                isFollowingUser: isFollowing // Siempre un booleano
             };
         });
 
