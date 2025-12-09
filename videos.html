@@ -1791,6 +1791,45 @@
 
         
         initialize();
+        
+        // Recargar estado de seguimiento cuando se vuelve a la página
+        window.addEventListener('focus', async () => {
+            if (loggedInUser && allVideosMasterList.length > 0) {
+                // Recargar los metadatos para obtener el estado actualizado de seguimiento
+                const updatedVideos = await fetchAllVideoMetadata();
+                if (updatedVideos.length > 0) {
+                    // Actualizar el estado de seguimiento en los videos existentes
+                    updatedVideos.forEach(updatedVideo => {
+                        const existingVideo = allVideosMasterList.find(v => v.videoId === updatedVideo.videoId);
+                        if (existingVideo) {
+                            existingVideo.isFollowingUser = updatedVideo.isFollowingUser;
+                        }
+                    });
+                    allVideosMasterList = updatedVideos;
+                    
+                    // Actualizar los elementos de video cargados
+                    loadedVideoElements.forEach(wrapper => {
+                        if (wrapper.videoData) {
+                            const updatedData = updatedVideos.find(v => v.videoId === wrapper.videoData.videoId);
+                            if (updatedData) {
+                                wrapper.videoData.isFollowingUser = updatedData.isFollowingUser;
+                                const followBtn = wrapper.videoData.followButtonElement || wrapper.querySelector('.follow-button');
+                                if (followBtn) {
+                                    const isMyVideo = loggedInUser && wrapper.videoData.user === `@${loggedInUser.username}`;
+                                    const isAlreadyFollowing = Boolean(wrapper.videoData.isFollowingUser) === true;
+                                    if (isMyVideo || isAlreadyFollowing) {
+                                        followBtn.style.display = 'none';
+                                        followBtn.style.visibility = 'hidden';
+                                        followBtn.style.opacity = '0';
+                                        followBtn.style.pointerEvents = 'none';
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
     });
 
 </script>
