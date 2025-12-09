@@ -2003,7 +2003,7 @@
                             const loggedInUsername = loggedInUser ? loggedInUser.username : '';
                             const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
                             
-                            // Verificar localStorage PRIMERO, luego backend
+                            // Verificar localStorage PRIMERO, luego backend para follows
                             const isFollowingInStorage = isUserFollowed(videoUsername);
                             const isFollowingFromBackend = updatedData.isFollowingUser;
                             
@@ -2012,6 +2012,30 @@
                             
                             // Actualizar el estado de seguimiento
                             videoData.isFollowingUser = isAlreadyFollowing;
+                            
+                            // Verificar localStorage PRIMERO, luego backend para likes
+                            const isLikedInStorage = isVideoLiked(videoData.videoId);
+                            const isLikedFromBackend = updatedData.isLikedByCurrentUser;
+                            const isLiked = isLikedInStorage || isLikedFromBackend;
+                            
+                            // Actualizar el estado de likes
+                            videoData.isLikedByCurrentUser = isLiked;
+                            
+                            // Actualizar el corazón visualmente
+                            const likeArea = wrapper.querySelector('.interaction-area');
+                            if (likeArea) {
+                                const iconDiv = likeArea.querySelector('.icon');
+                                if (iconDiv) {
+                                    if (isLiked) {
+                                        iconDiv.classList.add('liked');
+                                        if (!isLikedInStorage) {
+                                            saveLikedVideo(videoData.videoId);
+                                        }
+                                    } else {
+                                        iconDiv.classList.remove('liked');
+                                    }
+                                }
+                            }
                             
                             const profileContainer = wrapper.querySelector('.profile-picture-container');
                             let followBtn = wrapper.videoData.followButtonElement || wrapper.querySelector('.follow-button');
@@ -2060,6 +2084,11 @@
                             const videoUsername = video.user ? video.user.replace('@', '') : '';
                             const isFollowingInStorage = isUserFollowed(videoUsername);
                             updatedData.isFollowingUser = isFollowingInStorage || updatedData.isFollowingUser;
+                            
+                            // Actualizar likes también
+                            const isLikedInStorage = isVideoLiked(video.videoId);
+                            const isLikedFromBackend = updatedData.isLikedByCurrentUser;
+                            updatedData.isLikedByCurrentUser = isLikedInStorage || isLikedFromBackend;
                         }
                         return updatedData || video;
                     });
