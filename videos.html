@@ -1320,6 +1320,10 @@
                 // No agregar el botón si ya lo sigue o es su propio video
                 profileContainer.append(profilePicture);
                 videoData.followButtonElement = null;
+                // Asegurar que isFollowingUser esté en true si ya se sigue
+                if (isAlreadyFollowing && !isMyVideo) {
+                    videoData.isFollowingUser = true;
+                }
             } else {
                 // Agregar el botón y el event listener
                 followButton.addEventListener('click', (e) => {
@@ -1335,6 +1339,8 @@
                 profileContainer.append(profilePicture, followButton);
                 // Guardar referencia al botón en el videoData para acceso rápido
                 videoData.followButtonElement = followButton;
+                // Asegurar que isFollowingUser esté en false si no se sigue
+                videoData.isFollowingUser = false;
             }
 
             const likeArea = document.createElement('div');
@@ -1505,25 +1511,23 @@
     try {
         const result = await API.followUser(loggedInUser.username, targetUserToFollow);
         
-        // Ocultar el botón INMEDIATAMENTE - hacerlo de forma síncrona antes de cualquier otra cosa
-        const currentWrapper = loadedVideoElements[currentVideoIndex];
-        if (currentWrapper && currentWrapper.videoData && currentWrapper.videoData.user === `@${targetUserToFollow}`) {
-            let followBtn = currentWrapper.videoData.followButtonElement;
-            if (!followBtn) {
-                followBtn = currentWrapper.querySelector('.follow-button[data-target-user="' + targetUserToFollow + '"]');
+            // ELIMINAR el botón INMEDIATAMENTE - hacerlo de forma síncrona antes de cualquier otra cosa
+            const currentWrapper = loadedVideoElements[currentVideoIndex];
+            if (currentWrapper && currentWrapper.videoData && currentWrapper.videoData.user === `@${targetUserToFollow}`) {
+                let followBtn = currentWrapper.videoData.followButtonElement;
+                if (!followBtn) {
+                    followBtn = currentWrapper.querySelector('.follow-button[data-target-user="' + targetUserToFollow + '"]');
+                }
+                if (!followBtn) {
+                    followBtn = currentWrapper.querySelector('.follow-button');
+                }
+                if (followBtn) {
+                    // ELIMINAR el botón completamente
+                    followBtn.remove();
+                    currentWrapper.videoData.isFollowingUser = true;
+                    currentWrapper.videoData.followButtonElement = null;
+                }
             }
-            if (!followBtn) {
-                followBtn = currentWrapper.querySelector('.follow-button');
-            }
-            if (followBtn) {
-                followBtn.style.display = 'none';
-                followBtn.style.visibility = 'hidden';
-                followBtn.style.opacity = '0';
-                followBtn.style.pointerEvents = 'none';
-                currentWrapper.videoData.isFollowingUser = true;
-                currentWrapper.videoData.followButtonElement = followBtn;
-            }
-        }
         
         // Actualizar todos los videos
         updateAllVideosFollowStatus(targetUserToFollow, true);
@@ -1571,12 +1575,10 @@
                 
                 if (followBtn) {
                     if (isFollowing) {
-                        followBtn.style.display = 'none';
-                        followBtn.style.visibility = 'hidden';
-                        followBtn.style.opacity = '0';
-                        followBtn.style.pointerEvents = 'none';
-                        // Actualizar la referencia después de ocultar
-                        currentWrapper.videoData.followButtonElement = followBtn;
+                        // ELIMINAR el botón completamente en lugar de solo ocultarlo
+                        followBtn.remove();
+                        currentWrapper.videoData.followButtonElement = null;
+                        currentWrapper.videoData.isFollowingUser = true;
                     } else {
                         followBtn.style.display = 'flex';
                         followBtn.style.visibility = 'visible';
@@ -1605,10 +1607,10 @@
                     
                     if (followBtn) {
                         if (isFollowing) {
-                            followBtn.style.display = 'none';
-                            followBtn.style.visibility = 'hidden';
-                            followBtn.style.opacity = '0';
-                            followBtn.style.pointerEvents = 'none';
+                            // ELIMINAR el botón completamente en lugar de solo ocultarlo
+                            followBtn.remove();
+                            wrapper.videoData.followButtonElement = null;
+                            wrapper.videoData.isFollowingUser = true;
                         } else {
                             followBtn.style.display = 'flex';
                             followBtn.style.visibility = 'visible';
@@ -1830,38 +1832,73 @@
         
         // Recargar estado de seguimiento cuando se vuelve a la página
         window.addEventListener('focus', async () => {
-            if (loggedInUser && allVideosMasterList.length > 0) {
-                // Recargar los metadatos para obtener el estado actualizado de seguimiento
+            console.log('[DEBUG] Window focused. Re-fetching video metadata and updating follow status.');
+            loggedInUser = JSON.parse(localStorage.getItem('loggedInUser')); // Recargar por si cambió
+            if (loggedInUser) {
                 const updatedVideos = await fetchAllVideoMetadata();
                 if (updatedVideos.length > 0) {
-                    // Actualizar el estado de seguimiento en los videos existentes
-                    updatedVideos.forEach(updatedVideo => {
-                        const existingVideo = allVideosMasterList.find(v => v.videoId === updatedVideo.videoId);
-                        if (existingVideo) {
-                            existingVideo.isFollowingUser = updatedVideo.isFollowingUser;
-                        }
-                    });
+                    // Actualizar allVideosMasterList con los datos más recientes
                     allVideosMasterList = updatedVideos;
-                    
-                    // Actualizar los elementos de video cargados
+
+                    // Recorrer los videos actualmente cargados en el DOM y actualizar su estado
                     loadedVideoElements.forEach(wrapper => {
-                        if (wrapper.videoData) {
-                            const updatedData = updatedVideos.find(v => v.videoId === wrapper.videoData.videoId);
-                            if (updatedData) {
-                                wrapper.videoData.isFollowingUser = updatedData.isFollowingUser;
-                                const followBtn = wrapper.videoData.followButtonElement || wrapper.querySelector('.follow-button');
+                        const videoData = wrapper.videoData;
+                        const updatedData = updatedVideos.find(v => v.videoId === videoData.videoId);
+                        if (updatedData) {
+                            // Actualizar el estado de seguimiento
+                            videoData.isFollowingUser = updatedData.isFollowingUser;
+                            
+                            // Normalizar nombres de usuario para comparación
+                            const videoUsername = videoData.user ? videoData.user.replace('@', '') : '';
+                            const loggedInUsername = loggedInUser ? loggedInUser.username : '';
+                            const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
+                            
+                            // Verificar si ya se sigue
+                            const isFollowingValue = videoData.isFollowingUser;
+                            const isAlreadyFollowing = isFollowingValue === true || 
+                                                     isFollowingValue === 'true' ||
+                                                     String(isFollowingValue).toLowerCase() === 'true' ||
+                                                     Boolean(isFollowingValue) === true;
+                            
+                            const profileContainer = wrapper.querySelector('.profile-picture-container');
+                            let followBtn = wrapper.videoData.followButtonElement || wrapper.querySelector('.follow-button');
+
+                            if (isMyVideo || isAlreadyFollowing) {
+                                // Si ahora se sigue o es su propio video, ELIMINAR el botón completamente
                                 if (followBtn) {
-                                    const isMyVideo = loggedInUser && wrapper.videoData.user === `@${loggedInUser.username}`;
-                                    const isAlreadyFollowing = Boolean(wrapper.videoData.isFollowingUser) === true;
-                                    if (isMyVideo || isAlreadyFollowing) {
-                                        followBtn.style.display = 'none';
-                                        followBtn.style.visibility = 'hidden';
-                                        followBtn.style.opacity = '0';
-                                        followBtn.style.pointerEvents = 'none';
+                                    followBtn.remove();
+                                    videoData.followButtonElement = null;
+                                    console.log(`[DEBUG] Botón de seguir para @${videoUsername} eliminado al volver a la página.`);
+                                }
+                            } else {
+                                // Si no se sigue y no es su propio video, asegurar que el botón exista
+                                if (!followBtn && !isMyVideo) {
+                                    console.log(`[DEBUG] @${videoUsername} no seguido, recreando botón.`);
+                                    const newFollowButton = document.createElement('div');
+                                    newFollowButton.className = 'follow-button';
+                                    newFollowButton.textContent = '+';
+                                    newFollowButton.dataset.targetUser = videoUsername;
+                                    newFollowButton.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        if (!loggedInUser) {
+                                            alert("Debes iniciar sesión para seguir canales.");
+                                            return;
+                                        }
+                                        showFollowConfirmModal(videoUsername);
+                                    });
+                                    if (profileContainer) {
+                                        profileContainer.append(newFollowButton);
+                                        videoData.followButtonElement = newFollowButton;
                                     }
                                 }
                             }
                         }
+                    });
+                    // También actualizar videosToPlayQueue para futuros videos
+                    videosToPlayQueue = videosToPlayQueue.map(video => {
+                        const updatedData = updatedVideos.find(v => v.videoId === video.videoId);
+                        return updatedData || video;
                     });
                 }
             }
