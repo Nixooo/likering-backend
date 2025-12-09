@@ -611,19 +611,39 @@ app.get('/api/comments', async (req, res) => {
             return res.json({ success: false, message: 'Video ID requerido', data: [] });
         }
 
-        const result = await pool.query(`
-            SELECT 
-                c.comment_id,
-                c.username,
-                c.comment_text,
-                COALESCE(c.is_edited, c.edited, false) as is_edited,
-                c.created_at,
-                u.image_url
-            FROM comments c
-            LEFT JOIN users u ON u.username = c.username
-            WHERE c.video_id = $1
-            ORDER BY c.created_at DESC
-        `, [videoId]);
+        // Obtener comentarios - intentar usar is_edited, si no existe usar edited
+        let result;
+        try {
+            // Intentar con is_edited primero
+            result = await pool.query(`
+                SELECT 
+                    c.comment_id,
+                    c.username,
+                    c.comment_text,
+                    COALESCE(c.is_edited, false) as is_edited,
+                    c.created_at,
+                    u.image_url
+                FROM comments c
+                LEFT JOIN users u ON u.username = c.username
+                WHERE c.video_id = $1
+                ORDER BY c.created_at DESC
+            `, [videoId]);
+        } catch (err) {
+            // Si falla, usar edited
+            result = await pool.query(`
+                SELECT 
+                    c.comment_id,
+                    c.username,
+                    c.comment_text,
+                    COALESCE(c.edited, false) as is_edited,
+                    c.created_at,
+                    u.image_url
+                FROM comments c
+                LEFT JOIN users u ON u.username = c.username
+                WHERE c.video_id = $1
+                ORDER BY c.created_at DESC
+            `, [videoId]);
+        }
 
         const comments = result.rows.map(comment => ({
             commentId: comment.comment_id,
