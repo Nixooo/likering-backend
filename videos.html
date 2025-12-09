@@ -834,15 +834,26 @@
         return result.data.map(video => {
             // Convertir explícitamente is_following_user a booleano
             // El backend puede devolver true, false, null, o undefined
-            let isFollowing = false;
             const followingValue = video.is_following_user;
-            if (followingValue === true || followingValue === 'true') {
+            let isFollowing = false;
+            
+            // Verificar explícitamente todos los casos
+            if (followingValue === true) {
                 isFollowing = true;
-            } else if (followingValue === false || followingValue === 'false' || followingValue === null || followingValue === undefined) {
+            } else if (followingValue === 'true' || followingValue === 'True' || followingValue === 'TRUE') {
+                isFollowing = true;
+            } else if (followingValue === 1 || followingValue === '1') {
+                isFollowing = true;
+            } else if (followingValue === false || followingValue === 'false' || followingValue === null || followingValue === undefined || followingValue === 0 || followingValue === '0') {
                 isFollowing = false;
             } else {
-                // Para cualquier otro valor, convertir a booleano
+                // Para cualquier otro valor, intentar convertir a booleano
                 isFollowing = Boolean(followingValue);
+            }
+            
+            // Debug log para verificar
+            if (loggedInUser && video.user && video.user !== `@${loggedInUser.username}`) {
+                console.log(`[FETCH] Video @${video.user.substring(1)}: is_following_user raw =`, followingValue, 'tipo:', typeof followingValue, 'convertido a:', isFollowing);
             }
             
             return {
