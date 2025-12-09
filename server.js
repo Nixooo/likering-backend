@@ -34,6 +34,22 @@ pool.on('error', (err) => {
     console.error('❌ Error en la conexión a PostgreSQL:', err);
 });
 
+// Probar conexión al iniciar
+(async () => {
+    try {
+        const testQuery = await pool.query('SELECT NOW()');
+        console.log('✅ Conexión a PostgreSQL verificada:', testQuery.rows[0].now);
+    } catch (error) {
+        console.error('❌ ERROR CRÍTICO: No se pudo conectar a PostgreSQL:', error.message);
+        console.error('Verifica las variables de entorno en Render:');
+        console.error('- DB_HOST:', process.env.DB_HOST ? '✅ Configurado' : '❌ FALTA');
+        console.error('- DB_PORT:', process.env.DB_PORT ? '✅ Configurado' : '❌ FALTA');
+        console.error('- DB_NAME:', process.env.DB_NAME ? '✅ Configurado' : '❌ FALTA');
+        console.error('- DB_USER:', process.env.DB_USER ? '✅ Configurado' : '❌ FALTA');
+        console.error('- DB_PASSWORD:', process.env.DB_PASSWORD ? '✅ Configurado' : '❌ FALTA');
+    }
+})();
+
 // ==================== UTILIDADES ====================
 
 function generateId(prefix) {
