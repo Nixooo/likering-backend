@@ -404,7 +404,7 @@ app.get('/api/videos/all', async (req, res) => {
                 comments: parseInt(video.comments) || 0,
                 visualizaciones: parseInt(video.visualizaciones) || 0,
                 profileImg: video.profile_img || '',
-                isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
+                isLikedByCurrentUser: Boolean(video.is_liked_by_current_user) || false,
                 isFollowingUser: isFollowing // Siempre un booleano
             };
         });
