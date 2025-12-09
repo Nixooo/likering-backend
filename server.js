@@ -654,6 +654,13 @@ app.get('/api/comments', async (req, res) => {
             imageUrl: comment.image_url || ''
         }));
 
+        // Sincronizar el contador de comentarios con el número real
+        const realCount = comments.length;
+        await pool.query(
+            'UPDATE videos SET comments_count = $1 WHERE video_id = $2',
+            [realCount, videoId]
+        );
+
         res.json({ success: true, data: comments });
     } catch (error) {
         console.error('Error al obtener comentarios:', error);
@@ -770,6 +777,35 @@ app.post('/api/comments/delete', async (req, res) => {
     } catch (error) {
         console.error('Error al eliminar comentario:', error);
         res.json({ success: false, message: 'Error al eliminar comentario' });
+    }
+});
+
+// Sincronizar contador de comentarios para todos los videos
+app.post('/api/comments/sync-all', async (req, res) => {
+    try {
+        // Obtener todos los videos con su conteo real de comentarios
+        const result = await pool.query(`
+            SELECT 
+                v.video_id,
+                COUNT(c.comment_id) as real_count
+            FROM videos v
+            LEFT JOIN comments c ON c.video_id = v.video_id
+            GROUP BY v.video_id
+        `);
+
+        let updated = 0;
+        for (const row of result.rows) {
+            await pool.query(
+                'UPDATE videos SET comments_count = $1 WHERE video_id = $2',
+                [parseInt(row.real_count) || 0, row.video_id]
+            );
+            updated++;
+        }
+
+        res.json({ success: true, message: `Contadores sincronizados para ${updated} videos` });
+    } catch (error) {
+        console.error('Error al sincronizar contadores:', error);
+        res.json({ success: false, message: 'Error al sincronizar contadores' });
     }
 });
 
