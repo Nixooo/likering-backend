@@ -328,7 +328,7 @@ app.get('/api/videos/all', async (req, res) => {
                 u.image_url as profile_img,
                 CASE WHEN vl.username IS NOT NULL THEN true ELSE false END as is_liked_by_current_user,
                 CASE 
-                    WHEN f.follower_username IS NOT NULL AND f.follower_username = $1 THEN true 
+                    WHEN f.follower_username IS NOT NULL THEN true 
                     ELSE false 
                 END as is_following_user
             FROM videos v
@@ -343,21 +343,34 @@ app.get('/api/videos/all', async (req, res) => {
             ORDER BY v.created_at DESC
         `, [username || '']);
 
-        const videos = videosResult.rows.map(video => ({
-            videoId: video.video_id,
-            user: `@${video.user}`,
-            titulo: video.titulo || '',
-            description: video.descripcion || '',
-            videoUrl: video.videourl || video.video_url,
-            thumbnailUrl: video.thumbnailurl || video.thumbnail_url,
-            music: video.music || '',
-            likes: parseInt(video.likes) || 0,
-            comments: parseInt(video.comments) || 0,
-            visualizaciones: parseInt(video.visualizaciones) || 0,
-            profileImg: video.profile_img || '',
-            isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
-            isFollowingUser: Boolean(video.is_following_user)
-        }));
+        // Log para debug
+        if (username && videosResult.rows.length > 0) {
+            const sampleVideo = videosResult.rows[0];
+            console.log('📹 Video de ejemplo:', sampleVideo.user, 'is_following_user:', sampleVideo.is_following_user, 'tipo:', typeof sampleVideo.is_following_user);
+        }
+
+        const videos = videosResult.rows.map(video => {
+            // Convertir is_following_user explícitamente
+            const isFollowing = video.is_following_user === true || 
+                               video.is_following_user === 'true' ||
+                               (video.is_following_user !== null && video.is_following_user !== undefined && video.is_following_user !== false);
+            
+            return {
+                videoId: video.video_id,
+                user: `@${video.user}`,
+                titulo: video.titulo || '',
+                description: video.descripcion || '',
+                videoUrl: video.videourl || video.video_url,
+                thumbnailUrl: video.thumbnailurl || video.thumbnail_url,
+                music: video.music || '',
+                likes: parseInt(video.likes) || 0,
+                comments: parseInt(video.comments) || 0,
+                visualizaciones: parseInt(video.visualizaciones) || 0,
+                profileImg: video.profile_img || '',
+                isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
+                isFollowingUser: isFollowing
+            };
+        });
 
         res.json({ success: true, data: videos });
     } catch (error) {
