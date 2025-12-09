@@ -899,9 +899,12 @@ app.post('/api/messages/send', async (req, res) => {
 
         const messageId = generateId('msg');
 
+        const fromUserId = fromUser.id || fromUser.user_id;
+        const toUserId = toUser.id || toUser.user_id;
+        
         await pool.query(
             'INSERT INTO messages (message_id, from_user_id, from_username, to_user_id, to_username, message_text) VALUES ($1, $2, $3, $4, $5, $6)',
-            [messageId, fromUser.id, from, toUser.id, to, message]
+            [messageId, fromUserId, from, toUserId, to, message]
         );
 
         res.json({ success: true, message: 'Mensaje enviado', messageId });
