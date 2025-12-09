@@ -974,7 +974,7 @@
                     const avatar = document.getElementById('chat-avatar');
                     avatar.style.backgroundImage = `url('${result.data.imageUrl}')`;
                     avatar.addEventListener('click', () => {
-                        window.location.href = `Streamer.html?user=${chatUser}`;
+                        window.location.href = `streamer.html?user=${chatUser}`;
                     });
                 }
             } catch (error) {
@@ -1011,7 +1011,7 @@
 
             // Click en botón de info
             document.getElementById('info-btn').addEventListener('click', () => {
-                window.location.href = `Streamer.html?user=${chatUser}`;
+                window.location.href = `streamer.html?user=${chatUser}`;
             });
             
             // Inicializar modal de eliminación

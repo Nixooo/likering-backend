@@ -802,10 +802,10 @@
     }
     
     function setupEventListeners() {
-        document.getElementById('open-studio-btn').addEventListener('click', () => window.location.href = 'Editor.html');
+        document.getElementById('open-studio-btn').addEventListener('click', () => window.location.href = 'editor.html');
         // MODIFICADO: El botón de compartir ahora llama a la función para abrir la modal
         document.getElementById('share-profile-btn').addEventListener('click', handleShareProfileClick);
-        document.getElementById('wallet-btn').addEventListener('click', () => window.location.href = 'Billetera.html');
+        document.getElementById('wallet-btn').addEventListener('click', () => window.location.href = 'billetera.html');
 
         // --- Listeners para la Modal de Editar Perfil ---
         const editModal = document.getElementById('edit-profile-modal');
@@ -856,7 +856,7 @@
     function handleShareProfileClick() {
         if (!loggedInUser) return;
 
-        const profileUrl = `${window.location.origin}${window.location.pathname.replace('perfil.html', 'Streamer.html')}?user=${loggedInUser.username}`;
+        const profileUrl = `${window.location.origin}${window.location.pathname.replace('perfil.html', 'streamer.html')}?user=${loggedInUser.username}`;
         const shareText = `¡Mira el perfil de ${loggedInUser.username} en Likering!`;
         const encodedUrl = encodeURIComponent(profileUrl);
         const encodedText = encodeURIComponent(shareText);

@@ -761,7 +761,7 @@
         </div>
         
         <div class="my-profile-badge"><div class="my-profile-picture"></div><span>Yo</span></div>
-        <div class="floating-menu-container"><div class="floating-menu"><ul><li><a href="Billetera.html"><i class="fas fa-wallet"></i><span>Billetera</span></a></li><li><a href="Mensajes.html"><i class="far fa-comments"></i><span>Mensajes</span></a></li><li><a href="Perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li><li id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></li></ul></div></div>
+        <div class="floating-menu-container"><div class="floating-menu"><ul><li><a href="billetera.html"><i class="fas fa-wallet"></i><span>Billetera</span></a></li><li><a href="mensajes.html"><i class="far fa-comments"></i><span>Mensajes</span></a></li><li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li><li id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></li></ul></div></div>
         <div class="options-menu-container"><div class="options-menu"><ul><li id="share-btn"><i class="fas fa-share-square"></i><span>Compartir</span></li><li id="download-btn"><i class="fas fa-download"></i><span>Descargar</span></li></ul></div></div>
         <div class="comments-panel-container"><div class="comments-panel"><div class="comments-header"><h4 id="comments-count">0 comentarios</h4><i class="fas fa-times close-comments"></i></div><div class="comments-list" id="comments-list"></div><div class="add-comment-area"><div class="my-avatar-comment"></div><input type="text" id="comment-input" placeholder="Añadir un comentario..."><button class="send-comment-btn" id="send-comment-btn"><i class="fas fa-arrow-right"></i></button></div></div></div>
         <div class="share-menu-container"><div class="share-panel"><div class="share-panel-header"><h4>Compartir en</h4><i class="fas fa-times close-share"></i></div><div class="share-grid"><div class="share-option"><div class="share-icon whatsapp"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span></div><div class="share-option"><div class="share-icon instagram"><i class="fab fa-instagram"></i></div><span>Instagram</span></div><div class="share-option"><div class="share-icon copy-link"><i class="fas fa-link"></i></div><span>Copiar enlace</span></div></div></div></div>
@@ -1456,7 +1456,7 @@
             
             profilePicture.addEventListener('click', (e) => {
                 e.stopPropagation();
-                window.location.href = `Streamer.html?user=${videoData.user.substring(1)}`;
+                window.location.href = `streamer.html?user=${videoData.user.substring(1)}`;
             });
             
             optionsIcon.addEventListener('click', (e) => {
