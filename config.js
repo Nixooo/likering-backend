@@ -1,14 +1,9 @@
 // Configuración de la API para Likering
 // Backend: Node.js + Express + PostgreSQL (Aiven) - Desplegado en Render.com
 
-// Detectar si estamos en desarrollo o producción
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-// URL del backend - Actualiza esta URL con la URL de tu servicio en Render.com
-// Formato: https://tu-servicio.onrender.com/api
-const API_BASE_URL = isDevelopment 
-    ? 'http://localhost:3000/api' 
-    : 'https://likering-backend.onrender.com/api'; // ✅ URL de Render configurada
+// URL del backend - Siempre usa Render en producción
+// Si necesitas desarrollo local, cambia temporalmente a 'http://localhost:3000/api'
+const API_BASE_URL = 'https://likering-backend.onrender.com/api';
 
 const API = {
     // ==================== AUTENTICACIÓN ====================
