@@ -1924,20 +1924,20 @@
                         const videoData = wrapper.videoData;
                         const updatedData = updatedVideos.find(v => v.videoId === videoData.videoId);
                         if (updatedData) {
-                            // Actualizar el estado de seguimiento
-                            videoData.isFollowingUser = updatedData.isFollowingUser;
-                            
                             // Normalizar nombres de usuario para comparación
                             const videoUsername = videoData.user ? videoData.user.replace('@', '') : '';
                             const loggedInUsername = loggedInUser ? loggedInUser.username : '';
                             const isMyVideo = loggedInUser && videoUsername === loggedInUsername;
                             
-                            // Verificar si ya se sigue - convertir explícitamente a booleano
-                            const isFollowingValue = videoData.isFollowingUser;
-                            const isAlreadyFollowing = isFollowingValue === true || 
-                                                     isFollowingValue === 'true' ||
-                                                     String(isFollowingValue).toLowerCase() === 'true' ||
-                                                     Boolean(isFollowingValue) === true;
+                            // Verificar localStorage PRIMERO, luego backend
+                            const isFollowingInStorage = isUserFollowed(videoUsername);
+                            const isFollowingFromBackend = updatedData.isFollowingUser;
+                            
+                            // Usar localStorage como fuente de verdad principal
+                            const isAlreadyFollowing = isFollowingInStorage || isFollowingFromBackend;
+                            
+                            // Actualizar el estado de seguimiento
+                            videoData.isFollowingUser = isAlreadyFollowing;
                             
                             const profileContainer = wrapper.querySelector('.profile-picture-container');
                             let followBtn = wrapper.videoData.followButtonElement || wrapper.querySelector('.follow-button');
@@ -1948,6 +1948,10 @@
                                     followBtn.remove();
                                     videoData.followButtonElement = null;
                                     videoData.isFollowingUser = true; // Asegurar que esté en true
+                                    // Asegurar que también esté en localStorage
+                                    if (!isFollowingInStorage) {
+                                        saveFollowedUser(videoUsername);
+                                    }
                                     console.log(`[DEBUG] Botón de seguir para @${videoUsername} eliminado al volver a la página.`);
                                 }
                             } else {
