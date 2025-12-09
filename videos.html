@@ -831,14 +831,29 @@
             throw new Error(result.message || 'Error desconocido del backend.');
         }
         
-        return result.data.map(video => ({
-            ...video,
-            visualizaciones: parseInt(video.visualizaciones) || 0,
-            videoId: video.video_id || video.videoId,
-            profileImg: video.profile_img || video.profileImg,
-            isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
-            isFollowingUser: Boolean(video.is_following_user) // Asegurar que sea booleano
-        }));
+        return result.data.map(video => {
+            // Convertir explícitamente is_following_user a booleano
+            // El backend puede devolver true, false, null, o undefined
+            let isFollowing = false;
+            const followingValue = video.is_following_user;
+            if (followingValue === true || followingValue === 'true') {
+                isFollowing = true;
+            } else if (followingValue === false || followingValue === 'false' || followingValue === null || followingValue === undefined) {
+                isFollowing = false;
+            } else {
+                // Para cualquier otro valor, convertir a booleano
+                isFollowing = Boolean(followingValue);
+            }
+            
+            return {
+                ...video,
+                visualizaciones: parseInt(video.visualizaciones) || 0,
+                videoId: video.video_id || video.videoId,
+                profileImg: video.profile_img || video.profileImg,
+                isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
+                isFollowingUser: isFollowing // Asegurar que sea booleano
+            };
+        });
     } catch (error) {
         console.error("Error al cargar metadatos de videos:", error);
         if (loadingSpinner) {
