@@ -1469,7 +1469,27 @@
     try {
         const result = await API.followUser(loggedInUser.username, targetUserToFollow);
         
-        // Ocultar el botón INMEDIATAMENTE antes de cerrar el modal
+        // Ocultar el botón INMEDIATAMENTE - hacerlo de forma síncrona antes de cualquier otra cosa
+        const currentWrapper = loadedVideoElements[currentVideoIndex];
+        if (currentWrapper && currentWrapper.videoData && currentWrapper.videoData.user === `@${targetUserToFollow}`) {
+            let followBtn = currentWrapper.videoData.followButtonElement;
+            if (!followBtn) {
+                followBtn = currentWrapper.querySelector('.follow-button[data-target-user="' + targetUserToFollow + '"]');
+            }
+            if (!followBtn) {
+                followBtn = currentWrapper.querySelector('.follow-button');
+            }
+            if (followBtn) {
+                followBtn.style.display = 'none';
+                followBtn.style.visibility = 'hidden';
+                followBtn.style.opacity = '0';
+                followBtn.style.pointerEvents = 'none';
+                currentWrapper.videoData.isFollowingUser = true;
+                currentWrapper.videoData.followButtonElement = followBtn;
+            }
+        }
+        
+        // Actualizar todos los videos
         updateAllVideosFollowStatus(targetUserToFollow, true);
         
         hideFollowConfirmModal();
@@ -1519,15 +1539,18 @@
                         followBtn.style.visibility = 'hidden';
                         followBtn.style.opacity = '0';
                         followBtn.style.pointerEvents = 'none';
-                        // Remover el event listener para evitar clicks
-                        const newBtn = followBtn.cloneNode(true);
-                        followBtn.parentNode.replaceChild(newBtn, followBtn);
+                        // Actualizar la referencia después de ocultar
+                        currentWrapper.videoData.followButtonElement = followBtn;
                     } else {
                         followBtn.style.display = 'flex';
                         followBtn.style.visibility = 'visible';
                         followBtn.style.opacity = '1';
                         followBtn.style.pointerEvents = 'auto';
+                        // Actualizar la referencia
+                        currentWrapper.videoData.followButtonElement = followBtn;
                     }
+                } else {
+                    console.log('⚠️ No se encontró el botón de seguir para @' + username);
                 }
             }
             
