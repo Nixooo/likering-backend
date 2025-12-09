@@ -863,12 +863,18 @@
                 console.log(`[FETCH] Video @${video.user.substring(1)}: backend=${isFollowing}, localStorage=${isFollowingInStorage}, final=${finalIsFollowing}`);
             }
             
+            // Verificar localStorage para likes también
+            const videoIdForLike = video.video_id || video.videoId;
+            const isLikedInStorage = isVideoLiked(videoIdForLike);
+            const isLikedFromBackend = Boolean(video.is_liked_by_current_user);
+            const finalIsLiked = isLikedInStorage || isLikedFromBackend;
+            
             return {
                 ...video,
                 visualizaciones: parseInt(video.visualizaciones) || 0,
-                videoId: video.video_id || video.videoId,
+                videoId: videoIdForLike,
                 profileImg: video.profile_img || video.profileImg,
-                isLikedByCurrentUser: Boolean(video.is_liked_by_current_user),
+                isLikedByCurrentUser: finalIsLiked, // Usar el valor combinado
                 isFollowingUser: finalIsFollowing // Usar el valor combinado
             };
         });
@@ -1194,24 +1200,52 @@
 
        async function handleLikeClick(likeArea, videoId) {
     const iconDiv = likeArea.querySelector('.icon');
-    if (iconDiv.classList.contains('liked')) return;
-    
-    iconDiv.classList.add('liked');
     const countSpan = likeArea.querySelector('.count');
     let currentLikes = parseInt(countSpan.textContent) || 0;
-    countSpan.textContent = currentLikes + 1;
+    const isCurrentlyLiked = iconDiv.classList.contains('liked');
+    
+    // Toggle visual inmediato
+    if (isCurrentlyLiked) {
+        // Quitar like
+        iconDiv.classList.remove('liked');
+        countSpan.textContent = Math.max(0, currentLikes - 1);
+        removeLikedVideo(videoId);
+    } else {
+        // Agregar like
+        iconDiv.classList.add('liked');
+        countSpan.textContent = currentLikes + 1;
+        saveLikedVideo(videoId);
+    }
     
     try {
         const result = await API.likeVideo(videoId, loggedInUser.username);
         
-        if (!result.success) {
+        if (result.success) {
+            // Actualizar contador con el valor del servidor
+            if (result.likes !== undefined) {
+                countSpan.textContent = result.likes;
+            }
+        } else {
             // Revertir si falla
-            iconDiv.classList.remove('liked');
+            if (isCurrentlyLiked) {
+                iconDiv.classList.add('liked');
+                saveLikedVideo(videoId);
+            } else {
+                iconDiv.classList.remove('liked');
+                removeLikedVideo(videoId);
+            }
             countSpan.textContent = currentLikes;
         }
     } catch (error) {
         console.error("Error al registrar el like:", error);
-        iconDiv.classList.remove('liked');
+        // Revertir si falla
+        if (isCurrentlyLiked) {
+            iconDiv.classList.add('liked');
+            saveLikedVideo(videoId);
+        } else {
+            iconDiv.classList.remove('liked');
+            removeLikedVideo(videoId);
+        }
         countSpan.textContent = currentLikes;
     }
 }
@@ -1363,8 +1397,18 @@
             const likeArea = document.createElement('div');
             likeArea.className = 'interaction-area';
             likeArea.innerHTML = `<div class="icon"><i class="fas fa-heart"></i></div><span class="count">${videoData.likes}</span>`;
-            if (videoData.isLikedByCurrentUser) {
+            
+            // Verificar localStorage PRIMERO, luego backend
+            const isLikedInStorage = isVideoLiked(videoData.videoId);
+            const isLikedFromBackend = videoData.isLikedByCurrentUser;
+            const isLiked = isLikedInStorage || isLikedFromBackend;
+            
+            if (isLiked) {
                 likeArea.querySelector('.icon').classList.add('liked');
+                // Asegurar que también esté en localStorage
+                if (!isLikedInStorage) {
+                    saveLikedVideo(videoData.videoId);
+                }
             }
             likeArea.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1548,6 +1592,36 @@
             if (!loggedInUser) return false;
             const followed = getFollowedUsers();
             return followed.has(username);
+        }
+
+        // Funciones para manejar el estado de likes en localStorage
+        function getLikedVideos() {
+            if (!loggedInUser) return new Set();
+            const key = `likedVideos_${loggedInUser.username}`;
+            const stored = localStorage.getItem(key);
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        }
+
+        function saveLikedVideo(videoId) {
+            if (!loggedInUser) return;
+            const key = `likedVideos_${loggedInUser.username}`;
+            const liked = getLikedVideos();
+            liked.add(videoId);
+            localStorage.setItem(key, JSON.stringify([...liked]));
+        }
+
+        function removeLikedVideo(videoId) {
+            if (!loggedInUser) return;
+            const key = `likedVideos_${loggedInUser.username}`;
+            const liked = getLikedVideos();
+            liked.delete(videoId);
+            localStorage.setItem(key, JSON.stringify([...liked]));
+        }
+
+        function isVideoLiked(videoId) {
+            if (!loggedInUser) return false;
+            const liked = getLikedVideos();
+            return liked.has(videoId);
         }
 
        async function executeFollow() {

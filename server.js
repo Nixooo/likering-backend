@@ -565,7 +565,7 @@ app.post('/api/videos/delete', async (req, res) => {
     }
 });
 
-// Dar like a un video
+// Dar/quitar like a un video (toggle)
 app.post('/api/videos/like', async (req, res) => {
     try {
         const { videoId, username } = req.body;
@@ -585,27 +585,56 @@ app.post('/api/videos/like', async (req, res) => {
             [videoId, username]
         );
 
-        if (existingLike.rows.length > 0) {
-            return res.json({ success: false, message: 'Ya diste like a este video' });
-        }
-
-        // Agregar like
         const userId = user.id || user.user_id;
-        await pool.query(
-            'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
-            [videoId, userId, username]
-        );
+        let isLiked = false;
+        let newLikeCount = 0;
 
-        // Actualizar contador de likes del video
-        await pool.query(
-            'UPDATE videos SET likes = likes + 1 WHERE video_id = $1',
-            [videoId]
-        );
+        if (existingLike.rows.length > 0) {
+            // Quitar like
+            await pool.query(
+                'DELETE FROM video_likes WHERE video_id = $1 AND username = $2',
+                [videoId, username]
+            );
 
-        res.json({ success: true, message: 'Like agregado' });
+            // Actualizar contador de likes del video
+            await pool.query(
+                'UPDATE videos SET likes = GREATEST(likes - 1, 0) WHERE video_id = $1',
+                [videoId]
+            );
+
+            // Obtener el nuevo contador
+            const videoResult = await pool.query(
+                'SELECT likes FROM videos WHERE video_id = $1',
+                [videoId]
+            );
+            newLikeCount = videoResult.rows[0]?.likes || 0;
+
+            res.json({ success: true, message: 'Like eliminado', isLiked: false, likes: newLikeCount });
+        } else {
+            // Agregar like
+            await pool.query(
+                'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
+                [videoId, userId, username]
+            );
+
+            // Actualizar contador de likes del video
+            await pool.query(
+                'UPDATE videos SET likes = likes + 1 WHERE video_id = $1',
+                [videoId]
+            );
+
+            // Obtener el nuevo contador
+            const videoResult = await pool.query(
+                'SELECT likes FROM videos WHERE video_id = $1',
+                [videoId]
+            );
+            newLikeCount = videoResult.rows[0]?.likes || 0;
+
+            res.json({ success: true, message: 'Like agregado', isLiked: true, likes: newLikeCount });
+        }
     } catch (error) {
-        console.error('Error al dar like:', error);
-        res.json({ success: false, message: 'Error al dar like' });
+        console.error('Error al dar/quitar like:', error);
+        res.json({ success: false, message: 'Error al dar/quitar like' });
     }
 });
 
