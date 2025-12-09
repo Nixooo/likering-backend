@@ -860,23 +860,51 @@ app.get('/api/messages/conversations', async (req, res) => {
 
         console.log('📨 Conversaciones encontradas:', result.rows.length);
 
-        // Obtener imágenes de perfil
+        // Obtener imágenes de perfil y último mensaje completo
         const conversations = await Promise.all(result.rows.map(async (row) => {
             try {
                 const userData = await getUserByUsername(row.other_user);
+                const lastMessageTime = row.last_message_time ? new Date(row.last_message_time).toISOString() : new Date().toISOString();
+                
+                // Obtener el último mensaje completo para saber quién lo envió
+                const lastMsgResult = await pool.query(`
+                    SELECT from_username, message_text, created_at
+                    FROM messages
+                    WHERE (from_username = $1 AND to_username = $2) 
+                       OR (from_username = $2 AND to_username = $1)
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                `, [user, row.other_user]);
+                
+                const lastMsg = lastMsgResult.rows[0] || { 
+                    from_username: '', 
+                    message_text: row.last_message || '', 
+                    created_at: row.last_message_time 
+                };
+                
                 return {
                     username: row.other_user,
-                    lastMessage: row.last_message || '',
-                    lastMessageTime: row.last_message_time,
+                    lastMessage: {
+                        text: lastMsg.message_text || '',
+                        timestamp: lastMsg.created_at ? new Date(lastMsg.created_at).toISOString() : lastMessageTime,
+                        from: lastMsg.from_username || ''
+                    },
+                    lastMessageTime: lastMessageTime,
                     unreadCount: parseInt(row.unread_count) || 0,
                     imageUrl: userData?.image_url || ''
                 };
             } catch (err) {
                 console.error('Error obteniendo datos de usuario:', row.other_user, err);
+                const lastMessageTime = row.last_message_time ? new Date(row.last_message_time).toISOString() : new Date().toISOString();
+                
                 return {
                     username: row.other_user,
-                    lastMessage: row.last_message || '',
-                    lastMessageTime: row.last_message_time,
+                    lastMessage: {
+                        text: row.last_message || '',
+                        timestamp: lastMessageTime,
+                        from: ''
+                    },
+                    lastMessageTime: lastMessageTime,
                     unreadCount: parseInt(row.unread_count) || 0,
                     imageUrl: ''
                 };
