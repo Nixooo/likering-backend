@@ -1487,15 +1487,44 @@
 
 
         function updateAllVideosFollowStatus(username, isFollowing) {
-            loadedVideoElements.forEach(wrapper => {
+            // Actualizar el video actualmente visible primero
+            const currentWrapper = loadedVideoElements[currentVideoIndex];
+            if (currentWrapper && currentWrapper.videoData && currentWrapper.videoData.user === `@${username}`) {
+                currentWrapper.videoData.isFollowingUser = isFollowing;
+                const followBtn = currentWrapper.querySelector('.follow-button');
+                if (followBtn) {
+                    if (isFollowing) {
+                        followBtn.style.display = 'none';
+                        followBtn.style.visibility = 'hidden';
+                        followBtn.style.opacity = '0';
+                    } else {
+                        followBtn.style.display = 'flex';
+                        followBtn.style.visibility = 'visible';
+                        followBtn.style.opacity = '1';
+                    }
+                }
+            }
+            
+            // Actualizar todos los videos cargados
+            loadedVideoElements.forEach((wrapper, index) => {
                 if (wrapper.videoData && wrapper.videoData.user === `@${username}`) {
                     wrapper.videoData.isFollowingUser = isFollowing;
                     const followBtn = wrapper.querySelector('.follow-button');
                     if (followBtn) {
-                        followBtn.style.display = isFollowing ? 'none' : 'flex';
+                        if (isFollowing) {
+                            followBtn.style.display = 'none';
+                            followBtn.style.visibility = 'hidden';
+                            followBtn.style.opacity = '0';
+                        } else {
+                            followBtn.style.display = 'flex';
+                            followBtn.style.visibility = 'visible';
+                            followBtn.style.opacity = '1';
+                        }
                     }
                 }
             });
+            
+            // Actualizar las listas de videos
             videosToPlayQueue.forEach(video => {
                 if (video.user === `@${username}`) {
                     video.isFollowingUser = isFollowing;
