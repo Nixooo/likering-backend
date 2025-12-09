@@ -1271,6 +1271,7 @@
             const followButton = document.createElement('div');
             followButton.className = 'follow-button';
             followButton.textContent = '+';
+            followButton.dataset.targetUser = videoData.user.substring(1); // Guardar el usuario objetivo
             
             const isMyVideo = loggedInUser && videoData.user === `@${loggedInUser.username}`;
             // Verificar si ya sigue al usuario - manejar diferentes tipos de valores
@@ -1280,6 +1281,7 @@
 
             if (isMyVideo || isAlreadyFollowing) {
                 followButton.style.display = 'none';
+                followButton.style.visibility = 'hidden';
             } else {
                  // ==== MODIFICADO: El botón ahora abre el modal de confirmación ====
                  followButton.addEventListener('click', (e) => {
@@ -1295,6 +1297,9 @@
             }
 
             profileContainer.append(profilePicture, followButton);
+            
+            // Guardar referencia al botón en el videoData para acceso rápido
+            videoData.followButtonElement = followButton;
 
             const likeArea = document.createElement('div');
             likeArea.className = 'interaction-area';
@@ -1463,14 +1468,17 @@
 
     try {
         const result = await API.followUser(loggedInUser.username, targetUserToFollow);
+        
+        // Ocultar el botón INMEDIATAMENTE antes de cerrar el modal
+        updateAllVideosFollowStatus(targetUserToFollow, true);
+        
         hideFollowConfirmModal();
 
         if (result.success) {
-            // Actualizar el estado inmediatamente para ocultar el botón
-            updateAllVideosFollowStatus(targetUserToFollow, true);
             showFollowModal(result.message || 'Ahora sigues a este usuario');
         } else {
             if (result.message && result.message.includes("Ya sigues")) {
+                // Ya estaba oculto, pero asegurarse
                 updateAllVideosFollowStatus(targetUserToFollow, true);
             }
             showFollowModal(result.message || 'Error al seguir');
@@ -1487,20 +1495,38 @@
 
 
         function updateAllVideosFollowStatus(username, isFollowing) {
-            // Actualizar el video actualmente visible primero
+            // Actualizar el video actualmente visible primero - usar referencia directa si existe
             const currentWrapper = loadedVideoElements[currentVideoIndex];
             if (currentWrapper && currentWrapper.videoData && currentWrapper.videoData.user === `@${username}`) {
                 currentWrapper.videoData.isFollowingUser = isFollowing;
-                const followBtn = currentWrapper.querySelector('.follow-button');
+                
+                // Intentar usar referencia directa primero
+                let followBtn = currentWrapper.videoData.followButtonElement;
+                
+                // Si no existe, buscar en el DOM
+                if (!followBtn) {
+                    followBtn = currentWrapper.querySelector('.follow-button[data-target-user="' + username + '"]');
+                }
+                
+                // Si aún no se encuentra, buscar cualquier botón de seguir
+                if (!followBtn) {
+                    followBtn = currentWrapper.querySelector('.follow-button');
+                }
+                
                 if (followBtn) {
                     if (isFollowing) {
                         followBtn.style.display = 'none';
                         followBtn.style.visibility = 'hidden';
                         followBtn.style.opacity = '0';
+                        followBtn.style.pointerEvents = 'none';
+                        // Remover el event listener para evitar clicks
+                        const newBtn = followBtn.cloneNode(true);
+                        followBtn.parentNode.replaceChild(newBtn, followBtn);
                     } else {
                         followBtn.style.display = 'flex';
                         followBtn.style.visibility = 'visible';
                         followBtn.style.opacity = '1';
+                        followBtn.style.pointerEvents = 'auto';
                     }
                 }
             }
@@ -1509,16 +1535,26 @@
             loadedVideoElements.forEach((wrapper, index) => {
                 if (wrapper.videoData && wrapper.videoData.user === `@${username}`) {
                     wrapper.videoData.isFollowingUser = isFollowing;
-                    const followBtn = wrapper.querySelector('.follow-button');
+                    
+                    let followBtn = wrapper.videoData.followButtonElement;
+                    if (!followBtn) {
+                        followBtn = wrapper.querySelector('.follow-button[data-target-user="' + username + '"]');
+                    }
+                    if (!followBtn) {
+                        followBtn = wrapper.querySelector('.follow-button');
+                    }
+                    
                     if (followBtn) {
                         if (isFollowing) {
                             followBtn.style.display = 'none';
                             followBtn.style.visibility = 'hidden';
                             followBtn.style.opacity = '0';
+                            followBtn.style.pointerEvents = 'none';
                         } else {
                             followBtn.style.display = 'flex';
                             followBtn.style.visibility = 'visible';
                             followBtn.style.opacity = '1';
+                            followBtn.style.pointerEvents = 'auto';
                         }
                     }
                 }
