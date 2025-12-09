@@ -613,12 +613,12 @@ app.get('/api/comments', async (req, res) => {
 
         const result = await pool.query(`
             SELECT 
-                c.comment_id as commentId,
+                c.comment_id,
                 c.username,
-                c.comment_text as commentText,
+                c.comment_text,
                 c.edited,
-                c.created_at as timestamp,
-                u.image_url as imageUrl
+                c.created_at,
+                u.image_url
             FROM comments c
             LEFT JOIN users u ON u.username = c.username
             WHERE c.video_id = $1
@@ -626,12 +626,12 @@ app.get('/api/comments', async (req, res) => {
         `, [videoId]);
 
         const comments = result.rows.map(comment => ({
-            commentId: comment.commentid || comment.comment_id,
+            commentId: comment.comment_id,
             username: comment.username,
-            commentText: comment.commenttext || comment.comment_text,
+            commentText: comment.comment_text,
             edited: comment.edited || false,
-            timestamp: comment.timestamp,
-            imageUrl: comment.imageurl || comment.image_url || ''
+            timestamp: comment.created_at,
+            imageUrl: comment.image_url || ''
         }));
 
         res.json({ success: true, data: comments });

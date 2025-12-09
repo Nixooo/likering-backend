@@ -880,14 +880,25 @@
                 commentItem.dataset.commentId = comment.commentId || '';
 
                 const timeAgo = getTimeAgo(new Date(comment.timestamp));
+                const isMyComment = loggedInUser && comment.username === loggedInUser.username;
+                const canEdit = isMyComment && isWithinEditTime(new Date(comment.timestamp));
+                const editedBadge = comment.edited ? '<span style="color:#888;font-size:0.85em;margin-left:5px;">(editado)</span>' : '';
 
                 commentItem.innerHTML = `
-                    <div class="comment-avatar" style="background-image: url('${comment.imageUrl}')"></div>
+                    <div class="comment-avatar" style="background-image: url('${comment.imageUrl || ''}')"></div>
                     <div class="comment-body">
-                        <div class="comment-user">${comment.username}</div>
-                        <div class="comment-message">${comment.commentText}</div>
+                        <div class="comment-user">${comment.username}${editedBadge}</div>
+                        <div class="comment-message" data-original-text="${comment.commentText.replace(/"/g, '&quot;')}">
+                            <span class="comment-text">${comment.commentText}</span>
+                        </div>
                         <div class="comment-info">
                             <span class="comment-time">${timeAgo}</span>
+                            ${isMyComment ? `
+                                <div class="comment-options">
+                                    ${canEdit ? `<button class="edit-comment-btn" onclick="editComment('${comment.commentId}')" title="Editar">✏️</button>` : ''}
+                                    <button class="delete-comment-btn" onclick="deleteComment('${comment.commentId}')" title="Eliminar">🗑️</button>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -915,11 +926,12 @@
             return `${diffDays}d`;
         }
 
-        function editComment(commentId) {
+        window.editComment = function(commentId) {
           const commentItem    = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+          if (!commentItem) return;
           const commentMessage = commentItem.querySelector('.comment-message');
           const commentText    = commentMessage.querySelector('.comment-text');
-          const originalText   = commentMessage.dataset.originalText;
+          const originalText   = commentMessage.dataset.originalText || commentText.textContent;
           const editInput = document.createElement('textarea');
           editInput.className    = 'comment-edit-input';
           editInput.value        = originalText;
@@ -941,23 +953,27 @@
           editInput.select();
         }
 
-        function cancelEdit(commentId) {
+        window.cancelEdit = function(commentId) {
             const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+            if (!commentItem) return;
             const commentMessage = commentItem.querySelector('.comment-message');
             const commentText = commentMessage.querySelector('.comment-text');
             const editInput = commentMessage.querySelector('.comment-edit-input');
             const editActions = commentMessage.querySelector('.edit-actions');
-            editInput.remove();
-            editActions.remove();
-            commentText.style.display = 'block';
-            commentMessage.querySelector('.comment-options').style.display = 'flex';
+            if (editInput) editInput.remove();
+            if (editActions) editActions.remove();
+            if (commentText) commentText.style.display = 'block';
+            const options = commentMessage.querySelector('.comment-options');
+            if (options) options.style.display = 'flex';
             commentMessage.classList.remove('editing');
         }
 
-        async function saveEdit(commentId) {
+        window.saveEdit = async function(commentId) {
     const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+    if (!commentItem) return;
     const commentMessage = commentItem.querySelector('.comment-message');
     const editInput = commentMessage.querySelector('.comment-edit-input');
+    if (!editInput) return;
     const newText = editInput.value.trim();
     
     if (!newText || !commentId) {
@@ -996,7 +1012,7 @@
 
         let currentCommentId = null;
 
-        function deleteComment(commentId) {
+        window.deleteComment = function(commentId) {
             currentCommentId = commentId;
             showDeleteModal(commentId);
         }
@@ -1234,7 +1250,7 @@
             followButton.textContent = '+';
             
             const isMyVideo = loggedInUser && videoData.user === `@${loggedInUser.username}`;
-            const isAlreadyFollowing = videoData.isFollowingUser;
+            const isAlreadyFollowing = videoData.isFollowingUser === true || videoData.isFollowingUser === 'true';
 
             if (isMyVideo || isAlreadyFollowing) {
                 followButton.style.display = 'none';
@@ -1448,16 +1464,20 @@
                 if (wrapper.videoData && wrapper.videoData.user === `@${username}`) {
                     wrapper.videoData.isFollowingUser = isFollowing;
                     const followBtn = wrapper.querySelector('.follow-button');
-                    if (followBtn && isFollowing) {
-                        followBtn.style.display = 'none';
+                    if (followBtn) {
+                        followBtn.style.display = isFollowing ? 'none' : 'flex';
                     }
                 }
             });
             videosToPlayQueue.forEach(video => {
-                if (video.user === `@${username}`) video.isFollowingUser = isFollowing;
+                if (video.user === `@${username}`) {
+                    video.isFollowingUser = isFollowing;
+                }
             });
             allVideosMasterList.forEach(video => {
-                if (video.user === `@${username}`) video.isFollowingUser = isFollowing;
+                if (video.user === `@${username}`) {
+                    video.isFollowingUser = isFollowing;
+                }
             });
         }
 
