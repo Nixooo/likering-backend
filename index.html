@@ -273,7 +273,9 @@
             });
         });
 
-        // Service Worker
+        // Service Worker - Deshabilitado por ahora
+        // Si necesitas PWA, crea el archivo sw.js y descomenta esto
+        /*
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
@@ -281,6 +283,7 @@
                     .catch(err => console.log('SW registration failed'));
             });
         }
+        */
     </script>
 </body>
 </html>
