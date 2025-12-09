@@ -866,8 +866,15 @@
             // Verificar localStorage para likes también
             const videoIdForLike = video.video_id || video.videoId;
             const isLikedInStorage = isVideoLiked(videoIdForLike);
-            const isLikedFromBackend = Boolean(video.is_liked_by_current_user);
-            const finalIsLiked = isLikedInStorage || isLikedFromBackend;
+            // El backend devuelve isLikedByCurrentUser (camelCase), no is_liked_by_current_user
+            const isLikedFromBackend = Boolean(video.isLikedByCurrentUser || video.is_liked_by_current_user);
+            // Priorizar backend sobre localStorage (el backend es la fuente de verdad)
+            const finalIsLiked = isLikedFromBackend || isLikedInStorage;
+            
+            // Si el backend dice que está liked pero no está en localStorage, agregarlo
+            if (isLikedFromBackend && !isLikedInStorage) {
+                saveLikedVideo(videoIdForLike);
+            }
             
             return {
                 ...video,
@@ -1385,15 +1392,15 @@
             likeArea.className = 'interaction-area';
             likeArea.innerHTML = `<div class="icon"><i class="fas fa-heart"></i></div><span class="count">${videoData.likes}</span>`;
             
-            // Verificar localStorage PRIMERO, luego backend
+            // Verificar backend PRIMERO (fuente de verdad), luego localStorage
+            const isLikedFromBackend = Boolean(videoData.isLikedByCurrentUser);
             const isLikedInStorage = isVideoLiked(videoData.videoId);
-            const isLikedFromBackend = videoData.isLikedByCurrentUser;
-            const isLiked = isLikedInStorage || isLikedFromBackend;
+            const isLiked = isLikedFromBackend || isLikedInStorage;
             
             if (isLiked) {
                 likeArea.querySelector('.icon').classList.add('liked');
-                // Asegurar que también esté en localStorage
-                if (!isLikedInStorage) {
+                // Sincronizar localStorage con el backend
+                if (isLikedFromBackend && !isLikedInStorage) {
                     saveLikedVideo(videoData.videoId);
                 }
             }
@@ -2000,10 +2007,15 @@
                             // Actualizar el estado de seguimiento
                             videoData.isFollowingUser = isAlreadyFollowing;
                             
-                            // Verificar localStorage PRIMERO, luego backend para likes
-                            const isLikedInStorage = isVideoLiked(videoData.videoId);
+                            // Verificar backend PRIMERO (fuente de verdad), luego localStorage
                             const isLikedFromBackend = updatedData.isLikedByCurrentUser;
-                            const isLiked = isLikedInStorage || isLikedFromBackend;
+                            const isLikedInStorage = isVideoLiked(videoData.videoId);
+                            const isLiked = isLikedFromBackend || isLikedInStorage;
+                            
+                            // Sincronizar localStorage con el backend
+                            if (isLikedFromBackend && !isLikedInStorage) {
+                                saveLikedVideo(videoData.videoId);
+                            }
                             
                             // Actualizar el estado de likes
                             videoData.isLikedByCurrentUser = isLiked;
@@ -2072,10 +2084,15 @@
                             const isFollowingInStorage = isUserFollowed(videoUsername);
                             updatedData.isFollowingUser = isFollowingInStorage || updatedData.isFollowingUser;
                             
-                            // Actualizar likes también
-                            const isLikedInStorage = isVideoLiked(video.videoId);
+                            // Actualizar likes también - priorizar backend
                             const isLikedFromBackend = updatedData.isLikedByCurrentUser;
-                            updatedData.isLikedByCurrentUser = isLikedInStorage || isLikedFromBackend;
+                            const isLikedInStorage = isVideoLiked(video.videoId);
+                            updatedData.isLikedByCurrentUser = isLikedFromBackend || isLikedInStorage;
+                            
+                            // Sincronizar localStorage con el backend
+                            if (isLikedFromBackend && !isLikedInStorage) {
+                                saveLikedVideo(video.videoId);
+                            }
                         }
                         return updatedData || video;
                     });
