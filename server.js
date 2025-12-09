@@ -327,13 +327,10 @@ app.get('/api/videos/all', async (req, res) => {
                 v.visualizaciones,
                 u.image_url as profile_img,
                 CASE WHEN vl.username IS NOT NULL THEN true ELSE false END as is_liked_by_current_user,
-                COALESCE(
-                    CASE 
-                        WHEN f.follower_username IS NOT NULL AND f.follower_username = $1 THEN true 
-                        ELSE false 
-                    END,
-                    false
-                ) as is_following_user
+                CASE 
+                    WHEN f.follower_username IS NOT NULL AND f.follower_username = $1 THEN CAST(1 AS BOOLEAN)
+                    ELSE CAST(0 AS BOOLEAN)
+                END as is_following_user
             FROM videos v
             LEFT JOIN users u ON u.username = v.username
             LEFT JOIN video_likes vl ON vl.video_id = v.video_id AND vl.username = $1
