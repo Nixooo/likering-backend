@@ -8,7 +8,7 @@ const isDevelopment = window.location.hostname === 'localhost' || window.locatio
 // Formato: https://tu-servicio.onrender.com/api
 const API_BASE_URL = isDevelopment 
     ? 'http://localhost:3000/api' 
-    : 'https://likering-backend.onrender.com/api'; // ⚠️ CAMBIA ESTA URL por la de tu servicio en Render
+    : 'https://likering-backend.onrender.com/api'; // ✅ URL de Render configurada
 
 const API = {
     // ==================== AUTENTICACIÓN ====================
