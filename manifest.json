@@ -1,0 +1,25 @@
+{
+  "name": "Likering",
+  "short_name": "Likering",
+  "description": "Plataforma de videos cortos - Likering",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00A4E6",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/FKgZRLrW/image.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/FKgZRLrW/image.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
