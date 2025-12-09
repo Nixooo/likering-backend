@@ -349,10 +349,10 @@ app.get('/api/videos/all', async (req, res) => {
             ORDER BY v.created_at DESC
         `, [queryUsername]);
 
-        // Log para debug
-        if (username && videosResult.rows.length > 0) {
+        // Log para debug - verificar qué devuelve PostgreSQL
+        if (videosResult.rows.length > 0) {
             const sampleVideo = videosResult.rows[0];
-            console.log('📹 Video de ejemplo:', sampleVideo.user, 'is_following_user:', sampleVideo.is_following_user, 'tipo:', typeof sampleVideo.is_following_user);
+            console.log(`[BACKEND SQL RESULT] Video de ejemplo: @${sampleVideo.user}, is_following_user:`, sampleVideo.is_following_user, 'tipo:', typeof sampleVideo.is_following_user, 'valor raw:', JSON.stringify(sampleVideo.is_following_user));
         }
 
         const videos = videosResult.rows.map(video => {
