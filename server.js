@@ -312,6 +312,7 @@ app.get('/api/videos/all', async (req, res) => {
         const { username } = req.query;
 
         // Obtener todos los videos con información del usuario y estadísticas
+        // Usar el conteo real de comentarios en lugar del contador almacenado
         const videosResult = await pool.query(`
             SELECT 
                 v.video_id,
@@ -322,7 +323,7 @@ app.get('/api/videos/all', async (req, res) => {
                 v.thumbnail_url as thumbnailUrl,
                 v.music_name as music,
                 v.likes,
-                v.comments_count as comments,
+                COALESCE(comment_counts.real_count, 0) as comments,
                 v.visualizaciones,
                 u.image_url as profile_img,
                 CASE WHEN vl.username IS NOT NULL THEN true ELSE false END as is_liked_by_current_user,
@@ -331,6 +332,11 @@ app.get('/api/videos/all', async (req, res) => {
             LEFT JOIN users u ON u.username = v.username
             LEFT JOIN video_likes vl ON vl.video_id = v.video_id AND vl.username = $1
             LEFT JOIN follows f ON f.follower_username = $1 AND f.following_username = v.username
+            LEFT JOIN (
+                SELECT video_id, COUNT(*) as real_count
+                FROM comments
+                GROUP BY video_id
+            ) comment_counts ON comment_counts.video_id = v.video_id
             ORDER BY v.created_at DESC
         `, [username || '']);
 
