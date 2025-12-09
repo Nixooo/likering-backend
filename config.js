@@ -168,6 +168,22 @@ const API = {
         }
     },
 
+    async unfollowUser(followerUsername, targetUsername) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/unfollow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ followerUsername, targetUsername })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error al dejar de seguir usuario:', error);
+            return { success: false, message: 'Error de conexión' };
+        }
+    },
+
     // ==================== USUARIOS ====================
     
     async getUserProfile(username) {

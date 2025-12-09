@@ -841,6 +841,42 @@ app.post('/api/follow', async (req, res) => {
     }
 });
 
+// Dejar de seguir usuario
+app.post('/api/unfollow', async (req, res) => {
+    try {
+        const { followerUsername, targetUsername } = req.body;
+
+        if (!followerUsername || !targetUsername) {
+            return res.json({ success: false, message: 'Usuarios requeridos' });
+        }
+
+        if (followerUsername === targetUsername) {
+            return res.json({ success: false, message: 'No puedes dejar de seguirte a ti mismo' });
+        }
+
+        // Verificar si lo sigue
+        const existingFollow = await pool.query(
+            'SELECT * FROM follows WHERE follower_username = $1 AND following_username = $2',
+            [followerUsername, targetUsername]
+        );
+
+        if (existingFollow.rows.length === 0) {
+            return res.json({ success: false, message: 'No sigues a este usuario' });
+        }
+
+        // Eliminar seguimiento
+        await pool.query(
+            'DELETE FROM follows WHERE follower_username = $1 AND following_username = $2',
+            [followerUsername, targetUsername]
+        );
+
+        res.json({ success: true, message: `Ya no sigues a @${targetUsername}` });
+    } catch (error) {
+        console.error('Error al dejar de seguir usuario:', error);
+        res.json({ success: false, message: 'Error al dejar de seguir usuario' });
+    }
+});
+
 // ==================== RUTAS DE MENSAJERÍA ====================
 
 // Obtener conversaciones

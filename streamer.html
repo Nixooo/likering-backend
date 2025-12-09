@@ -671,30 +671,53 @@
                 const isFollowing = followBtn.classList.contains('following');
                 
                 if (isFollowing) {
-                    // Ya lo sigues, no hacer nada o implementar dejar de seguir
-                    return;
-                }
-                
-                // Seguir al usuario
-                followBtn.disabled = true;
-                followBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siguiendo...';
-                
-                try {
-                    const result = await API.followUser(loggedInUser.username, currentUser.username);
-                    
-                    if (result.success) {
-                        updateFollowButton(true);
-                        // Actualizar contador de seguidores
-                        const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
-                        document.getElementById('followers-count').textContent = followersCount + 1;
-                    } else {
-                        alert(result.message || 'Error al seguir usuario');
+                    // Ya lo sigues, dejar de seguir
+                    if (!confirm(`¿Dejar de seguir a @${currentUser.username}?`)) {
+                        return;
                     }
-                } catch (error) {
-                    console.error('Error al seguir:', error);
-                    alert('Error al seguir usuario. Inténtalo de nuevo.');
-                } finally {
-                    followBtn.disabled = false;
+                    
+                    followBtn.disabled = true;
+                    followBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Dejando de seguir...';
+                    
+                    try {
+                        const result = await API.unfollowUser(loggedInUser.username, currentUser.username);
+                        
+                        if (result.success) {
+                            updateFollowButton(false);
+                            // Actualizar contador de seguidores
+                            const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
+                            document.getElementById('followers-count').textContent = Math.max(0, followersCount - 1);
+                        } else {
+                            alert(result.message || 'Error al dejar de seguir usuario');
+                        }
+                    } catch (error) {
+                        console.error('Error al dejar de seguir:', error);
+                        alert('Error al dejar de seguir usuario. Inténtalo de nuevo.');
+                    } finally {
+                        followBtn.disabled = false;
+                    }
+                } else {
+                    // Seguir al usuario
+                    followBtn.disabled = true;
+                    followBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siguiendo...';
+                    
+                    try {
+                        const result = await API.followUser(loggedInUser.username, currentUser.username);
+                        
+                        if (result.success) {
+                            updateFollowButton(true);
+                            // Actualizar contador de seguidores
+                            const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
+                            document.getElementById('followers-count').textContent = followersCount + 1;
+                        } else {
+                            alert(result.message || 'Error al seguir usuario');
+                        }
+                    } catch (error) {
+                        console.error('Error al seguir:', error);
+                        alert('Error al seguir usuario. Inténtalo de nuevo.');
+                    } finally {
+                        followBtn.disabled = false;
+                    }
                 }
             });
 

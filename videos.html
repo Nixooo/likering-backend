@@ -1466,6 +1466,7 @@
         hideFollowConfirmModal();
 
         if (result.success) {
+            // Actualizar el estado inmediatamente para ocultar el botón
             updateAllVideosFollowStatus(targetUserToFollow, true);
             showFollowModal(result.message || 'Ahora sigues a este usuario');
         } else {
