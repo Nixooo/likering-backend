@@ -1,33 +1,26 @@
--- Cambiar comment_id de INTEGER/SERIAL a VARCHAR(100) en la tabla comments
--- Similar a lo que se hizo con video_id y message_id
+-- Script seguro para cambiar comment_id de INTEGER a VARCHAR(100)
+-- Este script verifica la estructura antes de hacer cambios
 
--- Paso 1: Verificar la estructura actual
+-- Paso 1: Verificar si comment_id ya es VARCHAR
 DO $$
 DECLARE
     current_type TEXT;
-    has_id_col BOOLEAN;
 BEGIN
-    -- Verificar tipo actual de comment_id
     SELECT data_type INTO current_type
     FROM information_schema.columns
     WHERE table_name = 'comments' AND column_name = 'comment_id';
     
-    -- Verificar si existe columna id
-    SELECT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'comments' AND column_name = 'id'
-    ) INTO has_id_col;
-    
     IF current_type IS NULL THEN
         RAISE NOTICE 'La columna comment_id no existe';
-    ELSIF current_type IN ('character varying', 'varchar') THEN
+    ELSIF current_type = 'character varying' OR current_type = 'varchar' THEN
         RAISE NOTICE 'comment_id ya es VARCHAR, no se necesita cambiar';
     ELSE
         RAISE NOTICE 'comment_id es de tipo: %, se procederá a cambiarlo', current_type;
     END IF;
 END $$;
 
--- Paso 2: Eliminar restricciones que dependan de comment_id
+-- Paso 2: Si comment_id es INTEGER, cambiarlo a VARCHAR
+-- Primero, eliminar restricciones que dependan de comment_id
 ALTER TABLE comments DROP CONSTRAINT IF EXISTS comments_comment_id_key;
 ALTER TABLE comments DROP CONSTRAINT IF EXISTS comments_comment_id_unique;
 
@@ -35,39 +28,19 @@ ALTER TABLE comments DROP CONSTRAINT IF EXISTS comments_comment_id_unique;
 ALTER TABLE comments ADD COLUMN IF NOT EXISTS comment_id_temp VARCHAR(100);
 
 -- Paso 4: Copiar y convertir los valores existentes
--- Si comment_id es INTEGER, convertir a string
--- Si comment_id ya es VARCHAR, copiar directamente
-DO $$
-DECLARE
-    current_type TEXT;
-BEGIN
-    SELECT data_type INTO current_type
-    FROM information_schema.columns
-    WHERE table_name = 'comments' AND column_name = 'comment_id';
-    
-    IF current_type IN ('integer', 'bigint', 'smallint', 'serial', 'bigserial') THEN
-        -- Convertir INTEGER a VARCHAR
-        UPDATE comments 
-        SET comment_id_temp = 'comment_' || comment_id::text 
-        WHERE comment_id_temp IS NULL;
-    ELSIF current_type IN ('character varying', 'varchar', 'text') THEN
-        -- Ya es VARCHAR, copiar directamente
-        UPDATE comments 
-        SET comment_id_temp = comment_id::text 
-        WHERE comment_id_temp IS NULL;
-    END IF;
-END $$;
+UPDATE comments 
+SET comment_id_temp = 'comment_' || comment_id::text 
+WHERE comment_id_temp IS NULL;
 
 -- Paso 5: Si hay filas sin comment_id_temp, generar valores únicos
 UPDATE comments 
 SET comment_id_temp = 'comment_' || COALESCE(
-    (SELECT MAX(CAST(SUBSTRING(comment_id_temp FROM 9) AS INTEGER)) 
-     FROM comments 
-     WHERE comment_id_temp ~ '^comment_[0-9]+$'), 0
+    (SELECT MAX(CAST(SUBSTRING(comment_id_temp FROM 9) AS INTEGER)) FROM comments WHERE comment_id_temp ~ '^comment_[0-9]+$'),
+    0
 ) + ROW_NUMBER() OVER ()::text
 WHERE comment_id_temp IS NULL;
 
--- Paso 6: Eliminar la columna antigua comment_id (si es INTEGER)
+-- Paso 6: Eliminar la columna antigua (si existe y es INTEGER)
 DO $$
 BEGIN
     IF EXISTS (
