@@ -1281,20 +1281,14 @@
                                      String(isFollowingValue).toLowerCase() === 'true' ||
                                      Boolean(isFollowingValue) === true;
 
-            // Debug: verificar el valor
-            if (loggedInUser && videoData.user !== `@${loggedInUser.username}`) {
-                console.log(`Video de @${videoData.user.substring(1)}: isFollowingUser =`, isFollowingValue, 'tipo:', typeof isFollowingValue, 'isAlreadyFollowing:', isAlreadyFollowing);
-            }
 
             if (isMyVideo || isAlreadyFollowing) {
-                followButton.style.display = 'none';
-                followButton.style.visibility = 'hidden';
-                followButton.style.opacity = '0';
-                followButton.style.pointerEvents = 'none';
-                followButton.remove(); // Eliminar completamente del DOM
+                // No agregar el botón si ya lo sigue o es su propio video
+                profileContainer.append(profilePicture);
+                videoData.followButtonElement = null;
             } else {
-                 // ==== MODIFICADO: El botón ahora abre el modal de confirmación ====
-                 followButton.addEventListener('click', (e) => {
+                // Agregar el botón y el event listener
+                followButton.addEventListener('click', (e) => {
                     e.stopPropagation();
                     e.preventDefault();
                     if (!loggedInUser) {
@@ -1304,12 +1298,10 @@
                     const targetUser = videoData.user.substring(1);
                     showFollowConfirmModal(targetUser); // Llama al nuevo modal
                 });
+                profileContainer.append(profilePicture, followButton);
+                // Guardar referencia al botón en el videoData para acceso rápido
+                videoData.followButtonElement = followButton;
             }
-
-            profileContainer.append(profilePicture, followButton);
-            
-            // Guardar referencia al botón en el videoData para acceso rápido
-            videoData.followButtonElement = followButton;
 
             const likeArea = document.createElement('div');
             likeArea.className = 'interaction-area';
