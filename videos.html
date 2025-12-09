@@ -1274,14 +1274,24 @@
             followButton.dataset.targetUser = videoData.user.substring(1); // Guardar el usuario objetivo
             
             const isMyVideo = loggedInUser && videoData.user === `@${loggedInUser.username}`;
-            // Verificar si ya sigue al usuario - convertir a booleano explícitamente
-            const isAlreadyFollowing = Boolean(videoData.isFollowingUser) === true;
+            // Verificar si ya sigue al usuario - manejar todos los casos posibles
+            const isFollowingValue = videoData.isFollowingUser;
+            const isAlreadyFollowing = isFollowingValue === true || 
+                                     isFollowingValue === 'true' ||
+                                     String(isFollowingValue).toLowerCase() === 'true' ||
+                                     Boolean(isFollowingValue) === true;
+
+            // Debug: verificar el valor
+            if (loggedInUser && videoData.user !== `@${loggedInUser.username}`) {
+                console.log(`Video de @${videoData.user.substring(1)}: isFollowingUser =`, isFollowingValue, 'tipo:', typeof isFollowingValue, 'isAlreadyFollowing:', isAlreadyFollowing);
+            }
 
             if (isMyVideo || isAlreadyFollowing) {
                 followButton.style.display = 'none';
                 followButton.style.visibility = 'hidden';
                 followButton.style.opacity = '0';
                 followButton.style.pointerEvents = 'none';
+                followButton.remove(); // Eliminar completamente del DOM
             } else {
                  // ==== MODIFICADO: El botón ahora abre el modal de confirmación ====
                  followButton.addEventListener('click', (e) => {
