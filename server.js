@@ -399,30 +399,62 @@ app.get('/api/videos/user', async (req, res) => {
 // Guardar nuevo video
 app.post('/api/videos/save', async (req, res) => {
     try {
+        console.log('📹 Intento de guardar video:', { 
+            usuario: req.body.usuario, 
+            hasVideoUrl: !!req.body.videoUrl,
+            hasThumbnailUrl: !!req.body.thumbnailUrl 
+        });
+
         const { usuario, titulo, descripcion, videoUrl, thumbnailUrl, musicUrl } = req.body;
 
         if (!usuario || !videoUrl) {
+            console.log('❌ Faltan campos requeridos');
             return res.json({ success: false, message: 'Usuario y URL del video son requeridos' });
         }
 
         const user = await getUserByUsername(usuario);
         if (!user) {
+            console.log('❌ Usuario no encontrado:', usuario);
             return res.json({ success: false, message: 'Usuario no encontrado' });
+        }
+
+        if (!user.id) {
+            console.log('❌ Usuario sin ID:', user);
+            return res.json({ success: false, message: 'Error: Usuario sin ID válido' });
         }
 
         const videoId = generateId('video');
         const musicName = musicUrl ? `Música ${Date.now()}` : '';
 
-        await pool.query(
+        console.log('📝 Insertando video:', {
+            videoId,
+            userId: user.id,
+            username: usuario,
+            videoUrl: videoUrl.substring(0, 50) + '...',
+            thumbnailUrl: thumbnailUrl ? thumbnailUrl.substring(0, 50) + '...' : 'null'
+        });
+
+        const result = await pool.query(
             `INSERT INTO videos (video_id, user_id, username, titulo, descripcion, video_url, thumbnail_url, music_url, music_name)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
             [videoId, user.id, usuario, titulo || '', descripcion || '', videoUrl, thumbnailUrl || videoUrl, musicUrl || '', musicName]
         );
 
+        console.log('✅ Video guardado exitosamente:', result.rows[0].video_id);
         res.json({ success: true, message: 'Video guardado', videoId });
     } catch (error) {
-        console.error('Error al guardar video:', error);
-        res.json({ success: false, message: 'Error al guardar video' });
+        console.error('❌ Error al guardar video:', error);
+        console.error('❌ Detalles del error:', {
+            message: error.message,
+            code: error.code,
+            detail: error.detail,
+            constraint: error.constraint,
+            table: error.table
+        });
+        res.json({ 
+            success: false, 
+            message: 'Error al guardar video: ' + (error.message || 'Error desconocido') 
+        });
     }
 });
 
