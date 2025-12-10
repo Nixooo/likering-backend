@@ -54,6 +54,72 @@
         .image-preview img { width: 100%; height: 100%; object-fit: cover; }
         .switch-form-link { color: var(--likering-blue); text-decoration: none; font-size: 0.9rem; cursor: pointer; }
         #register-form { display: none; }
+        
+        /* Modal de cuenta desactivada */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-content-custom {
+            background: rgba(18, 18, 18, 0.95);
+            border: 2px solid rgba(249, 43, 117, 0.5);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content-custom {
+            transform: scale(1);
+        }
+        .modal-content-custom .modal-icon {
+            font-size: 4rem;
+            color: #F92B75;
+            margin-bottom: 20px;
+        }
+        .modal-content-custom h2 {
+            margin: 0 0 15px 0;
+            color: #fff;
+            font-size: 1.5rem;
+        }
+        .modal-content-custom p {
+            margin: 0 0 25px 0;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+        .modal-content-custom .modal-close-btn {
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--likering-pink), var(--likering-blue));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s ease;
+        }
+        .modal-content-custom .modal-close-btn:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -113,6 +179,17 @@
                     const result = await API.login(username, password);
 
                     if (result.success) {
+                        // Verificar si el usuario está desactivado
+                        if (result.data.estado === 'Desactivo' || result.data.status === 'Desactivo') {
+                            if (!isSilent) {
+                                showAccountDisabledModal();
+                                loginForm.classList.add('shake');
+                                loginPasswordInput.value = '';
+                                setTimeout(() => loginForm.classList.remove('shake'), 500);
+                            }
+                            return false;
+                        }
+                        
                         localStorage.setItem('loggedInUser', JSON.stringify(result.data));
                         return true;
                     } else {
@@ -131,6 +208,33 @@
                     }
                     return false;
                 }
+            }
+            
+            // Función para mostrar modal de cuenta desactivada
+            function showAccountDisabledModal() {
+                let modal = document.getElementById('account-disabled-modal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'account-disabled-modal';
+                    modal.className = 'modal-overlay';
+                    modal.innerHTML = `
+                        <div class="modal-content-custom">
+                            <div class="modal-icon">⚠️</div>
+                            <h2>Cuenta Desactivada</h2>
+                            <p>Tu cuenta ha sido desactivada. Por favor, comunícate con los Administradores para más información.</p>
+                            <button class="modal-close-btn" onclick="document.getElementById('account-disabled-modal').classList.remove('show')">Entendido</button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                }
+                modal.classList.add('show');
+                
+                // Cerrar al hacer clic fuera del modal
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('show');
+                    }
+                });
             }
 
             // Intento de login silencioso
@@ -253,8 +357,16 @@
                     }
                     const imageUrl = imgbbData.data.url;
 
-                    // 2. Registrar usuario en el backend
-                    const result = await API.register(username, password, imageUrl);
+                    // 2. Registrar usuario en el backend con estado "Activo"
+                    // Nota: Si tu API no acepta el campo estado directamente, 
+                    // el backend debe establecerlo automáticamente como "Activo" por defecto
+                    const registerData = {
+                        username: username,
+                        password: password,
+                        imageUrl: imageUrl,
+                        estado: 'Activo' // Enviar estado Activo al registrar
+                    };
+                    const result = await API.register(username, password, imageUrl, registerData.estado);
                     
                     if (result.success) {
                         alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
