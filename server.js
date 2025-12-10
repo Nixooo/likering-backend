@@ -60,8 +60,18 @@ async function getUserByUsername(username) {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     const user = result.rows[0];
     if (user) {
-        // Normalizar: asegurar que siempre tenga 'id' (usar user_id si id no existe)
-        if (!user.id && user.user_id) {
+        // Normalizar: asegurar que siempre tenga ambos 'id' y 'user_id'
+        if (user.user_id && !user.id) {
+            user.id = user.user_id;
+        }
+        if (user.id && !user.user_id) {
+            user.user_id = user.id;
+        }
+        // Si ninguno existe, intentar usar el primer campo numérico (puede ser 'id' en PostgreSQL)
+        if (!user.user_id && !user.id && result.rows[0]) {
+            // PostgreSQL devuelve campos en minúsculas, verificar todas las variantes
+            const row = result.rows[0];
+            user.user_id = row.user_id || row.id || row.USER_ID || null;
             user.id = user.user_id;
         }
     }
@@ -234,19 +244,46 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
+        // Asegurar que tengamos el user_id
+        const userId = userData.user_id || userData.id;
+        
+        // Si todavía no tenemos user_id, intentar obtenerlo directamente de la base de datos
+        let finalUserId = userId;
+        if (!finalUserId) {
+            try {
+                const idResult = await pool.query(
+                    'SELECT user_id, id FROM users WHERE username = $1',
+                    [user]
+                );
+                if (idResult.rows.length > 0) {
+                    finalUserId = idResult.rows[0].user_id || idResult.rows[0].id;
+                    console.log('🔍 [GET PROFILE] user_id obtenido directamente de BD:', finalUserId);
+                }
+            } catch (err) {
+                console.error('❌ [GET PROFILE] Error al obtener user_id:', err);
+            }
+        }
+
+        const responseData = {
+            user_id: finalUserId,
+            id: finalUserId, // También incluir como 'id' para compatibilidad
+            username: userData.username,
+            imageUrl: userData.image_url,
+            plan: userData.plan || 'azul',
+            followers: followersCount,
+            following: followingCount,
+            likes: likesCount,
+            posts: postsCount
+        };
+
+        console.log('✅ [GET PROFILE] Enviando respuesta:', {
+            ...responseData,
+            imageUrl: '[oculto]'
+        });
+
         res.json({
             success: true,
-            data: {
-                user_id: userData.user_id || userData.id,
-                id: userData.user_id || userData.id, // También incluir como 'id' para compatibilidad
-                username: userData.username,
-                imageUrl: userData.image_url,
-                plan: userData.plan || 'azul',
-                followers: followersCount,
-                following: followingCount,
-                likes: likesCount,
-                posts: postsCount
-            }
+            data: responseData
         });
     } catch (error) {
         console.error('Error al obtener perfil:', error);
