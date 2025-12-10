@@ -2042,21 +2042,25 @@
                 // Obtener user_id del usuario que reporta
                 const reporterUserId = loggedInUser.user_id || loggedInUser.id;
                 
-                // Obtener user_id del usuario del video (puede que necesitemos obtenerlo del backend)
-                const videoUsername = currentVideoData.user ? currentVideoData.user.replace('@', '') : '';
+                if (!reporterUserId) {
+                    throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
+                }
                 
                 const reportData = {
                     tipo_reporte: 'video',
                     id_video_reportado: currentVideoData.videoId,
                     id_usuario_reporter: reporterUserId,
-                    id_usuario_reportado: null, // Se puede obtener del video si es necesario
+                    id_usuario_reportado: null, // El backend lo obtendrá del video automáticamente
                     motivo: reason,
                     descripcion: description || null
                 };
                 
-                // Determinar la URL base
-                const API_BASE_URL = window.API_BASE_URL || window.location.origin;
-                const reportUrl = `${API_BASE_URL}/api/public/reports`;
+                // Usar la URL base de config.js
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com';
+                const LOCAL_BACKEND_URL = 'http://localhost:3000';
+                const BASE_URL = isLocalhost ? LOCAL_BACKEND_URL : RENDER_BACKEND_URL;
+                const reportUrl = `${BASE_URL}/api/public/reports`;
                 
                 const response = await fetch(reportUrl, {
                     method: 'POST',
@@ -2066,7 +2070,26 @@
                     body: JSON.stringify(reportData)
                 });
                 
-                const result = await response.json();
+                // Validar que la respuesta sea OK antes de parsear JSON
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error del servidor (${response.status}): ${errorText || 'Error desconocido'}`);
+                }
+                
+                // Validar que la respuesta tenga contenido antes de parsear
+                const text = await response.text();
+                if (!text) {
+                    throw new Error('El servidor no devolvió ninguna respuesta');
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseError) {
+                    console.error('Error al parsear respuesta:', parseError);
+                    console.error('Respuesta recibida:', text);
+                    throw new Error('El servidor devolvió una respuesta inválida');
+                }
                 
                 if (result.success) {
                     alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');

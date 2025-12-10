@@ -875,23 +875,48 @@
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
                 
                 try {
-                    // Obtener user_id del usuario reportado desde la API
-                    const userProfile = await API.getUserProfile(currentUser.username);
-                    if (!userProfile.success || !userProfile.data.user_id) {
-                        throw new Error('No se pudo obtener la información del usuario.');
+                    // Validar que currentUser existe
+                    if (!currentUser) {
+                        throw new Error('No se pudo obtener la información del usuario reportado.');
+                    }
+                    
+                    // Obtener user_id del usuario reportado - puede estar en currentUser directamente o necesitamos obtenerlo
+                    let reportedUserId = currentUser.user_id || currentUser.id;
+                    
+                    // Si no está en currentUser, intentar obtenerlo de la API
+                    if (!reportedUserId) {
+                        const userProfile = await API.getUserProfile(currentUser.username);
+                        if (!userProfile.success) {
+                            throw new Error('No se pudo obtener la información del usuario.');
+                        }
+                        // El user_id puede estar en data.user_id o data.id
+                        reportedUserId = userProfile.data?.user_id || userProfile.data?.id || null;
+                    }
+                    
+                    if (!reportedUserId) {
+                        throw new Error('No se pudo obtener el ID del usuario reportado.');
+                    }
+                    
+                    // Obtener user_id del usuario que reporta
+                    const reporterUserId = loggedInUser.user_id || loggedInUser.id;
+                    if (!reporterUserId) {
+                        throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
                     }
                     
                     const reportData = {
                         tipo_reporte: 'usuario',
-                        id_usuario_reportado: userProfile.data.user_id,
-                        id_usuario_reporter: loggedInUser.user_id || loggedInUser.id,
+                        id_usuario_reportado: reportedUserId,
+                        id_usuario_reporter: reporterUserId,
                         motivo: reason,
                         descripcion: description || null
                     };
                     
-                    // Determinar la URL base - intentar usar la misma que config.js
-                    const API_BASE_URL = window.API_BASE_URL || 'https://tu-backend-url.com' || window.location.origin;
-                    const reportUrl = `${API_BASE_URL}/api/public/reports`;
+                    // Usar la URL base de config.js
+                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com';
+                    const LOCAL_BACKEND_URL = 'http://localhost:3000';
+                    const BASE_URL = isLocalhost ? LOCAL_BACKEND_URL : RENDER_BACKEND_URL;
+                    const reportUrl = `${BASE_URL}/api/public/reports`;
                     
                     const response = await fetch(reportUrl, {
                         method: 'POST',
@@ -901,7 +926,26 @@
                         body: JSON.stringify(reportData)
                     });
                     
-                    const result = await response.json();
+                    // Validar que la respuesta sea OK antes de parsear JSON
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Error del servidor (${response.status}): ${errorText || 'Error desconocido'}`);
+                    }
+                    
+                    // Validar que la respuesta tenga contenido antes de parsear
+                    const text = await response.text();
+                    if (!text) {
+                        throw new Error('El servidor no devolvió ninguna respuesta');
+                    }
+                    
+                    let result;
+                    try {
+                        result = JSON.parse(text);
+                    } catch (parseError) {
+                        console.error('Error al parsear respuesta:', parseError);
+                        console.error('Respuesta recibida:', text);
+                        throw new Error('El servidor devolvió una respuesta inválida');
+                    }
                     
                     if (result.success) {
                         alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');
