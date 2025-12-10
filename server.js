@@ -1293,6 +1293,168 @@ app.post('/api/messages/mark-read', async (req, res) => {
     }
 });
 
+// ==================== RUTAS DE REPORTES ====================
+
+// Crear reporte (público - no requiere autenticación)
+app.post('/api/public/reports', async (req, res) => {
+    try {
+        const { tipo_reporte, id_usuario_reportado, id_video_reportado, id_usuario_reporter, motivo, descripcion } = req.body;
+
+        console.log('📋 Intento de crear reporte:', {
+            tipo_reporte,
+            id_usuario_reportado,
+            id_video_reportado,
+            id_usuario_reporter,
+            motivo: motivo ? motivo.substring(0, 50) + '...' : null
+        });
+
+        // Validaciones básicas
+        if (!tipo_reporte || !id_usuario_reporter || !motivo) {
+            return res.json({ 
+                success: false, 
+                error: 'Faltan campos requeridos: tipo_reporte, id_usuario_reporter y motivo son obligatorios' 
+            });
+        }
+
+        if (tipo_reporte !== 'usuario' && tipo_reporte !== 'video') {
+            return res.json({ 
+                success: false, 
+                error: 'tipo_reporte debe ser "usuario" o "video"' 
+            });
+        }
+
+        // Validar que el tipo de reporte coincida con los IDs proporcionados
+        if (tipo_reporte === 'usuario' && !id_usuario_reportado) {
+            return res.json({ 
+                success: false, 
+                error: 'id_usuario_reportado es requerido para reportes de usuario' 
+            });
+        }
+
+        if (tipo_reporte === 'video' && !id_video_reportado) {
+            return res.json({ 
+                success: false, 
+                error: 'id_video_reportado es requerido para reportes de video' 
+            });
+        }
+
+        // Si es un reporte de video, obtener el id_usuario_reportado del video
+        let finalIdUsuarioReportado = id_usuario_reportado;
+        if (tipo_reporte === 'video' && id_video_reportado) {
+            try {
+                const videoResult = await pool.query(
+                    'SELECT user_id, username FROM videos WHERE video_id = $1',
+                    [id_video_reportado]
+                );
+
+                if (videoResult.rows.length === 0) {
+                    return res.json({ 
+                        success: false, 
+                        error: 'Video no encontrado' 
+                    });
+                }
+
+                // Obtener el user_id del video (puede ser user_id o id dependiendo de la estructura)
+                const videoUserId = videoResult.rows[0].user_id;
+                if (videoUserId) {
+                    finalIdUsuarioReportado = videoUserId;
+                } else {
+                    // Si no tiene user_id, intentar obtenerlo del username
+                    const videoUsername = videoResult.rows[0].username;
+                    if (videoUsername) {
+                        const userData = await getUserByUsername(videoUsername);
+                        if (userData) {
+                            finalIdUsuarioReportado = userData.id || userData.user_id;
+                        }
+                    }
+                }
+
+                console.log('📹 [REPORTE VIDEO] Usuario reportado obtenido del video:', finalIdUsuarioReportado);
+            } catch (videoError) {
+                console.error('❌ Error al obtener usuario del video:', videoError);
+                return res.json({ 
+                    success: false, 
+                    error: 'Error al obtener información del video reportado' 
+                });
+            }
+        }
+
+        // Validar que el usuario reporter existe
+        const reporterUser = await getUserById(id_usuario_reporter);
+        if (!reporterUser) {
+            return res.json({ 
+                success: false, 
+                error: 'Usuario reporter no encontrado' 
+            });
+        }
+
+        // Validar que el usuario reportado existe (si se proporciona)
+        if (finalIdUsuarioReportado) {
+            const reportedUser = await getUserById(finalIdUsuarioReportado);
+            if (!reportedUser) {
+                return res.json({ 
+                    success: false, 
+                    error: 'Usuario reportado no encontrado' 
+                });
+            }
+        }
+
+        // Insertar el reporte en la base de datos
+        // La tabla tiene valores por defecto para estado ('pendiente') y prioridad ('media')
+        const result = await pool.query(
+            `INSERT INTO reportes (
+                tipo_reporte, 
+                id_usuario_reportado, 
+                id_video_reportado, 
+                id_usuario_reporter, 
+                motivo, 
+                descripcion
+            ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [
+                tipo_reporte,
+                finalIdUsuarioReportado || null,
+                id_video_reportado || null,
+                id_usuario_reporter,
+                motivo,
+                descripcion || null
+            ]
+        );
+
+        const nuevoReporte = result.rows[0];
+        console.log('✅ Reporte creado exitosamente:', nuevoReporte.id);
+
+        res.json({ 
+            success: true, 
+            message: 'Reporte enviado correctamente. Los administradores lo revisarán pronto.',
+            data: {
+                id: nuevoReporte.id,
+                tipo_reporte: nuevoReporte.tipo_reporte,
+                estado: nuevoReporte.estado
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error al crear reporte:', error);
+        console.error('❌ Detalles del error:', {
+            message: error.message,
+            code: error.code,
+            detail: error.detail,
+            constraint: error.constraint
+        });
+        
+        let errorMessage = 'Error al crear el reporte';
+        if (error.code === '23503') { // Foreign key violation
+            errorMessage = 'Error: Usuario o video no encontrado';
+        } else if (error.message) {
+            errorMessage = `Error: ${error.message}`;
+        }
+
+        res.json({ 
+            success: false, 
+            error: errorMessage 
+        });
+    }
+});
+
 // ==================== RUTA DE SALUD ====================
 
 app.get('/api/health', (req, res) => {
