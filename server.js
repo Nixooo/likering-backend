@@ -95,7 +95,12 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Retornar datos del usuario (sin password)
+        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        const userId = user.id || user.user_id;
+        
         const userData = {
+            id: userId,
+            user_id: userId, // Incluir ambos para compatibilidad
             username: user.username,
             imageUrl: user.image_url,
             plan: user.plan || 'azul',
@@ -152,7 +157,12 @@ app.post('/api/register', async (req, res) => {
         const newUser = result.rows[0];
         console.log('✅ Usuario registrado exitosamente:', username);
 
+        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        const userId = newUser.id || newUser.user_id;
+
         const userData = {
+            id: userId,
+            user_id: userId, // Incluir ambos para compatibilidad
             username: newUser.username,
             imageUrl: newUser.image_url,
             plan: newUser.plan || 'azul',
@@ -228,9 +238,14 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
+        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        const userId = userData.id || userData.user_id;
+        
         res.json({
             success: true,
             data: {
+                id: userId,
+                user_id: userId, // Incluir ambos para compatibilidad
                 username: userData.username,
                 imageUrl: userData.image_url,
                 plan: userData.plan || 'azul',

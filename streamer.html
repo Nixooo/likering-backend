@@ -898,7 +898,26 @@
                     }
                     
                     // Obtener user_id del usuario que reporta
-                    const reporterUserId = loggedInUser.user_id || loggedInUser.id;
+                    let reporterUserId = loggedInUser.user_id || loggedInUser.id;
+                    
+                    // Si no tiene ID, intentar obtenerlo del backend
+                    if (!reporterUserId && loggedInUser.username) {
+                        try {
+                            const profileResult = await API.getUserProfile(loggedInUser.username);
+                            if (profileResult.success && profileResult.data) {
+                                reporterUserId = profileResult.data.id || profileResult.data.user_id;
+                                // Actualizar loggedInUser en localStorage con el ID
+                                if (reporterUserId) {
+                                    loggedInUser.id = reporterUserId;
+                                    loggedInUser.user_id = reporterUserId;
+                                    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                                }
+                            }
+                        } catch (profileError) {
+                            console.error('Error al obtener perfil del usuario:', profileError);
+                        }
+                    }
+                    
                     if (!reporterUserId) {
                         throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
                     }
