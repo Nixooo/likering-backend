@@ -2039,36 +2039,15 @@
             submitReportVideoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             
             try {
-                // Obtener user_id del usuario que reporta
-                let reporterUserId = loggedInUser.user_id || loggedInUser.id;
-                
-                // Si no tiene ID, intentar obtenerlo del backend
-                if (!reporterUserId && loggedInUser.username) {
-                    try {
-                        const profileResult = await API.getUserProfile(loggedInUser.username);
-                        if (profileResult.success && profileResult.data) {
-                            reporterUserId = profileResult.data.id || profileResult.data.user_id;
-                            // Actualizar loggedInUser en localStorage con el ID
-                            if (reporterUserId) {
-                                loggedInUser.id = reporterUserId;
-                                loggedInUser.user_id = reporterUserId;
-                                localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                            }
-                        }
-                    } catch (profileError) {
-                        console.error('Error al obtener perfil del usuario:', profileError);
-                    }
-                }
-                
-                if (!reporterUserId) {
+                // Validar que tenemos el username del usuario que reporta
+                if (!loggedInUser || !loggedInUser.username) {
                     throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
                 }
                 
                 const reportData = {
                     tipo_reporte: 'video',
                     id_video_reportado: currentVideoData.videoId,
-                    id_usuario_reporter: reporterUserId,
-                    id_usuario_reportado: null, // El backend lo obtendrá del video automáticamente
+                    username_reporter: loggedInUser.username,
                     motivo: reason,
                     descripcion: description || null
                 };

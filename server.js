@@ -1250,6 +1250,88 @@ app.post('/api/messages/mark-read', async (req, res) => {
     }
 });
 
+// ==================== RUTA DE REPORTES ====================
+
+// Endpoint público para crear reportes
+app.post('/api/public/reports', async (req, res) => {
+    try {
+        const { tipo_reporte, id_video_reportado, username_reporter, username_reportado, motivo, descripcion } = req.body;
+
+        // Validaciones básicas
+        if (!tipo_reporte || !username_reporter || !motivo) {
+            return res.json({ success: false, error: 'Faltan campos requeridos: tipo_reporte, username_reporter, motivo' });
+        }
+
+        if (tipo_reporte !== 'video' && tipo_reporte !== 'usuario') {
+            return res.json({ success: false, error: 'tipo_reporte debe ser "video" o "usuario"' });
+        }
+
+        // Obtener ID del usuario que reporta
+        const reporterUser = await getUserByUsername(username_reporter);
+        if (!reporterUser) {
+            return res.json({ success: false, error: 'Usuario reporter no encontrado' });
+        }
+        const reporterUserId = reporterUser.id || reporterUser.user_id;
+
+        let reportedUserId = null;
+        let videoId = null;
+
+        if (tipo_reporte === 'video') {
+            // Para reportes de video, obtener el ID del usuario del video
+            if (!id_video_reportado) {
+                return res.json({ success: false, error: 'id_video_reportado es requerido para reportes de video' });
+            }
+
+            // Buscar el video para obtener el username del propietario
+            const videoResult = await pool.query(
+                'SELECT username FROM videos WHERE video_id = $1',
+                [id_video_reportado]
+            );
+
+            if (videoResult.rows.length === 0) {
+                return res.json({ success: false, error: 'Video no encontrado' });
+            }
+
+            const videoOwnerUsername = videoResult.rows[0].username;
+            const videoOwner = await getUserByUsername(videoOwnerUsername);
+            if (videoOwner) {
+                reportedUserId = videoOwner.id || videoOwner.user_id;
+            }
+
+            videoId = id_video_reportado;
+        } else if (tipo_reporte === 'usuario') {
+            // Para reportes de usuario, usar el username proporcionado
+            if (!username_reportado) {
+                return res.json({ success: false, error: 'username_reportado es requerido para reportes de usuario' });
+            }
+
+            const reportedUser = await getUserByUsername(username_reportado);
+            if (!reportedUser) {
+                return res.json({ success: false, error: 'Usuario reportado no encontrado' });
+            }
+            reportedUserId = reportedUser.id || reportedUser.user_id;
+        }
+
+        // Insertar el reporte en la base de datos
+        const result = await pool.query(
+            `INSERT INTO reportes 
+            (tipo_reporte, id_video_reportado, id_usuario_reportado, id_usuario_reporter, motivo, descripcion, estado, prioridad) 
+            VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', 'media') 
+            RETURNING id`,
+            [tipo_reporte, videoId, reportedUserId, reporterUserId, motivo, descripcion || null]
+        );
+
+        res.json({
+            success: true,
+            message: 'Reporte enviado correctamente',
+            reportId: result.rows[0].id
+        });
+    } catch (error) {
+        console.error('Error al crear reporte:', error);
+        res.json({ success: false, error: 'Error al crear el reporte: ' + error.message });
+    }
+});
+
 // ==================== RUTA DE SALUD ====================
 
 app.get('/api/health', (req, res) => {
