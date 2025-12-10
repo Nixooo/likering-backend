@@ -248,6 +248,26 @@ app.get('/api/user/profile', async (req, res) => {
             return res.json({ success: false, message: 'Usuario no encontrado' });
         }
 
+        // Obtener el ID del usuario ANTES de obtener estadísticas
+        // Esto asegura que siempre tengamos el ID, incluso si getUserByUsername no lo devuelve correctamente
+        let userIdFromDB = userData.id || userData.user_id;
+        
+        // Si no hay ID, obtenerlo directamente de la BD
+        if (!userIdFromDB) {
+            try {
+                const directIdResult = await pool.query(
+                    'SELECT id FROM users WHERE username = $1',
+                    [user]
+                );
+                if (directIdResult.rows.length > 0) {
+                    userIdFromDB = directIdResult.rows[0].id;
+                    console.log('✅ [GET PROFILE] ID obtenido directamente al inicio:', userIdFromDB);
+                }
+            } catch (err) {
+                console.error('❌ [GET PROFILE] Error al obtener ID al inicio:', err);
+            }
+        }
+
         // Obtener estadísticas
         const videosResult = await pool.query(
             'SELECT COUNT(*) as count FROM videos WHERE username = $1',
@@ -274,9 +294,9 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
-        // IMPORTANTE: La tabla users usa 'id', NO 'user_id'
-        // Normalizar: obtener id (campo real) y crear user_id (para compatibilidad)
-        let finalUserId = userData.id || userData.user_id;
+        // IMPORTANTE: Obtener el ID del usuario de forma robusta
+        // Primero intentar desde userData o desde la consulta directa que hicimos antes
+        let finalUserId = userIdFromDB || userData.id || userData.user_id;
         
         console.log('🔍 [GET PROFILE] userData después de getUserByUsername:', {
             username: userData.username,
@@ -284,13 +304,15 @@ app.get('/api/user/profile', async (req, res) => {
             user_id: userData.user_id,
             hasId: !!userData.id,
             hasUser_id: !!userData.user_id,
-            allKeys: Object.keys(userData)
+            allKeys: Object.keys(userData),
+            userDataRaw: JSON.stringify(userData)
         });
 
-        // Si no hay ID, intentar obtenerlo directamente de la BD
-        if (!finalUserId) {
+        // Si no hay ID, intentar obtenerlo directamente de la BD con múltiples métodos
+        if (!finalUserId || finalUserId === null || finalUserId === undefined) {
+            console.log('⚠️ [GET PROFILE] No se encontró ID en userData, buscando en BD...');
             try {
-                // Intentar con 'id' primero
+                // Método 1: Intentar con 'id' primero
                 let idResult = await pool.query(
                     'SELECT id FROM users WHERE username = $1',
                     [user]
@@ -300,7 +322,7 @@ app.get('/api/user/profile', async (req, res) => {
                     finalUserId = idResult.rows[0].id;
                     console.log('✅ [GET PROFILE] id obtenido directamente de BD (campo id):', finalUserId);
                 } else {
-                    // Si no funciona, intentar con 'user_id'
+                    // Método 2: Intentar con 'user_id'
                     idResult = await pool.query(
                         'SELECT user_id FROM users WHERE username = $1',
                         [user]
@@ -310,7 +332,7 @@ app.get('/api/user/profile', async (req, res) => {
                         finalUserId = idResult.rows[0].user_id;
                         console.log('✅ [GET PROFILE] id obtenido directamente de BD (campo user_id):', finalUserId);
                     } else {
-                        // Último recurso: obtener todas las columnas y buscar cualquier campo que parezca un ID
+                        // Método 3: Obtener todas las columnas y buscar cualquier campo que parezca un ID
                         const allColumnsResult = await pool.query(
                             'SELECT * FROM users WHERE username = $1',
                             [user]
@@ -318,12 +340,26 @@ app.get('/api/user/profile', async (req, res) => {
                         
                         if (allColumnsResult.rows.length > 0) {
                             const row = allColumnsResult.rows[0];
+                            console.log('🔍 [GET PROFILE] Todas las columnas del usuario:', Object.keys(row));
+                            
                             // Buscar cualquier campo que termine en 'id' o sea 'id'
                             for (const [key, value] of Object.entries(row)) {
-                                if ((key.toLowerCase() === 'id' || key.toLowerCase() === 'user_id') && value) {
+                                const keyLower = key.toLowerCase();
+                                if ((keyLower === 'id' || keyLower === 'user_id') && (value !== null && value !== undefined)) {
                                     finalUserId = value;
                                     console.log(`✅ [GET PROFILE] id encontrado en campo '${key}':`, finalUserId);
                                     break;
+                                }
+                            }
+                            
+                            // Si aún no se encontró, buscar cualquier campo numérico que parezca un ID
+                            if (!finalUserId) {
+                                for (const [key, value] of Object.entries(row)) {
+                                    if (typeof value === 'number' && value > 0) {
+                                        finalUserId = value;
+                                        console.log(`✅ [GET PROFILE] ID numérico encontrado en campo '${key}':`, finalUserId);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -331,10 +367,12 @@ app.get('/api/user/profile', async (req, res) => {
                 }
             } catch (err) {
                 console.error('❌ [GET PROFILE] Error al obtener id:', err);
+                console.error('❌ [GET PROFILE] Error stack:', err.stack);
             }
         }
         
-        if (!finalUserId) {
+        // Validación final: si aún no hay ID, devolver error
+        if (!finalUserId || finalUserId === null || finalUserId === undefined) {
             console.error('❌ [GET PROFILE] ERROR CRÍTICO: No se pudo obtener el ID del usuario:', user);
             console.error('❌ [GET PROFILE] userData completo:', JSON.stringify(userData, null, 2));
             return res.json({ 
@@ -343,8 +381,11 @@ app.get('/api/user/profile', async (req, res) => {
             });
         }
         
-        console.log('✅ [GET PROFILE] finalUserId confirmado:', finalUserId);
+        console.log('✅ [GET PROFILE] finalUserId confirmado:', finalUserId, 'tipo:', typeof finalUserId);
 
+        // Asegurar que finalUserId sea un número válido
+        finalUserId = parseInt(finalUserId) || finalUserId;
+        
         const responseData = {
             user_id: finalUserId,
             id: finalUserId, // También incluir como 'id' para compatibilidad
@@ -357,8 +398,24 @@ app.get('/api/user/profile', async (req, res) => {
             posts: postsCount
         };
 
+        // Validación final antes de enviar
+        if (!responseData.user_id || responseData.user_id === null || responseData.user_id === undefined) {
+            console.error('❌ [GET PROFILE] ERROR: responseData no tiene user_id antes de enviar');
+            return res.json({ 
+                success: false, 
+                message: 'Error: No se pudo obtener el ID del usuario. Contacta al administrador.' 
+            });
+        }
+
         console.log('✅ [GET PROFILE] Enviando respuesta:', {
-            ...responseData,
+            user_id: responseData.user_id,
+            id: responseData.id,
+            username: responseData.username,
+            plan: responseData.plan,
+            followers: responseData.followers,
+            following: responseData.following,
+            likes: responseData.likes,
+            posts: responseData.posts,
             imageUrl: '[oculto]'
         });
 
