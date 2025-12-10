@@ -977,20 +977,26 @@
                         }
                     }
                     
-                    if (!reporterUserId) {
-                        console.error('❌ [REPORTE USUARIO] No se pudo obtener reporterUserId. loggedInUser completo:', loggedInUser);
-                        throw new Error('No se pudo obtener tu información de usuario. Por favor, cierra sesión e inicia sesión nuevamente.');
-                    }
-                    
-                    console.log('✅ [REPORTE USUARIO] reporterUserId final:', reporterUserId);
-                    
+                    // Si no se pudo obtener el user_id, usar el username como alternativa
+                    // El backend puede obtener el ID desde el username
                     const reportData = {
                         tipo_reporte: 'usuario',
                         id_usuario_reportado: reportedUserId,
-                        id_usuario_reporter: reporterUserId,
                         motivo: reason,
                         descripcion: description || null
                     };
+
+                    // Agregar id_usuario_reporter si está disponible, sino usar username_reporter
+                    if (reporterUserId) {
+                        reportData.id_usuario_reporter = reporterUserId;
+                        console.log('✅ [REPORTE USUARIO] Enviando reporte con id_usuario_reporter:', reporterUserId);
+                    } else if (loggedInUser && loggedInUser.username) {
+                        reportData.username_reporter = loggedInUser.username;
+                        console.log('⚠️ [REPORTE USUARIO] No se pudo obtener user_id, usando username_reporter:', loggedInUser.username);
+                    } else {
+                        console.error('❌ [REPORTE USUARIO] No se pudo obtener reporterUserId ni username. loggedInUser completo:', loggedInUser);
+                        throw new Error('No se pudo obtener tu información de usuario. Por favor, cierra sesión e inicia sesión nuevamente.');
+                    }
                     
                     // Usar la URL base de config.js
                     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

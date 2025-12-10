@@ -1423,7 +1423,7 @@ app.post('/api/messages/mark-read', async (req, res) => {
 // Crear reporte (público - no requiere autenticación)
 app.post('/api/public/reports', async (req, res) => {
     try {
-        const { tipo_reporte, id_usuario_reportado, id_video_reportado, id_usuario_reporter, motivo, descripcion } = req.body;
+        const { tipo_reporte, id_usuario_reportado, id_video_reportado, id_usuario_reporter, username_reporter, motivo, descripcion } = req.body;
 
         console.log('📋 Intento de crear reporte:', {
             tipo_reporte,
@@ -1434,10 +1434,41 @@ app.post('/api/public/reports', async (req, res) => {
         });
 
         // Validaciones básicas
-        if (!tipo_reporte || !id_usuario_reporter || !motivo) {
+        if (!tipo_reporte || !motivo) {
             return res.json({ 
                 success: false, 
-                error: 'Faltan campos requeridos: tipo_reporte, id_usuario_reporter y motivo son obligatorios' 
+                error: 'Faltan campos requeridos: tipo_reporte y motivo son obligatorios' 
+            });
+        }
+
+        // Si no se proporciona id_usuario_reporter, intentar obtenerlo desde username_reporter
+        let finalIdUsuarioReporter = id_usuario_reporter;
+        if (!finalIdUsuarioReporter && username_reporter) {
+            try {
+                const reporterUser = await getUserByUsername(username_reporter);
+                if (reporterUser) {
+                    finalIdUsuarioReporter = reporterUser.id || reporterUser.user_id;
+                    // Si aún no hay ID, intentar obtenerlo directamente de la BD
+                    if (!finalIdUsuarioReporter) {
+                        const idResult = await pool.query(
+                            'SELECT id FROM users WHERE username = $1',
+                            [username_reporter]
+                        );
+                        if (idResult.rows.length > 0) {
+                            finalIdUsuarioReporter = idResult.rows[0].id;
+                        }
+                    }
+                    console.log('✅ [REPORTE] id_usuario_reporter obtenido desde username:', finalIdUsuarioReporter);
+                }
+            } catch (err) {
+                console.error('❌ [REPORTE] Error al obtener ID desde username:', err);
+            }
+        }
+
+        if (!finalIdUsuarioReporter) {
+            return res.json({ 
+                success: false, 
+                error: 'Se requiere id_usuario_reporter o username_reporter' 
             });
         }
 
@@ -1505,7 +1536,7 @@ app.post('/api/public/reports', async (req, res) => {
         }
 
         // Validar que el usuario reporter existe
-        const reporterUser = await getUserById(id_usuario_reporter);
+        const reporterUser = await getUserById(finalIdUsuarioReporter);
         if (!reporterUser) {
             return res.json({ 
                 success: false, 
@@ -1531,7 +1562,7 @@ app.post('/api/public/reports', async (req, res) => {
                 tipo_reporte, 
                 id_usuario_reportado, 
                 id_video_reportado, 
-                id_usuario_reporter, 
+                finalIdUsuarioReporter, 
                 motivo, 
                 descripcion
             ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
@@ -1539,7 +1570,7 @@ app.post('/api/public/reports', async (req, res) => {
                 tipo_reporte,
                 finalIdUsuarioReportado || null,
                 id_video_reportado || null,
-                id_usuario_reporter,
+                finalIdUsuarioReporter,
                 motivo,
                 descripcion || null
             ]
