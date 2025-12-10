@@ -1562,7 +1562,7 @@ app.post('/api/public/reports', async (req, res) => {
                 tipo_reporte, 
                 id_usuario_reportado, 
                 id_video_reportado, 
-                finalIdUsuarioReporter, 
+                id_usuario_reporter, 
                 motivo, 
                 descripcion
             ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
