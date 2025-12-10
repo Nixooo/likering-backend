@@ -95,7 +95,12 @@ app.post('/api/login', async (req, res) => {
         }
 
         // Retornar datos del usuario (sin password)
+        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        const userId = user.id || user.user_id;
+        
         const userData = {
+            id: userId,
+            user_id: userId, // Incluir ambos para compatibilidad
             username: user.username,
             imageUrl: user.image_url,
             plan: user.plan || 'azul',
@@ -152,7 +157,12 @@ app.post('/api/register', async (req, res) => {
         const newUser = result.rows[0];
         console.log('✅ Usuario registrado exitosamente:', username);
 
+        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        const userId = newUser.id || newUser.user_id;
+
         const userData = {
+            id: userId,
+            user_id: userId, // Incluir ambos para compatibilidad
             username: newUser.username,
             imageUrl: newUser.image_url,
             plan: newUser.plan || 'azul',
@@ -228,9 +238,14 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
+        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        const userId = userData.id || userData.user_id;
+        
         res.json({
             success: true,
             data: {
+                id: userId,
+                user_id: userId, // Incluir ambos para compatibilidad
                 username: userData.username,
                 imageUrl: userData.image_url,
                 plan: userData.plan || 'azul',
@@ -1235,6 +1250,111 @@ app.post('/api/messages/mark-read', async (req, res) => {
     }
 });
 
+// ==================== RUTA DE REPORTES ====================
+
+// Endpoint público para crear reportes
+app.post('/api/public/reports', async (req, res) => {
+    console.log('📝 Reporte recibido:', req.body);
+    try {
+        const { tipo_reporte, id_video_reportado, username_reporter, username_reportado, motivo, descripcion } = req.body;
+
+        // Validaciones básicas
+        if (!tipo_reporte || !username_reporter || !motivo) {
+            return res.json({ success: false, error: 'Faltan campos requeridos: tipo_reporte, username_reporter, motivo' });
+        }
+
+        if (tipo_reporte !== 'video' && tipo_reporte !== 'usuario') {
+            return res.json({ success: false, error: 'tipo_reporte debe ser "video" o "usuario"' });
+        }
+
+        // Obtener ID del usuario que reporta
+        const reporterUser = await getUserByUsername(username_reporter);
+        if (!reporterUser) {
+            return res.json({ success: false, error: 'Usuario reporter no encontrado' });
+        }
+        const reporterUserId = reporterUser.id || reporterUser.user_id;
+
+        let reportedUserId = null;
+        let videoId = null;
+
+        if (tipo_reporte === 'video') {
+            // Para reportes de video, obtener el ID del usuario del video
+            if (!id_video_reportado) {
+                return res.json({ success: false, error: 'id_video_reportado es requerido para reportes de video' });
+            }
+
+            // Buscar el video por video_id (UUID string) para obtener el username del propietario
+            const videoResult = await pool.query(
+                'SELECT username FROM videos WHERE video_id = $1',
+                [id_video_reportado]
+            );
+
+            if (videoResult.rows.length === 0) {
+                return res.json({ success: false, error: 'Video no encontrado' });
+            }
+
+            const videoOwnerUsername = videoResult.rows[0].username;
+            
+            // Intentar obtener el id numérico de la tabla videos
+            // Si no existe la columna id, usamos NULL (la columna id_video_reportado debe aceptar NULL)
+            let videoIdNumeric = null;
+            try {
+                const idResult = await pool.query(
+                    'SELECT id FROM videos WHERE video_id = $1',
+                    [id_video_reportado]
+                );
+                if (idResult.rows.length > 0 && idResult.rows[0].id) {
+                    videoIdNumeric = idResult.rows[0].id;
+                }
+            } catch (idError) {
+                // Si la columna id no existe en videos, usar NULL
+                // NOTA: Esto requiere que id_video_reportado en la tabla reportes acepte NULL
+                // Si no acepta NULL, necesitarás modificar el esquema de la tabla reportes
+                console.log('⚠️ Columna id no existe en videos, usando NULL para id_video_reportado');
+                console.log('⚠️ Si esto falla, modifica la tabla reportes para que id_video_reportado acepte NULL');
+                videoIdNumeric = null;
+            }
+            
+            videoId = videoIdNumeric;
+            
+            // Obtener el ID del usuario propietario del video
+            const videoOwner = await getUserByUsername(videoOwnerUsername);
+            if (videoOwner) {
+                reportedUserId = videoOwner.id || videoOwner.user_id;
+            }
+        } else if (tipo_reporte === 'usuario') {
+            // Para reportes de usuario, usar el username proporcionado
+            if (!username_reportado) {
+                return res.json({ success: false, error: 'username_reportado es requerido para reportes de usuario' });
+            }
+
+            const reportedUser = await getUserByUsername(username_reportado);
+            if (!reportedUser) {
+                return res.json({ success: false, error: 'Usuario reportado no encontrado' });
+            }
+            reportedUserId = reportedUser.id || reportedUser.user_id;
+        }
+
+        // Insertar el reporte en la base de datos
+        const result = await pool.query(
+            `INSERT INTO reportes 
+            (tipo_reporte, id_video_reportado, id_usuario_reportado, id_usuario_reporter, motivo, descripcion, estado, prioridad) 
+            VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', 'media') 
+            RETURNING id`,
+            [tipo_reporte, videoId, reportedUserId, reporterUserId, motivo, descripcion || null]
+        );
+
+        res.json({
+            success: true,
+            message: 'Reporte enviado correctamente',
+            reportId: result.rows[0].id
+        });
+    } catch (error) {
+        console.error('Error al crear reporte:', error);
+        res.json({ success: false, error: 'Error al crear el reporte: ' + error.message });
+    }
+});
+
 // ==================== RUTA DE SALUD ====================
 
 app.get('/api/health', (req, res) => {
@@ -1246,5 +1366,6 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     console.log(`📊 Base de datos: PostgreSQL (Aiven)`);
+    console.log(`📝 Endpoint de reportes disponible: POST /api/public/reports`);
 });
 

@@ -762,10 +762,38 @@
         
         <div class="my-profile-badge"><div class="my-profile-picture"></div><span>Yo</span></div>
         <div class="floating-menu-container"><div class="floating-menu"><ul><li><a href="billetera.html"><i class="fas fa-wallet"></i><span>Billetera</span></a></li><li><a href="mensajes.html"><i class="far fa-comments"></i><span>Mensajes</span></a></li><li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li><li id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></li></ul></div></div>
-        <div class="options-menu-container"><div class="options-menu"><ul><li id="share-btn"><i class="fas fa-share-square"></i><span>Compartir</span></li><li id="download-btn"><i class="fas fa-download"></i><span>Descargar</span></li></ul></div></div>
+        <div class="options-menu-container"><div class="options-menu"><ul><li id="share-btn"><i class="fas fa-share-square"></i><span>Compartir</span></li><li id="download-btn"><i class="fas fa-download"></i><span>Descargar</span></li><li id="report-video-btn"><i class="fas fa-flag"></i><span>Reportar</span></li></ul></div></div>
         <div class="comments-panel-container"><div class="comments-panel"><div class="comments-header"><h4 id="comments-count">0 comentarios</h4><i class="fas fa-times close-comments"></i></div><div class="comments-list" id="comments-list"></div><div class="add-comment-area"><div class="my-avatar-comment"></div><input type="text" id="comment-input" placeholder="Añadir un comentario..."><button class="send-comment-btn" id="send-comment-btn"><i class="fas fa-arrow-right"></i></button></div></div></div>
         <div class="share-menu-container"><div class="share-panel"><div class="share-panel-header"><h4>Compartir en</h4><i class="fas fa-times close-share"></i></div><div class="share-grid"><div class="share-option"><div class="share-icon whatsapp"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span></div><div class="share-option"><div class="share-icon instagram"><i class="fab fa-instagram"></i></div><span>Instagram</span></div><div class="share-option"><div class="share-icon copy-link"><i class="fas fa-link"></i></div><span>Copiar enlace</span></div></div></div></div>
         <div class="download-progress-overlay"><div class="download-progress-box"><span id="download-status"></span></div></div>
+        
+        <!-- Modal de Reportar Video -->
+        <div class="follow-modal-overlay" id="report-video-modal">
+            <div class="follow-modal-container">
+                <h3 style="margin-bottom: 20px; color: #ef4444;"><i class="fas fa-flag"></i> Reportar Video</h3>
+                <p style="margin-bottom: 15px; color: #ccc;">Estás reportando un video de <strong id="report-video-username"></strong></p>
+                <div style="margin-bottom: 15px; text-align: left;">
+                    <label style="display: block; margin-bottom: 8px; color: #fff; font-weight: 600;">Motivo del reporte *</label>
+                    <select id="report-video-reason" style="width: 100%; padding: 10px; background: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 0.9rem;">
+                        <option value="">Selecciona un motivo</option>
+                        <option value="Contenido inapropiado">Contenido inapropiado</option>
+                        <option value="Spam o engañoso">Spam o engañoso</option>
+                        <option value="Violencia">Violencia</option>
+                        <option value="Derechos de autor">Derechos de autor</option>
+                        <option value="Desinformación">Desinformación</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 20px; text-align: left;">
+                    <label style="display: block; margin-bottom: 8px; color: #fff; font-weight: 600;">Descripción (opcional)</label>
+                    <textarea id="report-video-description" placeholder="Proporciona más detalles..." style="width: 100%; min-height: 80px; padding: 10px; background: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 0.9rem; resize: vertical; font-family: 'Poppins', sans-serif;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="cancel-report-video-btn" class="cancel-follow-btn" style="flex: 1;">Cancelar</button>
+                    <button id="submit-report-video-btn" style="flex: 1; padding: 10px; background: #ef4444; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Enviar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 <script src="config.js"></script>
@@ -1901,8 +1929,12 @@
         const closeShareButton = document.querySelector('.close-share');
         const shareButton = document.getElementById('share-btn');
         const downloadButton = document.getElementById('download-btn');
+        const reportVideoButton = document.getElementById('report-video-btn');
         const downloadOverlay = document.querySelector('.download-progress-overlay');
         const downloadStatus = document.getElementById('download-status');
+        const reportVideoModal = document.getElementById('report-video-modal');
+        const cancelReportVideoBtn = document.getElementById('cancel-report-video-btn');
+        const submitReportVideoBtn = document.getElementById('submit-report-video-btn');
 
         profileBadge.addEventListener('click', e => {
             e.stopPropagation();
@@ -1951,6 +1983,132 @@
                 console.error('Error al descargar el video:', error);
                 downloadStatus.innerHTML = '<i class="fas fa-times-circle"></i> Error al descargar';
                 setTimeout(() => downloadOverlay.classList.remove('active'), 2500);
+            }
+        });
+        
+        // Funcionalidad de reportar video
+        reportVideoButton.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            optionsMenuContainer.classList.remove('active');
+            
+            if (!loggedInUser) {
+                alert('Debes iniciar sesión para reportar videos.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
+            if (!currentVideoData) {
+                alert('Error al obtener información del video.');
+                return;
+            }
+            
+            // Verificar si es su propio video
+            const videoUsername = currentVideoData.user ? currentVideoData.user.replace('@', '') : '';
+            if (loggedInUser.username === videoUsername) {
+                alert('No puedes reportar tus propios videos.');
+                return;
+            }
+            
+            document.getElementById('report-video-username').textContent = currentVideoData.user || 'Usuario desconocido';
+            reportVideoModal.classList.add('show');
+            document.getElementById('report-video-reason').value = '';
+            document.getElementById('report-video-description').value = '';
+        });
+        
+        cancelReportVideoBtn.addEventListener('click', () => {
+            reportVideoModal.classList.remove('show');
+        });
+        
+        submitReportVideoBtn.addEventListener('click', async () => {
+            const reason = document.getElementById('report-video-reason').value;
+            const description = document.getElementById('report-video-description').value.trim();
+            const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
+            
+            if (!reason) {
+                alert('Por favor, selecciona un motivo para el reporte.');
+                return;
+            }
+            
+            if (!currentVideoData || !currentVideoData.videoId) {
+                alert('Error al obtener información del video.');
+                return;
+            }
+            
+            submitReportVideoBtn.disabled = true;
+            submitReportVideoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            
+            try {
+                // Validar que tenemos el username del usuario que reporta
+                if (!loggedInUser || !loggedInUser.username) {
+                    throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
+                }
+                
+                const reportData = {
+                    tipo_reporte: 'video',
+                    id_video_reportado: currentVideoData.videoId,
+                    username_reporter: loggedInUser.username,
+                    motivo: reason,
+                    descripcion: description || null
+                };
+                
+                // Usar la URL base de config.js
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com';
+                const LOCAL_BACKEND_URL = 'http://localhost:3000';
+                const BASE_URL = isLocalhost ? LOCAL_BACKEND_URL : RENDER_BACKEND_URL;
+                const reportUrl = `${BASE_URL}/api/public/reports`;
+                
+                const response = await fetch(reportUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reportData)
+                });
+                
+                // Validar que la respuesta sea OK antes de parsear JSON
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Error del servidor (${response.status}): ${errorText || 'Error desconocido'}`);
+                }
+                
+                // Validar que la respuesta tenga contenido antes de parsear
+                const text = await response.text();
+                if (!text) {
+                    throw new Error('El servidor no devolvió ninguna respuesta');
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseError) {
+                    console.error('Error al parsear respuesta:', parseError);
+                    console.error('Respuesta recibida:', text);
+                    throw new Error('El servidor devolvió una respuesta inválida');
+                }
+                
+                if (result.success) {
+                    alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');
+                    reportVideoModal.classList.remove('show');
+                    document.getElementById('report-video-reason').value = '';
+                    document.getElementById('report-video-description').value = '';
+                } else {
+                    throw new Error(result.error || 'Error al enviar el reporte');
+                }
+            } catch (error) {
+                console.error('Error al enviar reporte:', error);
+                alert('Error al enviar el reporte: ' + error.message);
+            } finally {
+                submitReportVideoBtn.disabled = false;
+                submitReportVideoBtn.innerHTML = 'Enviar';
+            }
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        reportVideoModal.addEventListener('click', (e) => {
+            if (e.target === reportVideoModal) {
+                reportVideoModal.classList.remove('show');
             }
         });
 

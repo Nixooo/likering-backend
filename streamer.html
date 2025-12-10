@@ -244,6 +244,18 @@
         color: var(--text-primary);
         border: 1px solid rgba(255,255,255,0.1);
     }
+    
+    .report-btn {
+        background: var(--light-grey);
+        color: var(--text-primary);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .report-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        border-color: rgba(239, 68, 68, 0.5);
+    }
 
     .follow-btn:hover {
         transform: translateY(-2px);
@@ -512,6 +524,10 @@
                 <button class="share-btn" id="share-btn">
                     <i class="fas fa-share-alt"></i> Compartir
                 </button>
+                
+                <button class="report-btn" id="report-user-btn">
+                    <i class="fas fa-flag"></i> Reportar
+                </button>
             </div>
         </div>
 
@@ -533,6 +549,38 @@
                             <i class="fas fa-copy"></i> Copiar
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal de Reportar Usuario -->
+        <div class="upload-modal-overlay" id="report-user-modal">
+            <div class="upload-modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Reportar Usuario</h3>
+                    <button class="modal-close" id="report-user-modal-close-btn"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="share-modal-body">
+                    <p class="share-modal-text">Estás reportando a <strong>@<span id="report-username"></span></strong></p>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">Motivo del reporte *</label>
+                        <select id="report-reason" style="width: 100%; padding: 12px; background: var(--dark-background); border: 1px solid var(--light-grey); border-radius: 10px; color: var(--text-primary); font-size: 0.9rem;">
+                            <option value="">Selecciona un motivo</option>
+                            <option value="Contenido inapropiado">Contenido inapropiado</option>
+                            <option value="Spam o engañoso">Spam o engañoso</option>
+                            <option value="Acoso o bullying">Acoso o bullying</option>
+                            <option value="Suplantación de identidad">Suplantación de identidad</option>
+                            <option value="Violencia">Violencia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">Descripción (opcional)</label>
+                        <textarea id="report-description" placeholder="Proporciona más detalles sobre el problema..." style="width: 100%; min-height: 100px; padding: 12px; background: var(--dark-background); border: 1px solid var(--light-grey); border-radius: 10px; color: var(--text-primary); font-size: 0.9rem; font-family: 'Poppins', sans-serif; resize: vertical;"></textarea>
+                    </div>
+                    <button id="submit-report-btn" class="modal-button submit-button" style="width: 100%;">
+                        <i class="fas fa-flag"></i> Enviar Reporte
+                    </button>
                 </div>
             </div>
         </div>
@@ -791,6 +839,118 @@
                 document.getElementById('share-modal').classList.remove('visible');
             });
             document.getElementById('copy-link-btn').addEventListener('click', copyProfileLink);
+            
+            // NUEVO: Listeners para la modal de reportar
+            document.getElementById('report-user-btn').addEventListener('click', () => {
+                if (!loggedInUser) {
+                    alert('Debes iniciar sesión para reportar usuarios.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                if (loggedInUser.username === currentUser.username) {
+                    alert('No puedes reportarte a ti mismo.');
+                    return;
+                }
+                document.getElementById('report-username').textContent = currentUser.username;
+                document.getElementById('report-user-modal').classList.add('visible');
+            });
+            
+            document.getElementById('report-user-modal-close-btn').addEventListener('click', () => {
+                document.getElementById('report-user-modal').classList.remove('visible');
+                document.getElementById('report-reason').value = '';
+                document.getElementById('report-description').value = '';
+            });
+            
+            document.getElementById('submit-report-btn').addEventListener('click', async () => {
+                const reason = document.getElementById('report-reason').value;
+                const description = document.getElementById('report-description').value.trim();
+                
+                if (!reason) {
+                    alert('Por favor, selecciona un motivo para el reporte.');
+                    return;
+                }
+                
+                const submitBtn = document.getElementById('submit-report-btn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                
+                try {
+                    // Validar que tenemos la información necesaria
+                    if (!currentUser || !currentUser.username) {
+                        throw new Error('No se pudo obtener la información del usuario reportado.');
+                    }
+                    
+                    if (!loggedInUser || !loggedInUser.username) {
+                        throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
+                    }
+                    
+                    const reportData = {
+                        tipo_reporte: 'usuario',
+                        username_reportado: currentUser.username,
+                        username_reporter: loggedInUser.username,
+                        motivo: reason,
+                        descripcion: description || null
+                    };
+                    
+                    // Usar la URL base de config.js
+                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com';
+                    const LOCAL_BACKEND_URL = 'http://localhost:3000';
+                    const BASE_URL = isLocalhost ? LOCAL_BACKEND_URL : RENDER_BACKEND_URL;
+                    const reportUrl = `${BASE_URL}/api/public/reports`;
+                    
+                    const response = await fetch(reportUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(reportData)
+                    });
+                    
+                    // Validar que la respuesta sea OK antes de parsear JSON
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Error del servidor (${response.status}): ${errorText || 'Error desconocido'}`);
+                    }
+                    
+                    // Validar que la respuesta tenga contenido antes de parsear
+                    const text = await response.text();
+                    if (!text) {
+                        throw new Error('El servidor no devolvió ninguna respuesta');
+                    }
+                    
+                    let result;
+                    try {
+                        result = JSON.parse(text);
+                    } catch (parseError) {
+                        console.error('Error al parsear respuesta:', parseError);
+                        console.error('Respuesta recibida:', text);
+                        throw new Error('El servidor devolvió una respuesta inválida');
+                    }
+                    
+                    if (result.success) {
+                        alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');
+                        document.getElementById('report-user-modal').classList.remove('visible');
+                        document.getElementById('report-reason').value = '';
+                        document.getElementById('report-description').value = '';
+                    } else {
+                        throw new Error(result.error || 'Error al enviar el reporte');
+                    }
+                } catch (error) {
+                    console.error('Error al enviar reporte:', error);
+                    alert('Error al enviar el reporte: ' + error.message);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-flag"></i> Enviar Reporte';
+                }
+            });
+            
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('report-user-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'report-user-modal') {
+                    document.getElementById('report-user-modal').classList.remove('visible');
+                }
+            });
         }
 
         // ***** NUEVA FUNCIÓN PARA ABRIR LA MODAL DE COMPARTIR *****
