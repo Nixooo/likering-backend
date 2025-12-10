@@ -2055,41 +2055,27 @@
                     try {
                         console.log('🔍 [REPORTE VIDEO] Obteniendo user_id desde API para:', loggedInUser.username);
                         const reporterProfile = await API.getUserProfile(loggedInUser.username);
-                        
-                        // Mostrar la respuesta completa de forma legible
                         console.log('🔍 [REPORTE VIDEO] Respuesta de API completa:', JSON.stringify(reporterProfile, null, 2));
                         console.log('🔍 [REPORTE VIDEO] reporterProfile.success:', reporterProfile.success);
                         console.log('🔍 [REPORTE VIDEO] reporterProfile.data:', reporterProfile.data);
                         
-                        if (reporterProfile && reporterProfile.success && reporterProfile.data) {
+                        if (reporterProfile.success && reporterProfile.data) {
                             console.log('🔍 [REPORTE VIDEO] reporterProfile.data.user_id:', reporterProfile.data.user_id);
                             console.log('🔍 [REPORTE VIDEO] reporterProfile.data.id:', reporterProfile.data.id);
-                            
                             reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
+                            console.log('🔍 [REPORTE VIDEO] reporterUserId desde API:', reporterUserId);
                             
+                            // Actualizar loggedInUser en localStorage para futuras veces
                             if (reporterUserId) {
-                                console.log('✅ [REPORTE VIDEO] reporterUserId obtenido desde API:', reporterUserId);
-                                
-                                // Actualizar loggedInUser en localStorage para futuras veces
                                 loggedInUser.user_id = reporterUserId;
                                 loggedInUser.id = reporterUserId;
                                 localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                                console.log('✅ [REPORTE VIDEO] loggedInUser actualizado en localStorage');
-                            } else {
-                                console.error('❌ [REPORTE VIDEO] reporterProfile.data existe pero no tiene user_id ni id');
-                                console.error('❌ [REPORTE VIDEO] reporterProfile.data completo:', JSON.stringify(reporterProfile.data, null, 2));
                             }
                         } else {
-                            console.error('❌ [REPORTE VIDEO] API no devolvió success o data');
-                            console.error('❌ [REPORTE VIDEO] reporterProfile completo:', JSON.stringify(reporterProfile, null, 2));
-                            
-                            // Intentar obtener el ID directamente del username usando una consulta alternativa
-                            console.log('🔄 [REPORTE VIDEO] Intentando método alternativo...');
-                            // Esto se manejará en el backend, pero podemos mostrar un mensaje más claro
+                            console.error('❌ [REPORTE VIDEO] API no devolvió success:', reporterProfile);
                         }
                     } catch (apiError) {
                         console.error('❌ [REPORTE VIDEO] Error al obtener perfil del reporter:', apiError);
-                        console.error('❌ [REPORTE VIDEO] Stack trace:', apiError.stack);
                     }
                 }
                 

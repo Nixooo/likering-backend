@@ -104,34 +104,10 @@ app.post('/api/login', async (req, res) => {
             return res.json({ success: false, message: 'Usuario o contraseña incorrectos' });
         }
 
-        // Asegurar que tenemos el ID del usuario
-        let userId = user.user_id || user.id;
-        
-        // Si no hay ID, intentar obtenerlo directamente de la BD
-        if (!userId) {
-            try {
-                const idResult = await pool.query(
-                    'SELECT id, user_id FROM users WHERE username = $1',
-                    [username]
-                );
-                
-                if (idResult.rows.length > 0) {
-                    userId = idResult.rows[0].id || idResult.rows[0].user_id;
-                }
-            } catch (err) {
-                console.error('❌ [LOGIN] Error al obtener id:', err);
-            }
-        }
-        
-        if (!userId) {
-            console.error('❌ [LOGIN] ERROR: No se pudo obtener el ID del usuario:', username);
-            return res.json({ success: false, message: 'Error: No se pudo obtener el ID del usuario' });
-        }
-
         // Retornar datos del usuario (sin password)
         const userData = {
-            user_id: userId,
-            id: userId, // También incluir como 'id' para compatibilidad
+            user_id: user.user_id || user.id,
+            id: user.user_id || user.id, // También incluir como 'id' para compatibilidad
             username: user.username,
             imageUrl: user.image_url,
             plan: user.plan || 'azul',
@@ -140,12 +116,6 @@ app.post('/api/login', async (req, res) => {
             likesGanados: user.likes_ganados || 0,
             dineroGanado: parseFloat(user.dinero_ganado) || 0
         };
-
-        console.log('✅ [LOGIN] Usuario autenticado:', {
-            username: userData.username,
-            user_id: userData.user_id,
-            id: userData.id
-        });
 
         res.json({ success: true, data: userData });
     } catch (error) {
@@ -248,26 +218,6 @@ app.get('/api/user/profile', async (req, res) => {
             return res.json({ success: false, message: 'Usuario no encontrado' });
         }
 
-        // Obtener el ID del usuario ANTES de obtener estadísticas
-        // Esto asegura que siempre tengamos el ID, incluso si getUserByUsername no lo devuelve correctamente
-        let userIdFromDB = userData.id || userData.user_id;
-        
-        // Si no hay ID, obtenerlo directamente de la BD
-        if (!userIdFromDB) {
-            try {
-                const directIdResult = await pool.query(
-                    'SELECT id FROM users WHERE username = $1',
-                    [user]
-                );
-                if (directIdResult.rows.length > 0) {
-                    userIdFromDB = directIdResult.rows[0].id;
-                    console.log('✅ [GET PROFILE] ID obtenido directamente al inicio:', userIdFromDB);
-                }
-            } catch (err) {
-                console.error('❌ [GET PROFILE] Error al obtener ID al inicio:', err);
-            }
-        }
-
         // Obtener estadísticas
         const videosResult = await pool.query(
             'SELECT COUNT(*) as count FROM videos WHERE username = $1',
@@ -294,98 +244,39 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
-        // IMPORTANTE: Obtener el ID del usuario de forma robusta
-        // Primero intentar desde userData o desde la consulta directa que hicimos antes
-        let finalUserId = userIdFromDB || userData.id || userData.user_id;
+        // IMPORTANTE: La tabla users usa 'id', NO 'user_id'
+        // Normalizar: obtener id (campo real) y crear user_id (para compatibilidad)
+        const userId = userData.id || userData.user_id;
         
         console.log('🔍 [GET PROFILE] userData después de getUserByUsername:', {
             username: userData.username,
             id: userData.id,
             user_id: userData.user_id,
             hasId: !!userData.id,
-            hasUser_id: !!userData.user_id,
-            allKeys: Object.keys(userData),
-            userDataRaw: JSON.stringify(userData)
+            hasUser_id: !!userData.user_id
         });
 
-        // Si no hay ID, intentar obtenerlo directamente de la BD con múltiples métodos
-        if (!finalUserId || finalUserId === null || finalUserId === undefined) {
-            console.log('⚠️ [GET PROFILE] No se encontró ID en userData, buscando en BD...');
+        let finalUserId = userId;
+        if (!finalUserId) {
+            // Si no hay ID, intentar obtenerlo directamente (no debería pasar)
             try {
-                // Método 1: Intentar con 'id' primero
-                let idResult = await pool.query(
+                const idResult = await pool.query(
                     'SELECT id FROM users WHERE username = $1',
                     [user]
                 );
-                
-                if (idResult.rows.length > 0 && idResult.rows[0].id) {
+                if (idResult.rows.length > 0) {
                     finalUserId = idResult.rows[0].id;
-                    console.log('✅ [GET PROFILE] id obtenido directamente de BD (campo id):', finalUserId);
-                } else {
-                    // Método 2: Intentar con 'user_id'
-                    idResult = await pool.query(
-                        'SELECT user_id FROM users WHERE username = $1',
-                        [user]
-                    );
-                    
-                    if (idResult.rows.length > 0 && idResult.rows[0].user_id) {
-                        finalUserId = idResult.rows[0].user_id;
-                        console.log('✅ [GET PROFILE] id obtenido directamente de BD (campo user_id):', finalUserId);
-                    } else {
-                        // Método 3: Obtener todas las columnas y buscar cualquier campo que parezca un ID
-                        const allColumnsResult = await pool.query(
-                            'SELECT * FROM users WHERE username = $1',
-                            [user]
-                        );
-                        
-                        if (allColumnsResult.rows.length > 0) {
-                            const row = allColumnsResult.rows[0];
-                            console.log('🔍 [GET PROFILE] Todas las columnas del usuario:', Object.keys(row));
-                            
-                            // Buscar cualquier campo que termine en 'id' o sea 'id'
-                            for (const [key, value] of Object.entries(row)) {
-                                const keyLower = key.toLowerCase();
-                                if ((keyLower === 'id' || keyLower === 'user_id') && (value !== null && value !== undefined)) {
-                                    finalUserId = value;
-                                    console.log(`✅ [GET PROFILE] id encontrado en campo '${key}':`, finalUserId);
-                                    break;
-                                }
-                            }
-                            
-                            // Si aún no se encontró, buscar cualquier campo numérico que parezca un ID
-                            if (!finalUserId) {
-                                for (const [key, value] of Object.entries(row)) {
-                                    if (typeof value === 'number' && value > 0) {
-                                        finalUserId = value;
-                                        console.log(`✅ [GET PROFILE] ID numérico encontrado en campo '${key}':`, finalUserId);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    console.log('🔍 [GET PROFILE] id obtenido directamente de BD:', finalUserId);
                 }
             } catch (err) {
                 console.error('❌ [GET PROFILE] Error al obtener id:', err);
-                console.error('❌ [GET PROFILE] Error stack:', err.stack);
             }
         }
         
-        // Validación final: si aún no hay ID, devolver error
-        if (!finalUserId || finalUserId === null || finalUserId === undefined) {
-            console.error('❌ [GET PROFILE] ERROR CRÍTICO: No se pudo obtener el ID del usuario:', user);
-            console.error('❌ [GET PROFILE] userData completo:', JSON.stringify(userData, null, 2));
-            return res.json({ 
-                success: false, 
-                message: 'Error: No se pudo obtener el ID del usuario. Contacta al administrador.' 
-            });
+        if (!finalUserId) {
+            console.error('❌ [GET PROFILE] ERROR: No se pudo obtener el ID del usuario:', user);
         }
-        
-        console.log('✅ [GET PROFILE] finalUserId confirmado:', finalUserId, 'tipo:', typeof finalUserId);
 
-        // Asegurar que finalUserId sea un número válido
-        finalUserId = parseInt(finalUserId) || finalUserId;
-        
         const responseData = {
             user_id: finalUserId,
             id: finalUserId, // También incluir como 'id' para compatibilidad
@@ -398,24 +289,8 @@ app.get('/api/user/profile', async (req, res) => {
             posts: postsCount
         };
 
-        // Validación final antes de enviar
-        if (!responseData.user_id || responseData.user_id === null || responseData.user_id === undefined) {
-            console.error('❌ [GET PROFILE] ERROR: responseData no tiene user_id antes de enviar');
-            return res.json({ 
-                success: false, 
-                message: 'Error: No se pudo obtener el ID del usuario. Contacta al administrador.' 
-            });
-        }
-
         console.log('✅ [GET PROFILE] Enviando respuesta:', {
-            user_id: responseData.user_id,
-            id: responseData.id,
-            username: responseData.username,
-            plan: responseData.plan,
-            followers: responseData.followers,
-            following: responseData.following,
-            likes: responseData.likes,
-            posts: responseData.posts,
+            ...responseData,
             imageUrl: '[oculto]'
         });
 
@@ -1430,6 +1305,7 @@ app.post('/api/public/reports', async (req, res) => {
             id_usuario_reportado,
             id_video_reportado,
             id_usuario_reporter,
+            username_reporter,
             motivo: motivo ? motivo.substring(0, 50) + '...' : null
         });
 
@@ -1438,6 +1314,13 @@ app.post('/api/public/reports', async (req, res) => {
             return res.json({ 
                 success: false, 
                 error: 'Faltan campos requeridos: tipo_reporte y motivo son obligatorios' 
+            });
+        }
+
+        if (tipo_reporte !== 'usuario' && tipo_reporte !== 'video') {
+            return res.json({ 
+                success: false, 
+                error: 'tipo_reporte debe ser "usuario" o "video"' 
             });
         }
 
@@ -1472,13 +1355,6 @@ app.post('/api/public/reports', async (req, res) => {
             });
         }
 
-        if (tipo_reporte !== 'usuario' && tipo_reporte !== 'video') {
-            return res.json({ 
-                success: false, 
-                error: 'tipo_reporte debe ser "usuario" o "video"' 
-            });
-        }
-
         // Validar que el tipo de reporte coincida con los IDs proporcionados
         if (tipo_reporte === 'usuario' && !id_usuario_reportado) {
             return res.json({ 
@@ -1510,7 +1386,7 @@ app.post('/api/public/reports', async (req, res) => {
                     });
                 }
 
-                // Obtener el user_id del video (puede ser user_id o id dependiendo de la estructura)
+                // Obtener el user_id del video
                 const videoUserId = videoResult.rows[0].user_id;
                 if (videoUserId) {
                     finalIdUsuarioReportado = videoUserId;
@@ -1556,7 +1432,6 @@ app.post('/api/public/reports', async (req, res) => {
         }
 
         // Insertar el reporte en la base de datos
-        // La tabla tiene valores por defecto para estado ('pendiente') y prioridad ('media')
         const result = await pool.query(
             `INSERT INTO reportes (
                 tipo_reporte, 
