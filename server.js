@@ -104,10 +104,34 @@ app.post('/api/login', async (req, res) => {
             return res.json({ success: false, message: 'Usuario o contraseña incorrectos' });
         }
 
+        // Asegurar que tenemos el ID del usuario
+        let userId = user.user_id || user.id;
+        
+        // Si no hay ID, intentar obtenerlo directamente de la BD
+        if (!userId) {
+            try {
+                const idResult = await pool.query(
+                    'SELECT id, user_id FROM users WHERE username = $1',
+                    [username]
+                );
+                
+                if (idResult.rows.length > 0) {
+                    userId = idResult.rows[0].id || idResult.rows[0].user_id;
+                }
+            } catch (err) {
+                console.error('❌ [LOGIN] Error al obtener id:', err);
+            }
+        }
+        
+        if (!userId) {
+            console.error('❌ [LOGIN] ERROR: No se pudo obtener el ID del usuario:', username);
+            return res.json({ success: false, message: 'Error: No se pudo obtener el ID del usuario' });
+        }
+
         // Retornar datos del usuario (sin password)
         const userData = {
-            user_id: user.user_id || user.id,
-            id: user.user_id || user.id, // También incluir como 'id' para compatibilidad
+            user_id: userId,
+            id: userId, // También incluir como 'id' para compatibilidad
             username: user.username,
             imageUrl: user.image_url,
             plan: user.plan || 'azul',
@@ -116,6 +140,12 @@ app.post('/api/login', async (req, res) => {
             likesGanados: user.likes_ganados || 0,
             dineroGanado: parseFloat(user.dinero_ganado) || 0
         };
+
+        console.log('✅ [LOGIN] Usuario autenticado:', {
+            username: userData.username,
+            user_id: userData.user_id,
+            id: userData.id
+        });
 
         res.json({ success: true, data: userData });
     } catch (error) {
@@ -246,27 +276,58 @@ app.get('/api/user/profile', async (req, res) => {
 
         // IMPORTANTE: La tabla users usa 'id', NO 'user_id'
         // Normalizar: obtener id (campo real) y crear user_id (para compatibilidad)
-        const userId = userData.id || userData.user_id;
+        let finalUserId = userData.id || userData.user_id;
         
         console.log('🔍 [GET PROFILE] userData después de getUserByUsername:', {
             username: userData.username,
             id: userData.id,
             user_id: userData.user_id,
             hasId: !!userData.id,
-            hasUser_id: !!userData.user_id
+            hasUser_id: !!userData.user_id,
+            allKeys: Object.keys(userData)
         });
 
-        let finalUserId = userId;
+        // Si no hay ID, intentar obtenerlo directamente de la BD
         if (!finalUserId) {
-            // Si no hay ID, intentar obtenerlo directamente (no debería pasar)
             try {
-                const idResult = await pool.query(
+                // Intentar con 'id' primero
+                let idResult = await pool.query(
                     'SELECT id FROM users WHERE username = $1',
                     [user]
                 );
-                if (idResult.rows.length > 0) {
+                
+                if (idResult.rows.length > 0 && idResult.rows[0].id) {
                     finalUserId = idResult.rows[0].id;
-                    console.log('🔍 [GET PROFILE] id obtenido directamente de BD:', finalUserId);
+                    console.log('✅ [GET PROFILE] id obtenido directamente de BD (campo id):', finalUserId);
+                } else {
+                    // Si no funciona, intentar con 'user_id'
+                    idResult = await pool.query(
+                        'SELECT user_id FROM users WHERE username = $1',
+                        [user]
+                    );
+                    
+                    if (idResult.rows.length > 0 && idResult.rows[0].user_id) {
+                        finalUserId = idResult.rows[0].user_id;
+                        console.log('✅ [GET PROFILE] id obtenido directamente de BD (campo user_id):', finalUserId);
+                    } else {
+                        // Último recurso: obtener todas las columnas y buscar cualquier campo que parezca un ID
+                        const allColumnsResult = await pool.query(
+                            'SELECT * FROM users WHERE username = $1',
+                            [user]
+                        );
+                        
+                        if (allColumnsResult.rows.length > 0) {
+                            const row = allColumnsResult.rows[0];
+                            // Buscar cualquier campo que termine en 'id' o sea 'id'
+                            for (const [key, value] of Object.entries(row)) {
+                                if ((key.toLowerCase() === 'id' || key.toLowerCase() === 'user_id') && value) {
+                                    finalUserId = value;
+                                    console.log(`✅ [GET PROFILE] id encontrado en campo '${key}':`, finalUserId);
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (err) {
                 console.error('❌ [GET PROFILE] Error al obtener id:', err);
@@ -274,8 +335,15 @@ app.get('/api/user/profile', async (req, res) => {
         }
         
         if (!finalUserId) {
-            console.error('❌ [GET PROFILE] ERROR: No se pudo obtener el ID del usuario:', user);
+            console.error('❌ [GET PROFILE] ERROR CRÍTICO: No se pudo obtener el ID del usuario:', user);
+            console.error('❌ [GET PROFILE] userData completo:', JSON.stringify(userData, null, 2));
+            return res.json({ 
+                success: false, 
+                message: 'Error: No se pudo obtener el ID del usuario. Contacta al administrador.' 
+            });
         }
+        
+        console.log('✅ [GET PROFILE] finalUserId confirmado:', finalUserId);
 
         const responseData = {
             user_id: finalUserId,

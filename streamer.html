@@ -950,21 +950,30 @@
                         try {
                             console.log('🔍 [REPORTE USUARIO] Obteniendo user_id desde API para reporter:', loggedInUser.username);
                             const reporterProfile = await API.getUserProfile(loggedInUser.username);
-                            console.log('🔍 [REPORTE USUARIO] Respuesta de API para reporter:', reporterProfile);
+                            console.log('🔍 [REPORTE USUARIO] Respuesta de API completa:', JSON.stringify(reporterProfile, null, 2));
                             
-                            if (reporterProfile.success && reporterProfile.data) {
+                            if (reporterProfile && reporterProfile.success && reporterProfile.data) {
                                 reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
-                                console.log('🔍 [REPORTE USUARIO] reporterUserId desde API:', reporterUserId);
                                 
-                                // Actualizar loggedInUser en localStorage para futuras veces
                                 if (reporterUserId) {
+                                    console.log('✅ [REPORTE USUARIO] reporterUserId obtenido desde API:', reporterUserId);
+                                    
+                                    // Actualizar loggedInUser en localStorage para futuras veces
                                     loggedInUser.user_id = reporterUserId;
                                     loggedInUser.id = reporterUserId;
                                     localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                                    console.log('✅ [REPORTE USUARIO] loggedInUser actualizado en localStorage');
+                                } else {
+                                    console.error('❌ [REPORTE USUARIO] reporterProfile.data existe pero no tiene user_id ni id');
+                                    console.error('❌ [REPORTE USUARIO] reporterProfile.data completo:', JSON.stringify(reporterProfile.data, null, 2));
                                 }
+                            } else {
+                                console.error('❌ [REPORTE USUARIO] API no devolvió success o data');
+                                console.error('❌ [REPORTE USUARIO] reporterProfile completo:', JSON.stringify(reporterProfile, null, 2));
                             }
                         } catch (apiError) {
                             console.error('❌ [REPORTE USUARIO] Error al obtener perfil del reporter:', apiError);
+                            console.error('❌ [REPORTE USUARIO] Stack trace:', apiError.stack);
                         }
                     }
                     
