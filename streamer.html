@@ -905,12 +905,16 @@
                         try {
                             console.log('🔍 [REPORTE USUARIO] Obteniendo user_id desde API para:', currentUser.username);
                             const userProfile = await API.getUserProfile(currentUser.username);
-                            console.log('🔍 [REPORTE USUARIO] Respuesta de API para usuario reportado:', userProfile);
+                            console.log('🔍 [REPORTE USUARIO] Respuesta de API completa:', JSON.stringify(userProfile, null, 2));
+                            console.log('🔍 [REPORTE USUARIO] userProfile.success:', userProfile.success);
+                            console.log('🔍 [REPORTE USUARIO] userProfile.data:', userProfile.data);
                             
                             if (!userProfile.success) {
                                 throw new Error('No se pudo obtener la información del usuario desde la API.');
                             }
                             // El user_id puede estar en data.user_id o data.id
+                            console.log('🔍 [REPORTE USUARIO] userProfile.data.user_id:', userProfile.data?.user_id);
+                            console.log('🔍 [REPORTE USUARIO] userProfile.data.id:', userProfile.data?.id);
                             reportedUserId = userProfile.data?.user_id || userProfile.data?.id || null;
                             console.log('🔍 [REPORTE USUARIO] reportedUserId desde API:', reportedUserId);
                             

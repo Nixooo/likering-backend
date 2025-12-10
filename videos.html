@@ -2055,9 +2055,13 @@
                     try {
                         console.log('🔍 [REPORTE VIDEO] Obteniendo user_id desde API para:', loggedInUser.username);
                         const reporterProfile = await API.getUserProfile(loggedInUser.username);
-                        console.log('🔍 [REPORTE VIDEO] Respuesta de API:', reporterProfile);
+                        console.log('🔍 [REPORTE VIDEO] Respuesta de API completa:', JSON.stringify(reporterProfile, null, 2));
+                        console.log('🔍 [REPORTE VIDEO] reporterProfile.success:', reporterProfile.success);
+                        console.log('🔍 [REPORTE VIDEO] reporterProfile.data:', reporterProfile.data);
                         
                         if (reporterProfile.success && reporterProfile.data) {
+                            console.log('🔍 [REPORTE VIDEO] reporterProfile.data.user_id:', reporterProfile.data.user_id);
+                            console.log('🔍 [REPORTE VIDEO] reporterProfile.data.id:', reporterProfile.data.id);
                             reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
                             console.log('🔍 [REPORTE VIDEO] reporterUserId desde API:', reporterUserId);
                             
