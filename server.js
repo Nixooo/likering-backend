@@ -96,9 +96,12 @@ app.post('/api/login', async (req, res) => {
 
         // Retornar datos del usuario (sin password)
         const userData = {
+            user_id: user.user_id || user.id,
+            id: user.user_id || user.id, // También incluir como 'id' para compatibilidad
             username: user.username,
             imageUrl: user.image_url,
             plan: user.plan || 'azul',
+            estado: user.estado || 'Activo', // Incluir estado para validación
             likesDisponibles: user.likes_disponibles || 0,
             likesGanados: user.likes_ganados || 0,
             dineroGanado: parseFloat(user.dinero_ganado) || 0
@@ -153,9 +156,12 @@ app.post('/api/register', async (req, res) => {
         console.log('✅ Usuario registrado exitosamente:', username);
 
         const userData = {
+            user_id: newUser.user_id || newUser.id,
+            id: newUser.user_id || newUser.id, // También incluir como 'id' para compatibilidad
             username: newUser.username,
             imageUrl: newUser.image_url,
             plan: newUser.plan || 'azul',
+            estado: newUser.estado || 'Activo', // Incluir estado
             likesDisponibles: 0,
             likesGanados: 0,
             dineroGanado: 0
@@ -231,6 +237,8 @@ app.get('/api/user/profile', async (req, res) => {
         res.json({
             success: true,
             data: {
+                user_id: userData.user_id || userData.id,
+                id: userData.user_id || userData.id, // También incluir como 'id' para compatibilidad
                 username: userData.username,
                 imageUrl: userData.image_url,
                 plan: userData.plan || 'azul',
