@@ -1254,6 +1254,7 @@ app.post('/api/messages/mark-read', async (req, res) => {
 
 // Endpoint público para crear reportes
 app.post('/api/public/reports', async (req, res) => {
+    console.log('📝 Reporte recibido:', req.body);
     try {
         const { tipo_reporte, id_video_reportado, username_reporter, username_reportado, motivo, descripcion } = req.body;
 
@@ -1343,5 +1344,6 @@ app.get('/api/health', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
     console.log(`📊 Base de datos: PostgreSQL (Aiven)`);
+    console.log(`📝 Endpoint de reportes disponible: POST /api/public/reports`);
 });
 
