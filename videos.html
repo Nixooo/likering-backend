@@ -2044,24 +2044,43 @@
                     throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
                 }
                 
+                console.log('🔍 [REPORTE VIDEO] loggedInUser:', loggedInUser);
+                
                 // Obtener user_id del usuario que reporta desde la API usando el username
                 let reporterUserId = loggedInUser.user_id || loggedInUser.id;
+                console.log('🔍 [REPORTE VIDEO] reporterUserId desde localStorage:', reporterUserId);
                 
                 if (!reporterUserId) {
                     // Si no está en loggedInUser, obtenerlo de la API
                     try {
+                        console.log('🔍 [REPORTE VIDEO] Obteniendo user_id desde API para:', loggedInUser.username);
                         const reporterProfile = await API.getUserProfile(loggedInUser.username);
+                        console.log('🔍 [REPORTE VIDEO] Respuesta de API:', reporterProfile);
+                        
                         if (reporterProfile.success && reporterProfile.data) {
                             reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
+                            console.log('🔍 [REPORTE VIDEO] reporterUserId desde API:', reporterUserId);
+                            
+                            // Actualizar loggedInUser en localStorage para futuras veces
+                            if (reporterUserId) {
+                                loggedInUser.user_id = reporterUserId;
+                                loggedInUser.id = reporterUserId;
+                                localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                            }
+                        } else {
+                            console.error('❌ [REPORTE VIDEO] API no devolvió success:', reporterProfile);
                         }
                     } catch (apiError) {
-                        console.error('Error al obtener perfil del reporter:', apiError);
+                        console.error('❌ [REPORTE VIDEO] Error al obtener perfil del reporter:', apiError);
                     }
                 }
                 
                 if (!reporterUserId) {
-                    throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
+                    console.error('❌ [REPORTE VIDEO] No se pudo obtener reporterUserId. loggedInUser completo:', loggedInUser);
+                    throw new Error('No se pudo obtener tu información de usuario. Por favor, cierra sesión e inicia sesión nuevamente.');
                 }
+                
+                console.log('✅ [REPORTE VIDEO] reporterUserId final:', reporterUserId);
                 
                 const reportData = {
                     tipo_reporte: 'video',
