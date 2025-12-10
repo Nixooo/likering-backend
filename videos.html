@@ -2039,67 +2039,21 @@
             submitReportVideoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             
             try {
-                // Validar que loggedInUser existe
-                if (!loggedInUser || !loggedInUser.username) {
-                    throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
-                }
-                
-                console.log('🔍 [REPORTE VIDEO] loggedInUser:', loggedInUser);
-                
-                // Obtener user_id del usuario que reporta desde la API usando el username
-                let reporterUserId = loggedInUser.user_id || loggedInUser.id;
-                console.log('🔍 [REPORTE VIDEO] reporterUserId desde localStorage:', reporterUserId);
+                // Obtener user_id del usuario que reporta
+                const reporterUserId = loggedInUser.user_id || loggedInUser.id;
                 
                 if (!reporterUserId) {
-                    // Si no está en loggedInUser, obtenerlo de la API
-                    try {
-                        console.log('🔍 [REPORTE VIDEO] Obteniendo user_id desde API para:', loggedInUser.username);
-                        const reporterProfile = await API.getUserProfile(loggedInUser.username);
-                        console.log('🔍 [REPORTE VIDEO] Respuesta de API completa:', JSON.stringify(reporterProfile, null, 2));
-                        console.log('🔍 [REPORTE VIDEO] reporterProfile.success:', reporterProfile.success);
-                        console.log('🔍 [REPORTE VIDEO] reporterProfile.data:', reporterProfile.data);
-                        
-                        if (reporterProfile.success && reporterProfile.data) {
-                            console.log('🔍 [REPORTE VIDEO] reporterProfile.data.user_id:', reporterProfile.data.user_id);
-                            console.log('🔍 [REPORTE VIDEO] reporterProfile.data.id:', reporterProfile.data.id);
-                            reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
-                            console.log('🔍 [REPORTE VIDEO] reporterUserId desde API:', reporterUserId);
-                            
-                            // Actualizar loggedInUser en localStorage para futuras veces
-                            if (reporterUserId) {
-                                loggedInUser.user_id = reporterUserId;
-                                loggedInUser.id = reporterUserId;
-                                localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                            }
-                        } else {
-                            console.error('❌ [REPORTE VIDEO] API no devolvió success:', reporterProfile);
-                        }
-                    } catch (apiError) {
-                        console.error('❌ [REPORTE VIDEO] Error al obtener perfil del reporter:', apiError);
-                    }
+                    throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
                 }
                 
-                // Si no se pudo obtener el user_id, usar el username como alternativa
-                // El backend puede obtener el ID desde el username
                 const reportData = {
                     tipo_reporte: 'video',
                     id_video_reportado: currentVideoData.videoId,
+                    id_usuario_reporter: reporterUserId,
                     id_usuario_reportado: null, // El backend lo obtendrá del video automáticamente
                     motivo: reason,
                     descripcion: description || null
                 };
-
-                // Agregar id_usuario_reporter si está disponible, sino usar username_reporter
-                if (reporterUserId) {
-                    reportData.id_usuario_reporter = reporterUserId;
-                    console.log('✅ [REPORTE VIDEO] Enviando reporte con id_usuario_reporter:', reporterUserId);
-                } else if (loggedInUser && loggedInUser.username) {
-                    reportData.username_reporter = loggedInUser.username;
-                    console.log('⚠️ [REPORTE VIDEO] No se pudo obtener user_id, usando username_reporter:', loggedInUser.username);
-                } else {
-                    console.error('❌ [REPORTE VIDEO] No se pudo obtener reporterUserId ni username. loggedInUser completo:', loggedInUser);
-                    throw new Error('No se pudo obtener tu información de usuario. Por favor, cierra sesión e inicia sesión nuevamente.');
-                }
                 
                 // Usar la URL base de config.js
                 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

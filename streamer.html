@@ -609,28 +609,15 @@
         async function fetchUserProfile(username) {
             try {
                 const result = await API.getUserProfile(username);
-                console.log('🔍 [FETCH PROFILE] Respuesta de API.getUserProfile:', result);
                 
                 if (result.success) {
                     currentUser = result.data;
-                    console.log('🔍 [FETCH PROFILE] currentUser guardado:', currentUser);
-                    
-                    // Asegurar que user_id esté disponible
-                    if (currentUser.user_id || currentUser.id) {
-                        const userId = currentUser.user_id || currentUser.id;
-                        currentUser.user_id = userId;
-                        currentUser.id = userId;
-                        console.log('✅ [FETCH PROFILE] user_id disponible en currentUser:', userId);
-                    } else {
-                        console.warn('⚠️ [FETCH PROFILE] user_id NO está disponible en la respuesta');
-                    }
-                    
                     displayProfileData(result.data);
                 } else {
                     throw new Error(result.message || 'Error al obtener datos del perfil.');
                 }
             } catch (error) {
-                console.error("❌ [FETCH PROFILE] Error fetching profile:", error);
+                console.error("Error fetching profile:", error);
                 document.getElementById('profile-username').textContent = 'Error al cargar';
             }
         }
@@ -889,105 +876,40 @@
                 
                 try {
                     // Validar que currentUser existe
-                    if (!currentUser || !currentUser.username) {
+                    if (!currentUser) {
                         throw new Error('No se pudo obtener la información del usuario reportado.');
                     }
                     
-                    console.log('🔍 [REPORTE USUARIO] currentUser:', currentUser);
-                    console.log('🔍 [REPORTE USUARIO] loggedInUser:', loggedInUser);
-                    
                     // Obtener user_id del usuario reportado - puede estar en currentUser directamente o necesitamos obtenerlo
                     let reportedUserId = currentUser.user_id || currentUser.id;
-                    console.log('🔍 [REPORTE USUARIO] reportedUserId desde currentUser:', reportedUserId);
                     
                     // Si no está en currentUser, intentar obtenerlo de la API
                     if (!reportedUserId) {
-                        try {
-                            console.log('🔍 [REPORTE USUARIO] Obteniendo user_id desde API para:', currentUser.username);
-                            const userProfile = await API.getUserProfile(currentUser.username);
-                            console.log('🔍 [REPORTE USUARIO] Respuesta de API completa:', JSON.stringify(userProfile, null, 2));
-                            console.log('🔍 [REPORTE USUARIO] userProfile.success:', userProfile.success);
-                            console.log('🔍 [REPORTE USUARIO] userProfile.data:', userProfile.data);
-                            
-                            if (!userProfile.success) {
-                                throw new Error('No se pudo obtener la información del usuario desde la API.');
-                            }
-                            // El user_id puede estar en data.user_id o data.id
-                            console.log('🔍 [REPORTE USUARIO] userProfile.data.user_id:', userProfile.data?.user_id);
-                            console.log('🔍 [REPORTE USUARIO] userProfile.data.id:', userProfile.data?.id);
-                            reportedUserId = userProfile.data?.user_id || userProfile.data?.id || null;
-                            console.log('🔍 [REPORTE USUARIO] reportedUserId desde API:', reportedUserId);
-                            
-                            // Actualizar currentUser para futuras veces
-                            if (reportedUserId) {
-                                currentUser.user_id = reportedUserId;
-                                currentUser.id = reportedUserId;
-                            }
-                        } catch (apiError) {
-                            console.error('❌ [REPORTE USUARIO] Error al obtener perfil del usuario reportado:', apiError);
-                            throw new Error('No se pudo obtener la información del usuario reportado.');
+                        const userProfile = await API.getUserProfile(currentUser.username);
+                        if (!userProfile.success) {
+                            throw new Error('No se pudo obtener la información del usuario.');
                         }
+                        // El user_id puede estar en data.user_id o data.id
+                        reportedUserId = userProfile.data?.user_id || userProfile.data?.id || null;
                     }
                     
                     if (!reportedUserId) {
-                        console.error('❌ [REPORTE USUARIO] No se pudo obtener reportedUserId. currentUser completo:', currentUser);
-                        throw new Error('No se pudo obtener el ID del usuario reportado. Por favor, recarga la página.');
-                    }
-                    
-                    console.log('✅ [REPORTE USUARIO] reportedUserId final:', reportedUserId);
-                    
-                    // Validar que loggedInUser existe
-                    if (!loggedInUser || !loggedInUser.username) {
-                        throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
+                        throw new Error('No se pudo obtener el ID del usuario reportado.');
                     }
                     
                     // Obtener user_id del usuario que reporta
-                    let reporterUserId = loggedInUser.user_id || loggedInUser.id;
-                    console.log('🔍 [REPORTE USUARIO] reporterUserId desde localStorage:', reporterUserId);
-                    
-                    // Si no está en loggedInUser, obtenerlo de la API
+                    const reporterUserId = loggedInUser.user_id || loggedInUser.id;
                     if (!reporterUserId) {
-                        try {
-                            console.log('🔍 [REPORTE USUARIO] Obteniendo user_id desde API para reporter:', loggedInUser.username);
-                            const reporterProfile = await API.getUserProfile(loggedInUser.username);
-                            console.log('🔍 [REPORTE USUARIO] Respuesta de API para reporter:', reporterProfile);
-                            
-                            if (reporterProfile.success && reporterProfile.data) {
-                                reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
-                                console.log('🔍 [REPORTE USUARIO] reporterUserId desde API:', reporterUserId);
-                                
-                                // Actualizar loggedInUser en localStorage para futuras veces
-                                if (reporterUserId) {
-                                    loggedInUser.user_id = reporterUserId;
-                                    loggedInUser.id = reporterUserId;
-                                    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                                }
-                            }
-                        } catch (apiError) {
-                            console.error('❌ [REPORTE USUARIO] Error al obtener perfil del reporter:', apiError);
-                        }
+                        throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
                     }
                     
-                    // Si no se pudo obtener el user_id, usar el username como alternativa
-                    // El backend puede obtener el ID desde el username
                     const reportData = {
                         tipo_reporte: 'usuario',
                         id_usuario_reportado: reportedUserId,
+                        id_usuario_reporter: reporterUserId,
                         motivo: reason,
                         descripcion: description || null
                     };
-
-                    // Agregar id_usuario_reporter si está disponible, sino usar username_reporter
-                    if (reporterUserId) {
-                        reportData.id_usuario_reporter = reporterUserId;
-                        console.log('✅ [REPORTE USUARIO] Enviando reporte con id_usuario_reporter:', reporterUserId);
-                    } else if (loggedInUser && loggedInUser.username) {
-                        reportData.username_reporter = loggedInUser.username;
-                        console.log('⚠️ [REPORTE USUARIO] No se pudo obtener user_id, usando username_reporter:', loggedInUser.username);
-                    } else {
-                        console.error('❌ [REPORTE USUARIO] No se pudo obtener reporterUserId ni username. loggedInUser completo:', loggedInUser);
-                        throw new Error('No se pudo obtener tu información de usuario. Por favor, cierra sesión e inicia sesión nuevamente.');
-                    }
                     
                     // Usar la URL base de config.js
                     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';

@@ -60,19 +60,9 @@ async function getUserByUsername(username) {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     const user = result.rows[0];
     if (user) {
-        // IMPORTANTE: La tabla users tiene 'id', NO 'user_id'
-        // Normalizar: asegurar que siempre tenga ambos 'id' y 'user_id' para compatibilidad
-        // Primero verificar 'id' (que es lo que realmente existe en la BD)
-        if (user.id && !user.user_id) {
-            user.user_id = user.id;  // Normalizar id -> user_id
-        }
-        // Si por alguna razón existe user_id pero no id, también normalizar
-        if (user.user_id && !user.id) {
+        // Normalizar: asegurar que siempre tenga 'id' (usar user_id si id no existe)
+        if (!user.id && user.user_id) {
             user.id = user.user_id;
-        }
-        // Si no existe ninguno (no debería pasar), intentar obtener de cualquier forma
-        if (!user.user_id && !user.id) {
-            console.warn('⚠️ [getUserByUsername] Usuario sin ID:', username);
         }
     }
     return user;
@@ -106,12 +96,9 @@ app.post('/api/login', async (req, res) => {
 
         // Retornar datos del usuario (sin password)
         const userData = {
-            user_id: user.user_id || user.id,
-            id: user.user_id || user.id, // También incluir como 'id' para compatibilidad
             username: user.username,
             imageUrl: user.image_url,
             plan: user.plan || 'azul',
-            estado: user.estado || 'Activo', // Incluir estado para validación
             likesDisponibles: user.likes_disponibles || 0,
             likesGanados: user.likes_ganados || 0,
             dineroGanado: parseFloat(user.dinero_ganado) || 0
@@ -166,12 +153,9 @@ app.post('/api/register', async (req, res) => {
         console.log('✅ Usuario registrado exitosamente:', username);
 
         const userData = {
-            user_id: newUser.user_id || newUser.id,
-            id: newUser.user_id || newUser.id, // También incluir como 'id' para compatibilidad
             username: newUser.username,
             imageUrl: newUser.image_url,
             plan: newUser.plan || 'azul',
-            estado: newUser.estado || 'Activo', // Incluir estado
             likesDisponibles: 0,
             likesGanados: 0,
             dineroGanado: 0
@@ -244,59 +228,17 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
-        // IMPORTANTE: La tabla users usa 'id', NO 'user_id'
-        // Normalizar: obtener id (campo real) y crear user_id (para compatibilidad)
-        const userId = userData.id || userData.user_id;
-        
-        console.log('🔍 [GET PROFILE] userData después de getUserByUsername:', {
-            username: userData.username,
-            id: userData.id,
-            user_id: userData.user_id,
-            hasId: !!userData.id,
-            hasUser_id: !!userData.user_id
-        });
-
-        let finalUserId = userId;
-        if (!finalUserId) {
-            // Si no hay ID, intentar obtenerlo directamente (no debería pasar)
-            try {
-                const idResult = await pool.query(
-                    'SELECT id FROM users WHERE username = $1',
-                    [user]
-                );
-                if (idResult.rows.length > 0) {
-                    finalUserId = idResult.rows[0].id;
-                    console.log('🔍 [GET PROFILE] id obtenido directamente de BD:', finalUserId);
-                }
-            } catch (err) {
-                console.error('❌ [GET PROFILE] Error al obtener id:', err);
-            }
-        }
-        
-        if (!finalUserId) {
-            console.error('❌ [GET PROFILE] ERROR: No se pudo obtener el ID del usuario:', user);
-        }
-
-        const responseData = {
-            user_id: finalUserId,
-            id: finalUserId, // También incluir como 'id' para compatibilidad
-            username: userData.username,
-            imageUrl: userData.image_url,
-            plan: userData.plan || 'azul',
-            followers: followersCount,
-            following: followingCount,
-            likes: likesCount,
-            posts: postsCount
-        };
-
-        console.log('✅ [GET PROFILE] Enviando respuesta:', {
-            ...responseData,
-            imageUrl: '[oculto]'
-        });
-
         res.json({
             success: true,
-            data: responseData
+            data: {
+                username: userData.username,
+                imageUrl: userData.image_url,
+                plan: userData.plan || 'azul',
+                followers: followersCount,
+                following: followingCount,
+                likes: likesCount,
+                posts: postsCount
+            }
         });
     } catch (error) {
         console.error('Error al obtener perfil:', error);
@@ -1290,199 +1232,6 @@ app.post('/api/messages/mark-read', async (req, res) => {
     } catch (error) {
         console.error('Error al marcar como leído:', error);
         res.json({ success: false, message: 'Error al marcar como leído' });
-    }
-});
-
-// ==================== RUTAS DE REPORTES ====================
-
-// Crear reporte (público - no requiere autenticación)
-app.post('/api/public/reports', async (req, res) => {
-    try {
-        const { tipo_reporte, id_usuario_reportado, id_video_reportado, id_usuario_reporter, username_reporter, motivo, descripcion } = req.body;
-
-        console.log('📋 Intento de crear reporte:', {
-            tipo_reporte,
-            id_usuario_reportado,
-            id_video_reportado,
-            id_usuario_reporter,
-            username_reporter,
-            motivo: motivo ? motivo.substring(0, 50) + '...' : null
-        });
-
-        // Validaciones básicas
-        if (!tipo_reporte || !motivo) {
-            return res.json({ 
-                success: false, 
-                error: 'Faltan campos requeridos: tipo_reporte y motivo son obligatorios' 
-            });
-        }
-
-        if (tipo_reporte !== 'usuario' && tipo_reporte !== 'video') {
-            return res.json({ 
-                success: false, 
-                error: 'tipo_reporte debe ser "usuario" o "video"' 
-            });
-        }
-
-        // Si no se proporciona id_usuario_reporter, intentar obtenerlo desde username_reporter
-        let finalIdUsuarioReporter = id_usuario_reporter;
-        if (!finalIdUsuarioReporter && username_reporter) {
-            try {
-                const reporterUser = await getUserByUsername(username_reporter);
-                if (reporterUser) {
-                    finalIdUsuarioReporter = reporterUser.id || reporterUser.user_id;
-                    // Si aún no hay ID, intentar obtenerlo directamente de la BD
-                    if (!finalIdUsuarioReporter) {
-                        const idResult = await pool.query(
-                            'SELECT id FROM users WHERE username = $1',
-                            [username_reporter]
-                        );
-                        if (idResult.rows.length > 0) {
-                            finalIdUsuarioReporter = idResult.rows[0].id;
-                        }
-                    }
-                    console.log('✅ [REPORTE] id_usuario_reporter obtenido desde username:', finalIdUsuarioReporter);
-                }
-            } catch (err) {
-                console.error('❌ [REPORTE] Error al obtener ID desde username:', err);
-            }
-        }
-
-        if (!finalIdUsuarioReporter) {
-            return res.json({ 
-                success: false, 
-                error: 'Se requiere id_usuario_reporter o username_reporter' 
-            });
-        }
-
-        // Validar que el tipo de reporte coincida con los IDs proporcionados
-        if (tipo_reporte === 'usuario' && !id_usuario_reportado) {
-            return res.json({ 
-                success: false, 
-                error: 'id_usuario_reportado es requerido para reportes de usuario' 
-            });
-        }
-
-        if (tipo_reporte === 'video' && !id_video_reportado) {
-            return res.json({ 
-                success: false, 
-                error: 'id_video_reportado es requerido para reportes de video' 
-            });
-        }
-
-        // Si es un reporte de video, obtener el id_usuario_reportado del video
-        let finalIdUsuarioReportado = id_usuario_reportado;
-        if (tipo_reporte === 'video' && id_video_reportado) {
-            try {
-                const videoResult = await pool.query(
-                    'SELECT user_id, username FROM videos WHERE video_id = $1',
-                    [id_video_reportado]
-                );
-
-                if (videoResult.rows.length === 0) {
-                    return res.json({ 
-                        success: false, 
-                        error: 'Video no encontrado' 
-                    });
-                }
-
-                // Obtener el user_id del video
-                const videoUserId = videoResult.rows[0].user_id;
-                if (videoUserId) {
-                    finalIdUsuarioReportado = videoUserId;
-                } else {
-                    // Si no tiene user_id, intentar obtenerlo del username
-                    const videoUsername = videoResult.rows[0].username;
-                    if (videoUsername) {
-                        const userData = await getUserByUsername(videoUsername);
-                        if (userData) {
-                            finalIdUsuarioReportado = userData.id || userData.user_id;
-                        }
-                    }
-                }
-
-                console.log('📹 [REPORTE VIDEO] Usuario reportado obtenido del video:', finalIdUsuarioReportado);
-            } catch (videoError) {
-                console.error('❌ Error al obtener usuario del video:', videoError);
-                return res.json({ 
-                    success: false, 
-                    error: 'Error al obtener información del video reportado' 
-                });
-            }
-        }
-
-        // Validar que el usuario reporter existe
-        const reporterUser = await getUserById(finalIdUsuarioReporter);
-        if (!reporterUser) {
-            return res.json({ 
-                success: false, 
-                error: 'Usuario reporter no encontrado' 
-            });
-        }
-
-        // Validar que el usuario reportado existe (si se proporciona)
-        if (finalIdUsuarioReportado) {
-            const reportedUser = await getUserById(finalIdUsuarioReportado);
-            if (!reportedUser) {
-                return res.json({ 
-                    success: false, 
-                    error: 'Usuario reportado no encontrado' 
-                });
-            }
-        }
-
-        // Insertar el reporte en la base de datos
-        const result = await pool.query(
-            `INSERT INTO reportes (
-                tipo_reporte, 
-                id_usuario_reportado, 
-                id_video_reportado, 
-                id_usuario_reporter, 
-                motivo, 
-                descripcion
-            ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [
-                tipo_reporte,
-                finalIdUsuarioReportado || null,
-                id_video_reportado || null,
-                finalIdUsuarioReporter,
-                motivo,
-                descripcion || null
-            ]
-        );
-
-        const nuevoReporte = result.rows[0];
-        console.log('✅ Reporte creado exitosamente:', nuevoReporte.id);
-
-        res.json({ 
-            success: true, 
-            message: 'Reporte enviado correctamente. Los administradores lo revisarán pronto.',
-            data: {
-                id: nuevoReporte.id,
-                tipo_reporte: nuevoReporte.tipo_reporte,
-                estado: nuevoReporte.estado
-            }
-        });
-    } catch (error) {
-        console.error('❌ Error al crear reporte:', error);
-        console.error('❌ Detalles del error:', {
-            message: error.message,
-            code: error.code,
-            detail: error.detail,
-            constraint: error.constraint
-        });
-        
-        let errorMessage = 'Error al crear el reporte';
-        if (error.code === '23503') { // Foreign key violation
-            errorMessage = 'Error: Usuario o video no encontrado';
-        } else if (error.message) {
-            errorMessage = `Error: ${error.message}`;
-        }
-
-        res.json({ 
-            success: false, 
-            error: errorMessage 
-        });
     }
 });
 
