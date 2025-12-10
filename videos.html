@@ -2039,8 +2039,25 @@
             submitReportVideoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
             
             try {
-                // Obtener user_id del usuario que reporta
-                const reporterUserId = loggedInUser.user_id || loggedInUser.id;
+                // Validar que loggedInUser existe
+                if (!loggedInUser || !loggedInUser.username) {
+                    throw new Error('No estás autenticado. Por favor, inicia sesión nuevamente.');
+                }
+                
+                // Obtener user_id del usuario que reporta desde la API usando el username
+                let reporterUserId = loggedInUser.user_id || loggedInUser.id;
+                
+                if (!reporterUserId) {
+                    // Si no está en loggedInUser, obtenerlo de la API
+                    try {
+                        const reporterProfile = await API.getUserProfile(loggedInUser.username);
+                        if (reporterProfile.success && reporterProfile.data) {
+                            reporterUserId = reporterProfile.data.user_id || reporterProfile.data.id;
+                        }
+                    } catch (apiError) {
+                        console.error('Error al obtener perfil del reporter:', apiError);
+                    }
+                }
                 
                 if (!reporterUserId) {
                     throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
