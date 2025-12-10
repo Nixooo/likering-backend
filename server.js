@@ -1283,9 +1283,9 @@ app.post('/api/public/reports', async (req, res) => {
                 return res.json({ success: false, error: 'id_video_reportado es requerido para reportes de video' });
             }
 
-            // Buscar el video para obtener el username del propietario
+            // Buscar el video por video_id (UUID string) para obtener el id numérico y el username del propietario
             const videoResult = await pool.query(
-                'SELECT username FROM videos WHERE video_id = $1',
+                'SELECT id, username FROM videos WHERE video_id = $1',
                 [id_video_reportado]
             );
 
@@ -1293,13 +1293,15 @@ app.post('/api/public/reports', async (req, res) => {
                 return res.json({ success: false, error: 'Video no encontrado' });
             }
 
+            // videoId debe ser el id numérico (integer) para la tabla reportes
+            videoId = videoResult.rows[0].id;
             const videoOwnerUsername = videoResult.rows[0].username;
+            
+            // Obtener el ID del usuario propietario del video
             const videoOwner = await getUserByUsername(videoOwnerUsername);
             if (videoOwner) {
                 reportedUserId = videoOwner.id || videoOwner.user_id;
             }
-
-            videoId = id_video_reportado;
         } else if (tipo_reporte === 'usuario') {
             // Para reportes de usuario, usar el username proporcionado
             if (!username_reportado) {
