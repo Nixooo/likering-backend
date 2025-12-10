@@ -1283,9 +1283,9 @@ app.post('/api/public/reports', async (req, res) => {
                 return res.json({ success: false, error: 'id_video_reportado es requerido para reportes de video' });
             }
 
-            // Buscar el video por video_id (UUID string) para obtener el id numérico y el username del propietario
+            // Buscar el video por video_id (UUID string) para obtener el username del propietario
             const videoResult = await pool.query(
-                'SELECT id, username FROM videos WHERE video_id = $1',
+                'SELECT username FROM videos WHERE video_id = $1',
                 [id_video_reportado]
             );
 
@@ -1293,9 +1293,29 @@ app.post('/api/public/reports', async (req, res) => {
                 return res.json({ success: false, error: 'Video no encontrado' });
             }
 
-            // videoId debe ser el id numérico (integer) para la tabla reportes
-            videoId = videoResult.rows[0].id;
             const videoOwnerUsername = videoResult.rows[0].username;
+            
+            // Intentar obtener el id numérico de la tabla videos
+            // Si no existe la columna id, usamos NULL (la columna id_video_reportado debe aceptar NULL)
+            let videoIdNumeric = null;
+            try {
+                const idResult = await pool.query(
+                    'SELECT id FROM videos WHERE video_id = $1',
+                    [id_video_reportado]
+                );
+                if (idResult.rows.length > 0 && idResult.rows[0].id) {
+                    videoIdNumeric = idResult.rows[0].id;
+                }
+            } catch (idError) {
+                // Si la columna id no existe en videos, usar NULL
+                // NOTA: Esto requiere que id_video_reportado en la tabla reportes acepte NULL
+                // Si no acepta NULL, necesitarás modificar el esquema de la tabla reportes
+                console.log('⚠️ Columna id no existe en videos, usando NULL para id_video_reportado');
+                console.log('⚠️ Si esto falla, modifica la tabla reportes para que id_video_reportado acepte NULL');
+                videoIdNumeric = null;
+            }
+            
+            videoId = videoIdNumeric;
             
             // Obtener el ID del usuario propietario del video
             const videoOwner = await getUserByUsername(videoOwnerUsername);
