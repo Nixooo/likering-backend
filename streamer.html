@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    
+
     /* ===== DESIGN SYSTEM ===== */
     :root {
         --primary-pink: #FF2D7A;
@@ -128,6 +128,55 @@
         word-spacing: 0.5em;
     }
     
+    .profile-header::after {
+        content: attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        font-size: clamp(4rem, 12vw, 10rem);
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.03);
+        text-transform: lowercase;
+        letter-spacing: -1px;
+        pointer-events: none;
+        z-index: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-start;
+        padding-top: 20px;
+        line-height: 1;
+        word-spacing: 0.5em;
+    }
+    
+    .profile-header {
+        position: relative;
+    }
+
+    .profile-header .username-background-middle {
+        content: attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        font-size: clamp(4rem, 12vw, 10rem);
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.03);
+        text-transform: lowercase;
+        letter-spacing: -1px;
+        pointer-events: none;
+        z-index: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        line-height: 1;
+        word-spacing: 0.5em;
+    }
+    
     .header-top {
         display: flex;
         justify-content: space-between;
@@ -153,12 +202,12 @@
         transition: all var(--transition-base);
         text-decoration: none;
     }
-    
+
     .back-button:hover {
         background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
+        transform: scale(1.1); 
     }
-    
+
     .menu-button {
         width: 40px;
         height: 40px;
@@ -170,7 +219,7 @@
         font-size: 1.2rem;
         cursor: pointer;
         display: flex;
-        align-items: center;
+        align-items: center; 
         justify-content: center;
         transition: all var(--transition-base);
         position: relative;
@@ -267,7 +316,7 @@
         align-items: center;
         gap: 20px;
     }
-    
+
     .profile-picture {
         width: 100px;
         height: 100px;
@@ -279,7 +328,7 @@
         position: relative;
         transition: all var(--transition-base);
     }
-    
+
     .profile-picture:hover {
         transform: scale(1.05);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
@@ -347,27 +396,27 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         margin-top: 10px;
     }
-    
+
     .stat-item {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 6px;
     }
-    
+
     .stat-number {
         font-size: 1.1rem;
         font-weight: 700;
         color: var(--text-primary);
         letter-spacing: -0.3px;
     }
-    
+
     .stat-label {
         font-size: 0.85rem;
         color: var(--text-secondary);
         font-weight: 500;
     }
-    
+
     /* ===== BIO SECTION ===== */
     .profile-bio-section {
         width: 100%;
@@ -459,7 +508,7 @@
         background: var(--bg-primary);
         padding-bottom: 20px;
     }
-    
+
     .video-thumbnail {
         position: relative;
         aspect-ratio: 9/16;
@@ -467,18 +516,18 @@
         cursor: pointer;
         background: var(--bg-secondary);
     }
-    
+
     .video-thumbnail img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform var(--transition-base);
     }
-    
+
     .video-thumbnail:hover img {
         transform: scale(1.05);
     }
-    
+
     .video-overlay-content {
         position: absolute;
         bottom: 0;
@@ -616,7 +665,7 @@
             gap: 1px;
         }
     }
-    </style>
+</style>
 </head>
 <body class="plan-azul">
     <div class="floating-menu-container" id="floating-menu-container">
@@ -632,18 +681,19 @@
                 </li>
             </ul>
         </div>
-    </div>
-    
+            </div>
+
     <div class="profile-header" data-username="">
+        <div class="username-background-middle"></div>
         <div class="header-top">
             <a href="javascript:history.back()" class="back-button">
                 <i class="fas fa-arrow-left"></i>
             </a>
             <div class="menu-button" id="menu-button">
                 <i class="fas fa-bars"></i>
-            </div>
-        </div>
-        
+                    </div>
+                </div>
+                
         <div class="profile-content">
             <div id="profile-picture" class="profile-picture"></div>
             <h1 id="profile-name" class="profile-name"></h1>
@@ -652,25 +702,25 @@
                 <button class="follow-btn" id="follow-btn">
                     <i class="fas fa-user-plus"></i> Seguir
                 </button>
-            </div>
+                        </div>
             
             <div class="profile-stats">
-                <div class="stat-item">
-                    <span id="followers-count" class="stat-number">0</span>
-                    <span class="stat-label">Seguidores</span>
-                </div>
-                <div class="stat-item">
-                    <span id="following-count" class="stat-number">0</span>
-                    <span class="stat-label">Siguiendo</span>
-                </div>
-                <div class="stat-item">
-                    <span id="likes-count" class="stat-number">0</span>
-                    <span class="stat-label">Likes</span>
+                    <div class="stat-item">
+                            <span id="followers-count" class="stat-number">0</span>
+                            <span class="stat-label">Seguidores</span>
+                    </div>
+                    <div class="stat-item">
+                            <span id="following-count" class="stat-number">0</span>
+                            <span class="stat-label">Siguiendo</span>
+                    </div>
+                    <div class="stat-item">
+                            <span id="likes-count" class="stat-number">0</span>
+                            <span class="stat-label">Likes</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    
+
     <div class="profile-bio-section">
         <div id="bio-text" class="bio-text"></div>
         <div id="bio-contact" class="bio-contact"></div>
@@ -685,22 +735,22 @@
         <div class="tab-item" data-tab="liked">
             <i class="fas fa-heart tab-icon"></i>
             <span class="tab-label">Liked</span>
+            </div>
         </div>
-    </div>
-    
+
     <div class="video-grid" id="video-grid-container">
         <!-- Videos se cargarán aquí -->
     </div>
-    
+        
     <!-- Modal de Compartir -->
     <div class="modal-overlay" id="share-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Compartir Perfil</h3>
+                <div class="modal-header">
+                    <h3 class="modal-title">Compartir Perfil</h3>
                 <button class="modal-close" id="share-modal-close">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>
+                </div>
             <div style="text-align: center; padding: 20px 0;">
                 <p style="color: var(--text-secondary); margin-bottom: 24px;">Comparte el perfil de @<span id="share-username"></span></p>
                 <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -713,7 +763,7 @@
                     <div style="display: flex; align-items: center; gap: 16px; padding: 14px; background: var(--bg-glass); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-base);" class="share-option" data-type="instagram">
                         <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
                             <i class="fab fa-instagram"></i>
-                        </div>
+                </div>
                         <span style="flex: 1; font-weight: 600;">Instagram</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 16px; padding: 14px; background: var(--bg-glass); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-base);" class="share-option" data-type="copy">
@@ -724,36 +774,36 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
-    </div>
-    
+        
     <!-- Modal de Reportar -->
     <div class="modal-overlay" id="report-modal">
         <div class="modal-content">
-            <div class="modal-header">
+                <div class="modal-header">
                 <h3 class="modal-title"><i class="fas fa-flag"></i> Reportar Usuario</h3>
                 <button class="modal-close" id="report-modal-close">
                     <i class="fas fa-times"></i>
                 </button>
-            </div>
+                </div>
             <div>
                 <p style="color: var(--text-secondary); margin-bottom: 20px; text-align: center;">Estás reportando a <strong>@<span id="report-username"></span></strong></p>
-                <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 10px; color: var(--text-primary); font-weight: 600; font-size: 0.95rem;">Motivo del reporte *</label>
                     <select id="report-reason" style="width: 100%; padding: 14px 16px; background: var(--bg-glass); border: 1.5px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem; font-family: 'Inter', sans-serif; outline: none; transition: all var(--transition-base);">
-                        <option value="">Selecciona un motivo</option>
-                        <option value="Contenido inapropiado">Contenido inapropiado</option>
-                        <option value="Spam o engañoso">Spam o engañoso</option>
-                        <option value="Acoso o bullying">Acoso o bullying</option>
-                        <option value="Suplantación de identidad">Suplantación de identidad</option>
-                        <option value="Violencia">Violencia</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                </div>
+                            <option value="">Selecciona un motivo</option>
+                            <option value="Contenido inapropiado">Contenido inapropiado</option>
+                            <option value="Spam o engañoso">Spam o engañoso</option>
+                            <option value="Acoso o bullying">Acoso o bullying</option>
+                            <option value="Suplantación de identidad">Suplantación de identidad</option>
+                            <option value="Violencia">Violencia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
                 <div style="margin-bottom: 24px;">
                     <label style="display: block; margin-bottom: 10px; color: var(--text-primary); font-weight: 600; font-size: 0.95rem;">Descripción (opcional)</label>
                     <textarea id="report-description" placeholder="Proporciona más detalles..." style="width: 100%; min-height: 100px; padding: 14px 16px; background: var(--bg-glass); border: 1.5px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem; font-family: 'Inter', sans-serif; resize: vertical; outline: none; transition: all var(--transition-base);"></textarea>
-                </div>
+                    </div>
                 <div style="display: flex; gap: 12px;">
                     <button id="cancel-report-btn" style="flex: 1; padding: 14px; background: var(--bg-glass); border: 1.5px solid var(--border-color); border-radius: var(--radius-md); color: var(--text-secondary); font-weight: 600; cursor: pointer; transition: all var(--transition-base);">Cancelar</button>
                     <button id="submit-report-btn" style="flex: 1; padding: 14px; background: linear-gradient(135deg, #ef4444 0%, #ff2d7a 100%); border: none; border-radius: var(--radius-md); color: white; font-weight: 600; cursor: pointer; transition: all var(--transition-base); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Enviar</button>
@@ -934,7 +984,12 @@
         
         async function displayProfileData(userData) {
             const header = document.querySelector('.profile-header');
+            const usernameMiddle = document.querySelector('.username-background-middle');
             header.setAttribute('data-username', userData.username);
+            if (usernameMiddle) {
+                const repeatedUsername = Array(6).fill(userData.username.toLowerCase()).join(' ');
+                usernameMiddle.textContent = repeatedUsername;
+            }
             
             // Aplicar clase de plan al body para cambiar colores del header
             const plan = (userData.plan || 'azul').toLowerCase();
@@ -1144,7 +1199,7 @@
                     }
                 }
             });
-            
+
             // Tabs
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -1161,7 +1216,7 @@
             
             document.getElementById('share-modal').addEventListener('click', (e) => {
                 if (e.target.id === 'share-modal') {
-                    document.getElementById('share-modal').classList.remove('visible');
+                document.getElementById('share-modal').classList.remove('visible');
                 }
             });
             
