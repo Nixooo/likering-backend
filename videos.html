@@ -1088,7 +1088,7 @@
     .my-profile-badge {
         position: absolute;
         right: 24px;
-        bottom: 30px;
+        bottom: 28px;
         z-index: 51;
         width: 52px;
         height: 52px;
@@ -1122,9 +1122,6 @@
         box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(0, 168, 255, 0.2);
     }
     
-    .my-profile-badge:hover span {
-        opacity: 1;
-    }
     
     /* ===== OPTIONS ICON - Más Sutil ===== */
     .options-icon {
@@ -1157,8 +1154,7 @@
     /* ===== FLOATING MENUS - Ultra Moderno ===== */
     .floating-menu-container,
     .options-menu-container,
-    .comments-panel-container,
-    .share-menu-container {
+    .comments-panel-container {
         position: absolute;
         top: 0;
         left: 0;
@@ -1172,23 +1168,20 @@
     
     .floating-menu-container.active,
     .options-menu-container.active,
-    .comments-panel-container.active,
-    .share-menu-container.active {
+    .comments-panel-container.active {
         opacity: 1;
         visibility: visible;
         transition: opacity var(--transition-base);
     }
     
     .floating-menu-container,
-    .options-menu-container,
-    .share-menu-container {
+    .options-menu-container {
         background: rgba(0, 0, 0, 0.6);
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }
     
-    .options-menu-container,
-    .share-menu-container {
+    .options-menu-container {
         z-index: 60;
         background: rgba(0, 0, 0, 0.5);
     }
@@ -1313,9 +1306,9 @@
         color: var(--text-primary);
         height: 75%;
         max-height: 650px;
-        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.5);
-        position: relative;
+        position: fixed;
         overflow: hidden;
     }
     
@@ -1542,116 +1535,67 @@
     .add-comment-area .send-comment-btn:active {
         transform: scale(0.95);
     }
-    /* ===== SHARE PANEL - Rediseño Completo ===== */
-    .share-panel {
-        position: absolute;
-        bottom: 120px;
-        right: 20px;
-        background: rgba(10, 10, 15, 0.95);
-        backdrop-filter: blur(40px) saturate(200%);
-        -webkit-backdrop-filter: blur(40px) saturate(200%);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: var(--radius-xl);
-        padding: 20px;
-        width: 300px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-        transform: translateY(30px) scale(0.9);
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        position: relative;
-        overflow: hidden;
+    /* ===== SHARE MODAL - Igual que Report Modal ===== */
+    .share-modal-container {
+        max-width: 380px;
     }
     
-    .share-panel::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
+    .share-modal-container::before {
         background: var(--gradient-1);
     }
     
-    .share-menu-container.active .share-panel {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-    
-    .share-panel-header {
+    .share-modal-title {
+        margin: 0 0 24px 0 !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        color: var(--text-primary) !important;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        justify-content: center;
+        gap: 12px;
+        letter-spacing: -0.3px;
     }
     
-    .share-panel-header h4 {
-        margin: 0;
-        font-weight: 700;
-        font-size: 1.2rem;
-        letter-spacing: -0.4px;
-        color: var(--text-primary);
+    .share-modal-title i {
+        font-size: 1.3em;
         background: var(--gradient-1);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     
-    .close-share {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--radius-full);
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: var(--text-secondary);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        font-size: 1rem;
-    }
-    
-    .close-share:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: var(--text-primary);
-        transform: rotate(90deg);
-        border-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    .share-grid {
+    .share-modal-grid {
         display: flex;
         flex-direction: column;
         gap: 12px;
     }
     
-    .share-option {
+    .share-modal-option {
         display: flex;
         align-items: center;
         gap: 16px;
         cursor: pointer;
-        padding: 14px 16px;
+        padding: 16px 18px;
         border-radius: var(--radius-md);
         transition: all var(--transition-base);
         background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border: 1.5px solid rgba(255, 255, 255, 0.05);
     }
     
-    .share-option:hover {
+    .share-modal-option:hover {
         background: rgba(255, 255, 255, 0.08);
         border-color: rgba(255, 255, 255, 0.15);
         transform: translateX(4px);
     }
     
-    .share-icon {
-        width: 48px;
-        height: 48px;
+    .share-modal-icon {
+        width: 50px;
+        height: 50px;
         border-radius: var(--radius-md);
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         color: #fff;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         transition: all var(--transition-base);
@@ -1660,49 +1604,29 @@
         flex-shrink: 0;
     }
     
-    .share-icon::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-        opacity: 0;
-        transition: opacity var(--transition-base);
-    }
-    
-    .share-option:hover .share-icon {
+    .share-modal-option:hover .share-modal-icon {
         transform: scale(1.1);
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
     
-    .share-option:hover .share-icon::after {
-        opacity: 1;
-    }
-    
-    .share-icon.whatsapp {
+    .share-modal-icon.whatsapp {
         background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
     }
     
-    .share-icon.instagram {
+    .share-modal-icon.instagram {
         background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
     }
     
-    .share-icon.copy-link {
+    .share-modal-icon.copy-link {
         background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
     }
     
-    .share-option span {
-        font-size: 0.95rem;
+    .share-modal-option span {
+        font-size: 1rem;
         font-weight: 600;
         color: var(--text-primary);
         letter-spacing: -0.2px;
         flex: 1;
-    }
-    
-    .share-option:hover span {
-        color: var(--text-primary);
     }
     /* ===== DOWNLOAD PROGRESS - Ultra Moderno ===== */
     .download-progress-overlay {
@@ -1855,38 +1779,36 @@
             font-size: 0.7rem;
         }
         
-    .my-profile-badge {
-            bottom: 100px;
+        .my-profile-badge {
+            bottom: 28px;
             right: 16px;
             width: 46px;
             height: 46px;
         }
         
-        .share-panel {
-            width: calc(100% - 32px);
-            max-width: 320px;
-            bottom: 90px;
-            right: 16px;
-            padding: 16px;
+        .share-modal-container {
+            max-width: 340px;
+            padding: 32px 24px;
         }
         
-        .share-panel-header h4 {
-            font-size: 1rem;
+        .share-modal-title {
+            font-size: 1.3rem !important;
+            margin-bottom: 20px !important;
         }
         
-        .share-option {
-            padding: 10px 12px;
-            gap: 12px;
+        .share-modal-option {
+            padding: 14px 16px;
+            gap: 14px;
         }
         
-        .share-icon {
-            width: 40px;
-            height: 40px;
-            font-size: 1.3rem;
+        .share-modal-icon {
+            width: 44px;
+            height: 44px;
+            font-size: 1.4rem;
         }
         
-        .share-option span {
-            font-size: 0.85rem;
+        .share-modal-option span {
+            font-size: 0.9rem;
         }
         
         .comments-panel {
@@ -2010,48 +1932,35 @@
         }
         
         .my-profile-badge {
-            bottom: 95px; 
+            bottom: 22px; 
             right: 14px;
             width: 42px;
             height: 42px;
         }
         
-        .share-panel {
-            width: calc(100% - 24px);
-            max-width: none;
-            bottom: 80px;
-            right: 12px;
-            padding: 14px;
+        .share-modal-container {
+            max-width: 320px;
+            padding: 28px 20px;
         }
         
-        .share-panel-header {
-            margin-bottom: 16px;
-            padding-bottom: 12px;
+        .share-modal-title {
+            font-size: 1.2rem !important;
+            margin-bottom: 18px !important;
         }
         
-        .share-panel-header h4 {
-            font-size: 0.95rem;
+        .share-modal-option {
+            padding: 12px 14px;
+            gap: 12px;
         }
         
-        .close-share {
-            width: 28px;
-            height: 28px;
-            font-size: 0.9rem;
+        .share-modal-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.3rem;
         }
         
-        .share-option {
-            padding: 8px 10px;
-            gap: 10px;
-        }
-        
-        .share-icon {
-            width: 36px;
-            height: 36px;
-            font-size: 1.2rem;
-        }
-        
-        .share-option span {
-            font-size: 0.8rem;
+        .share-modal-option span {
+            font-size: 0.85rem;
         }
         
         .comments-panel {
@@ -2161,11 +2070,36 @@
             </div>
         </div>
         
-        <div class="my-profile-badge"><div class="my-profile-picture"></div><span>Yo</span></div>
+        <div class="my-profile-badge"><div class="my-profile-picture"></div></div>
         <div class="floating-menu-container"><div class="floating-menu"><ul><li><a href="billetera.html"><i class="fas fa-wallet"></i><span>Billetera</span></a></li><li><a href="mensajes.html"><i class="far fa-comments"></i><span>Mensajes</span></a></li><li><a href="perfil.html"><i class="fas fa-user-circle"></i><span>Perfil</span></a></li><li id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></li></ul></div></div>
         <div class="options-menu-container"><div class="options-menu"><ul><li id="share-btn"><i class="fas fa-share-square"></i><span>Compartir</span></li><li id="download-btn"><i class="fas fa-download"></i><span>Descargar</span></li><li id="report-video-btn"><i class="fas fa-flag"></i><span>Reportar</span></li></ul></div></div>
         <div class="comments-panel-container"><div class="comments-panel"><div class="comments-header"><h4 id="comments-count">0 comentarios</h4><i class="fas fa-times close-comments"></i></div><div class="comments-list" id="comments-list"></div><div class="add-comment-area"><div class="my-avatar-comment"></div><input type="text" id="comment-input" placeholder="Añadir un comentario..."><button class="send-comment-btn" id="send-comment-btn"><i class="fas fa-arrow-right"></i></button></div></div></div>
-        <div class="share-menu-container"><div class="share-panel"><div class="share-panel-header"><h4>Compartir en</h4><i class="fas fa-times close-share"></i></div><div class="share-grid"><div class="share-option"><div class="share-icon whatsapp"><i class="fab fa-whatsapp"></i></div><span>WhatsApp</span></div><div class="share-option"><div class="share-icon instagram"><i class="fab fa-instagram"></i></div><span>Instagram</span></div><div class="share-option"><div class="share-icon copy-link"><i class="fas fa-link"></i></div><span>Copiar enlace</span></div></div></div></div>
+        <!-- Modal de Compartir -->
+        <div class="follow-modal-overlay" id="share-modal">
+            <div class="follow-modal-container share-modal-container">
+                <h3 class="share-modal-title"><i class="fas fa-share-alt"></i> Compartir</h3>
+                <div class="share-modal-grid">
+                    <div class="share-modal-option">
+                        <div class="share-modal-icon whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <span>WhatsApp</span>
+                    </div>
+                    <div class="share-modal-option">
+                        <div class="share-modal-icon instagram">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <span>Instagram</span>
+                    </div>
+                    <div class="share-modal-option">
+                        <div class="share-modal-icon copy-link">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <span>Copiar enlace</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="download-progress-overlay"><div class="download-progress-box"><span id="download-status"></span></div></div>
         
         <!-- Modal de Reportar Video -->
@@ -3326,8 +3260,7 @@
         const floatingMenu = document.querySelector('.floating-menu');
         const optionsMenuContainer = document.querySelector('.options-menu-container');
         const optionsMenu = document.querySelector('.options-menu');
-        const shareMenuContainer = document.querySelector('.share-menu-container');
-        const closeShareButton = document.querySelector('.close-share');
+        const shareModal = document.getElementById('share-modal');
         const shareButton = document.getElementById('share-btn');
         const downloadButton = document.getElementById('download-btn');
         const reportVideoButton = document.getElementById('report-video-btn');
@@ -3348,12 +3281,41 @@
         shareButton.addEventListener('click', e => {
             e.stopPropagation();
             optionsMenuContainer.classList.remove('active');
-            shareMenuContainer.classList.add('active');
+            shareModal.classList.add('show');
         });
-        closeShareButton.addEventListener('click', () => shareMenuContainer.classList.remove('active'));
-        shareMenuContainer.addEventListener('click', e => {
-            if (e.target === shareMenuContainer) shareMenuContainer.classList.remove('active')
+        shareModal.addEventListener('click', e => {
+            if (e.target === shareModal) shareModal.classList.remove('show');
         });
+        
+        // Funcionalidad de compartir
+        document.querySelectorAll('.share-modal-option').forEach(option => {
+            option.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
+                if (!currentVideoData) return;
+                
+                const videoUrl = window.location.origin + window.location.pathname + '?video=' + currentVideoData.videoId;
+                const shareText = `Mira este video de ${currentVideoData.user}: ${currentVideoData.title}`;
+                
+                const optionType = option.querySelector('.share-modal-icon').classList.contains('whatsapp') ? 'whatsapp' :
+                                  option.querySelector('.share-modal-icon').classList.contains('instagram') ? 'instagram' :
+                                  'copy';
+                
+                if (optionType === 'whatsapp') {
+                    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + videoUrl)}`, '_blank');
+                } else if (optionType === 'instagram') {
+                    // Instagram no permite compartir directamente, copiar enlace
+                    await navigator.clipboard.writeText(videoUrl);
+                    alert('Enlace copiado al portapapeles');
+                } else if (optionType === 'copy') {
+                    await navigator.clipboard.writeText(videoUrl);
+                    alert('Enlace copiado al portapapeles');
+                }
+                
+                shareModal.classList.remove('show');
+            });
+        });
+        
         downloadButton.addEventListener('click', async (e) => {
             e.stopPropagation();
             optionsMenuContainer.classList.remove('active');
