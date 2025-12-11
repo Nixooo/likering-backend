@@ -100,21 +100,19 @@
     /* ===== HEADER - Color según plan con degradado vertical ===== */
     .profile-header {
         width: 100%;
-        background: linear-gradient(180deg, var(--header-color-1) 0%, var(--header-color-2) 30%, var(--bg-secondary) 100%);
+        background: linear-gradient(180deg, var(--header-color-1) 0%, var(--header-color-2) 20%, var(--bg-secondary) 100%);
         position: relative;
         padding: 30px 20px 30px;
         overflow: hidden;
         margin-bottom: -1px;
     }
     
-    .profile-header::before {
-        content: attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username);
+    .username-background-line {
         position: absolute;
-        top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
-        font-size: clamp(4rem, 12vw, 10rem);
+        height: calc(100% / 12);
+        font-size: clamp(2rem, 6vw, 5rem);
         font-weight: 900;
         color: rgba(255, 255, 255, 0.03);
         text-transform: lowercase;
@@ -129,54 +127,18 @@
         word-spacing: 0.5em;
     }
     
-    .profile-header::after {
-        content: attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username);
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        font-size: clamp(4rem, 12vw, 10rem);
-        font-weight: 900;
-        color: rgba(255, 255, 255, 0.03);
-        text-transform: lowercase;
-        letter-spacing: -1px;
-        pointer-events: none;
-        z-index: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        display: flex;
-        align-items: flex-start;
-        padding-top: 20px;
-        line-height: 1;
-        word-spacing: 0.5em;
-    }
-    
-    .profile-header {
-        position: relative;
-    }
-
-    .profile-header .username-background-middle {
-        content: attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username) ' ' attr(data-username);
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        font-size: clamp(4rem, 12vw, 10rem);
-        font-weight: 900;
-        color: rgba(255, 255, 255, 0.03);
-        text-transform: lowercase;
-        letter-spacing: -1px;
-        pointer-events: none;
-        z-index: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        line-height: 1;
-        word-spacing: 0.5em;
-    }
+    .username-background-line:nth-child(1) { top: 0%; }
+    .username-background-line:nth-child(2) { top: 8.33%; }
+    .username-background-line:nth-child(3) { top: 16.66%; }
+    .username-background-line:nth-child(4) { top: 25%; }
+    .username-background-line:nth-child(5) { top: 33.33%; }
+    .username-background-line:nth-child(6) { top: 41.66%; }
+    .username-background-line:nth-child(7) { top: 50%; }
+    .username-background-line:nth-child(8) { top: 58.33%; }
+    .username-background-line:nth-child(9) { top: 66.66%; }
+    .username-background-line:nth-child(10) { top: 75%; }
+    .username-background-line:nth-child(11) { top: 83.33%; }
+    .username-background-line:nth-child(12) { top: 91.66%; }
     
     .header-top {
         display: flex;
@@ -393,8 +355,8 @@
         justify-content: space-around;
         width: 100%;
         padding: 20px 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: none;
+        border-bottom: none;
         margin-top: 10px;
     }
 
@@ -458,7 +420,7 @@
         align-items: center;
         padding: 12px 0;
         background: var(--bg-secondary);
-        border-bottom: 0.3px solid var(--border-color);
+        border-bottom: none;
         position: sticky;
         top: 0;
         z-index: 10;
@@ -985,12 +947,12 @@
         
         async function displayProfileData(userData) {
             const header = document.querySelector('.profile-header');
-            const usernameMiddle = document.querySelector('.username-background-middle');
+            const usernameLines = document.querySelectorAll('.username-background-line');
             header.setAttribute('data-username', userData.username);
-            if (usernameMiddle) {
-                const repeatedUsername = Array(6).fill(userData.username.toLowerCase()).join(' ');
-                usernameMiddle.textContent = repeatedUsername;
-            }
+            const repeatedUsername = Array(8).fill(userData.username.toLowerCase()).join(' ');
+            usernameLines.forEach(line => {
+                line.textContent = repeatedUsername;
+            });
             
             // Aplicar clase de plan al body para cambiar colores del header
             const plan = (userData.plan || 'azul').toLowerCase();
