@@ -111,10 +111,10 @@
     .liquid-glass-circle {
         position: absolute;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(255, 255, 255, 0.04);
         backdrop-filter: blur(30px);
         -webkit-backdrop-filter: blur(30px);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.03);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
         pointer-events: none;
         z-index: 1;
         opacity: 0;
@@ -127,10 +127,10 @@
             opacity: 0;
         }
         5% {
-            opacity: 0.25;
+            opacity: 0.4;
         }
         95% {
-            opacity: 0.25;
+            opacity: 0.4;
         }
         100% {
             transform: translateX(calc(100vw + 150px)) translateY(var(--random-y));
@@ -1019,11 +1019,15 @@
                 circle.style.width = `${size}px`;
                 circle.style.height = `${size}px`;
                 
-                // Posición Y aleatoria en la parte superior del degradado (primeros 30% del header)
+                // Posición Y aleatoria en la parte superior donde están los textos del username (primeros 50% del header)
                 const headerHeight = header.offsetHeight;
-                const gradientTopArea = headerHeight * 0.30; // Parte superior del degradado
-                const randomY = Math.floor(Math.random() * (gradientTopArea - size)) + 10; // +10 para evitar que se salgan
-                circle.style.setProperty('--random-y', `${randomY}px`);
+                const usernameArea = headerHeight * 0.50; // Área donde están los textos del username
+                const randomY = Math.floor(Math.random() * (usernameArea - size));
+                if (randomY >= 0) {
+                    circle.style.setProperty('--random-y', `${randomY}px`);
+                } else {
+                    circle.style.setProperty('--random-y', '10px');
+                }
                 
                 // Duración de animación aleatoria entre 12s y 20s (más rápido)
                 const duration = Math.floor(Math.random() * 8) + 12;
