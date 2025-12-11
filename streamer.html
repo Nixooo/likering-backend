@@ -32,8 +32,54 @@
         --radius-full: 9999px;
         --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
         --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --purple-dark: #6B46C1;
-        --purple-darker: #4C1D95;
+        
+        /* Plan Colors */
+        --plan-azul: #00A8FF;
+        --plan-rojo: #FF2D7A;
+        --plan-naranja: #FFA500;
+        --plan-verde: #28a745;
+        --plan-morado: #8A2BE2;
+        --plan-negro: #E0E0E0;
+        --plan-amarillo: #FFD700;
+        
+        /* Default colors (azul) */
+        --header-color-1: #1e40af;
+        --header-color-2: #3b82f6;
+    }
+    
+    body.plan-azul {
+        --header-color-1: #1e40af;
+        --header-color-2: #3b82f6;
+    }
+    
+    body.plan-rojo {
+        --header-color-1: #991b1b;
+        --header-color-2: #dc2626;
+    }
+    
+    body.plan-naranja {
+        --header-color-1: #9a3412;
+        --header-color-2: #f97316;
+    }
+    
+    body.plan-verde {
+        --header-color-1: #166534;
+        --header-color-2: #22c55e;
+    }
+    
+    body.plan-morado {
+        --header-color-1: #6b21a8;
+        --header-color-2: #a855f7;
+    }
+    
+    body.plan-negro {
+        --header-color-1: #1f2937;
+        --header-color-2: #4b5563;
+    }
+    
+    body.plan-amarillo {
+        --header-color-1: #854d0e;
+        --header-color-2: #eab308;
     }
     
     * {
@@ -51,25 +97,12 @@
         -moz-osx-font-smoothing: grayscale;
     }
     
-    /* ===== STATUS BAR ===== */
-    .status-bar {
-        height: 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 16px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        background: transparent;
-    }
-    
-    /* ===== HEADER - Fondo Púrpura ===== */
+    /* ===== HEADER - Color según plan ===== */
     .profile-header {
         width: 100%;
-        background: linear-gradient(135deg, var(--purple-darker) 0%, var(--purple-dark) 100%);
+        background: linear-gradient(135deg, var(--header-color-1) 0%, var(--header-color-2) 100%);
         position: relative;
-        padding: 50px 20px 30px;
+        padding: 30px 20px 30px;
         overflow: hidden;
     }
     
@@ -132,11 +165,89 @@
         align-items: center;
         justify-content: center;
         transition: all var(--transition-base);
+        position: relative;
     }
     
     .menu-button:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: scale(1.1);
+    }
+    
+    /* ===== MENU FLOTANTE ===== */
+    .floating-menu-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--transition-base), visibility 0s 0.3s;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+    }
+    
+    .floating-menu-container.active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity var(--transition-base);
+    }
+    
+    .floating-menu {
+        position: absolute;
+        top: 70px;
+        right: 20px;
+        width: 200px;
+        background: rgba(20, 20, 32, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        color: var(--text-primary);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: transform var(--transition-base), opacity var(--transition-base);
+    }
+    
+    .floating-menu-container.active .floating-menu {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .floating-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 8px;
+    }
+    
+    .floating-menu li {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+        margin: 4px 0;
+    }
+    
+    .floating-menu li:hover {
+        background: var(--bg-glass-hover);
+        transform: translateX(4px);
+    }
+    
+    .floating-menu li i {
+        width: 24px;
+        margin-right: 14px;
+        text-align: center;
+        font-size: 1.1rem;
+        color: var(--primary-blue);
+    }
+    
+    .floating-menu li.report-option i {
+        color: #ef4444;
     }
     
     /* ===== PROFILE SECTION ===== */
@@ -216,28 +327,6 @@
     .follow-btn.following:hover {
         background: var(--bg-glass-hover);
         border-color: var(--border-hover);
-    }
-    
-    .instagram-btn {
-        width: 50px;
-        height: 50px;
-        border-radius: var(--radius-md);
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        color: var(--text-primary);
-        font-size: 1.3rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all var(--transition-base);
-        text-decoration: none;
-    }
-    
-    .instagram-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
     }
     
     /* ===== STATS SECTION ===== */
@@ -360,7 +449,7 @@
         grid-template-columns: repeat(3, 1fr);
         gap: 2px;
         background: var(--bg-primary);
-        padding-bottom: 80px;
+        padding-bottom: 20px;
     }
     
     .video-thumbnail {
@@ -410,77 +499,6 @@
     
     .video-overlay-stats i {
         font-size: 0.65rem;
-    }
-    
-    /* ===== BOTTOM NAVIGATION ===== */
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: var(--bg-secondary);
-        border-top: 1px solid var(--border-color);
-        padding: 12px 0;
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        z-index: 100;
-        backdrop-filter: blur(20px);
-    }
-    
-    .nav-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        cursor: pointer;
-        color: var(--text-secondary);
-        transition: all var(--transition-fast);
-        text-decoration: none;
-        padding: 4px 12px;
-        border-radius: var(--radius-md);
-    }
-    
-    .nav-item:hover,
-    .nav-item.active {
-        color: var(--text-primary);
-    }
-    
-    .nav-item i {
-        font-size: 1.3rem;
-    }
-    
-    .nav-item-label {
-        font-size: 0.7rem;
-        font-weight: 600;
-    }
-    
-    .nav-item.create {
-        background: var(--gradient-1);
-        color: white;
-        padding: 8px 16px;
-        border-radius: var(--radius-md);
-        box-shadow: 0 4px 12px rgba(255, 45, 122, 0.3);
-    }
-    
-    .nav-item.create:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 45, 122, 0.5);
-    }
-    
-    .nav-item.create i {
-        font-size: 1.5rem;
-    }
-    
-    .notification-badge {
-        position: absolute;
-        top: -2px;
-        right: 8px;
-        width: 8px;
-        height: 8px;
-        background: #ef4444;
-        border-radius: var(--radius-full);
-        border: 2px solid var(--bg-secondary);
     }
     
     /* ===== MODALS ===== */
@@ -566,7 +584,7 @@
     /* ===== RESPONSIVE ===== */
     @media (max-width: 480px) {
         .profile-header {
-            padding: 40px 16px 24px;
+            padding: 24px 16px 24px;
         }
         
         .profile-picture {
@@ -592,13 +610,19 @@
     }
     </style>
 </head>
-<body>
-    <div class="status-bar">
-        <span>9:41</span>
-        <div style="display: flex; gap: 6px; align-items: center;">
-            <i class="fas fa-signal" style="font-size: 0.7rem;"></i>
-            <i class="fas fa-wifi" style="font-size: 0.7rem;"></i>
-            <i class="fas fa-battery-three-quarters" style="font-size: 0.7rem;"></i>
+<body class="plan-azul">
+    <div class="floating-menu-container" id="floating-menu-container">
+        <div class="floating-menu">
+            <ul>
+                <li id="share-menu-option">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Compartir</span>
+                </li>
+                <li class="report-option" id="report-menu-option">
+                    <i class="fas fa-flag"></i>
+                    <span>Reportar</span>
+                </li>
+            </ul>
         </div>
     </div>
     
@@ -607,7 +631,7 @@
             <a href="javascript:history.back()" class="back-button">
                 <i class="fas fa-arrow-left"></i>
             </a>
-            <div class="menu-button">
+            <div class="menu-button" id="menu-button">
                 <i class="fas fa-bars"></i>
             </div>
         </div>
@@ -620,9 +644,6 @@
                 <button class="follow-btn" id="follow-btn">
                     <i class="fas fa-user-plus"></i> Seguir
                 </button>
-                <a href="#" class="instagram-btn" id="instagram-btn" target="_blank">
-                    <i class="fab fa-instagram"></i>
-                </a>
             </div>
             
             <div class="profile-stats">
@@ -649,45 +670,18 @@
     </div>
     
     <div class="profile-tabs">
-        <div class="tab-item active" data-tab="posts">
-            <i class="fas fa-th-large tab-icon"></i>
-            <span class="tab-label">Posts</span>
+        <div class="tab-item active" data-tab="reels">
+            <i class="fas fa-video tab-icon"></i>
+            <span class="tab-label">Reels</span>
         </div>
         <div class="tab-item" data-tab="liked">
             <i class="fas fa-heart tab-icon"></i>
             <span class="tab-label">Liked</span>
         </div>
-        <div class="tab-item" data-tab="saved">
-            <i class="fas fa-lock tab-icon"></i>
-            <span class="tab-label">Saved</span>
-        </div>
     </div>
     
     <div class="video-grid" id="video-grid-container">
         <!-- Videos se cargarán aquí -->
-    </div>
-    
-    <div class="bottom-nav">
-        <a href="videos.html" class="nav-item active">
-            <i class="fas fa-home"></i>
-            <span class="nav-item-label">Home</span>
-        </a>
-        <a href="#" class="nav-item">
-            <i class="fas fa-search"></i>
-            <span class="nav-item-label">Discover</span>
-        </a>
-        <a href="editor.html" class="nav-item create">
-            <i class="fas fa-plus"></i>
-        </a>
-        <a href="#" class="nav-item" style="position: relative;">
-            <i class="fas fa-bell"></i>
-            <span class="notification-badge"></span>
-            <span class="nav-item-label">Notifications</span>
-        </a>
-        <a href="perfil.html" class="nav-item">
-            <i class="fas fa-user"></i>
-            <span class="nav-item-label">Profile</span>
-        </a>
     </div>
     
     <!-- Modal de Compartir -->
@@ -764,7 +758,7 @@
     <script>
         let currentUser = null;
         let loggedInUser = null;
-        let currentTab = 'posts';
+        let currentTab = 'reels';
         
         document.addEventListener('DOMContentLoaded', () => {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
@@ -774,7 +768,7 @@
 
             if (username) {
                 fetchUserProfile(username);
-                fetchUserVideos(username);
+                loadTabContent('reels');
                 setupEventListeners();
             } else {
                 document.getElementById('profile-name').textContent = 'Usuario no encontrado';
@@ -794,6 +788,18 @@
             } catch (error) {
                 console.error("Error fetching profile:", error);
                 document.getElementById('profile-name').textContent = 'Error al cargar';
+            }
+        }
+
+        async function loadTabContent(tab) {
+            currentTab = tab;
+            const videoGridContainer = document.getElementById('video-grid-container');
+            videoGridContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i><p>Cargando...</p></div>';
+            
+            if (tab === 'reels') {
+                await fetchUserVideos(currentUser.username);
+            } else if (tab === 'liked') {
+                await fetchLikedVideos(currentUser.username);
             }
         }
 
@@ -842,6 +848,65 @@
             }
         }
         
+        async function fetchLikedVideos(streamerUsername) {
+            const videoGridContainer = document.getElementById('video-grid-container');
+            try {
+                if (!loggedInUser || !loggedInUser.username) {
+                    videoGridContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-secondary);">Debes iniciar sesión para ver los videos que te gustan.</div>';
+                    return;
+                }
+                
+                // Obtener todos los videos
+                const result = await API.getAllVideos(loggedInUser.username);
+                
+                if (result.success) {
+                    // Filtrar videos que:
+                    // 1. El usuario logueado le ha dado like (isLikedByCurrentUser === true)
+                    // 2. Son del streamer del perfil actual
+                    const likedVideos = result.data.filter(video => {
+                        const videoUsername = video.user ? video.user.replace('@', '') : '';
+                        const isLiked = video.isLikedByCurrentUser === true || video.is_liked_by_current_user === true;
+                        return isLiked && videoUsername === streamerUsername;
+                    });
+                    
+                    let gridHTML = '';
+                    if (likedVideos.length === 0) {
+                        gridHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-secondary);">No has dado like a ningún video de este usuario.</div>';
+                    } else {
+                        likedVideos.forEach(video => {
+                            const title = video.titulo || video.title || '';
+                            const views = video.visualizaciones || 0;
+                            const videoId = video.videoId || video.video_id;
+                            gridHTML += `
+                                <div class="video-thumbnail" data-video-id="${videoId}" data-user="${video.user}">
+                                    <img src="${video.thumbnailUrl || video.thumbnail_url}" alt="${title}" loading="lazy">
+                                    <div class="video-overlay-content">
+                                        <div class="video-overlay-text">${title}</div>
+                                        <div class="video-overlay-stats">
+                                            <i class="fas fa-play"></i>
+                                            <span>${formatNumber(views)}</span>
+                                        </div>
+                                    </div>
+                                </div>`;
+                        });
+                    }
+                    videoGridContainer.innerHTML = gridHTML;
+                    
+                    videoGridContainer.querySelectorAll('.video-thumbnail').forEach(thumb => {
+                        thumb.addEventListener('click', () => {
+                            window.location.href = `videos.html?video=${thumb.dataset.videoId}`;
+                        });
+                    });
+
+                } else {
+                    throw new Error(result.message || 'Error al obtener videos.');
+                }
+            } catch (error) {
+                console.error('Error fetching liked videos:', error);
+                videoGridContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-secondary);">Error al cargar videos.</div>';
+            }
+        }
+        
         function formatNumber(num) {
             if (num >= 1000000) {
                 return (num / 1000000).toFixed(1) + 'M';
@@ -854,6 +919,10 @@
         async function displayProfileData(userData) {
             const header = document.querySelector('.profile-header');
             header.setAttribute('data-username', userData.username);
+            
+            // Aplicar clase de plan al body para cambiar colores del header
+            const plan = (userData.plan || 'azul').toLowerCase();
+            document.body.className = `plan-${plan}`;
             
             document.getElementById('profile-name').textContent = userData.fullName || userData.username;
             document.getElementById('profile-picture').style.backgroundImage = `url('${userData.imageUrl}')`;
@@ -883,11 +952,6 @@
                 bioLink.textContent = userData.link;
             } else {
                 bioLink.style.display = 'none';
-            }
-            
-            // Instagram link
-            if (userData.instagram) {
-                document.getElementById('instagram-btn').href = userData.instagram;
             }
             
             // Verificar si el usuario logueado ya sigue a este perfil
@@ -958,6 +1022,50 @@
         }
 
         function setupEventListeners() {
+            // Menu button toggle
+            const menuButton = document.getElementById('menu-button');
+            const floatingMenu = document.getElementById('floating-menu-container');
+            
+            menuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                floatingMenu.classList.toggle('active');
+            });
+            
+            floatingMenu.addEventListener('click', (e) => {
+                if (e.target === floatingMenu) {
+                    floatingMenu.classList.remove('active');
+                }
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!menuButton.contains(e.target) && !floatingMenu.contains(e.target)) {
+                    floatingMenu.classList.remove('active');
+                }
+            });
+            
+            // Menu options
+            document.getElementById('share-menu-option').addEventListener('click', () => {
+                floatingMenu.classList.remove('active');
+                if (!currentUser) return;
+                document.getElementById('share-username').textContent = currentUser.username;
+                document.getElementById('share-modal').classList.add('visible');
+            });
+            
+            document.getElementById('report-menu-option').addEventListener('click', () => {
+                floatingMenu.classList.remove('active');
+                if (!loggedInUser) {
+                    alert('Debes iniciar sesión para reportar usuarios.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                if (loggedInUser.username === currentUser.username) {
+                    alert('No puedes reportarte a ti mismo.');
+                    return;
+                }
+                document.getElementById('report-username').textContent = currentUser.username;
+                document.getElementById('report-modal').classList.add('visible');
+            });
+            
             // Follow button
             document.getElementById('follow-btn').addEventListener('click', async () => {
                 if (!loggedInUser) {
@@ -1026,18 +1134,11 @@
                 tab.addEventListener('click', () => {
                     document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    currentTab = tab.dataset.tab;
-                    // Aquí puedes cargar diferentes contenidos según el tab
+                    loadTabContent(tab.dataset.tab);
                 });
             });
             
             // Share modal
-            document.querySelector('.menu-button').addEventListener('click', () => {
-                if (!currentUser) return;
-                document.getElementById('share-username').textContent = currentUser.username;
-                document.getElementById('share-modal').classList.add('visible');
-            });
-            
             document.getElementById('share-modal-close').addEventListener('click', () => {
                 document.getElementById('share-modal').classList.remove('visible');
             });
