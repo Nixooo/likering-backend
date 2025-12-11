@@ -767,9 +767,11 @@
             const username = urlParams.get('user');
 
             if (username) {
-                fetchUserProfile(username);
-                loadTabContent('reels');
                 setupEventListeners();
+                fetchUserProfile(username).then(() => {
+                    // Cargar videos después de que el perfil esté listo
+                    loadTabContent('reels');
+                });
             } else {
                 document.getElementById('profile-name').textContent = 'Usuario no encontrado';
             }
@@ -795,6 +797,12 @@
             currentTab = tab;
             const videoGridContainer = document.getElementById('video-grid-container');
             videoGridContainer.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--text-secondary);"><i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 10px;"></i><p>Cargando...</p></div>';
+            
+            // Esperar a que currentUser esté disponible
+            if (!currentUser) {
+                console.log('Esperando a que currentUser esté disponible...');
+                return;
+            }
             
             if (tab === 'reels') {
                 await fetchUserVideos(currentUser.username);

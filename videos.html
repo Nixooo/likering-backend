@@ -2498,13 +2498,13 @@
           modal.classList.add('show');
         }
 
-        function hideDeleteModal() {
+        window.hideDeleteModal = function() {
             const modal = document.getElementById('comment-delete-modal');
             if (modal) modal.classList.remove('show');
             currentCommentId = null;
         }
 
-        async function confirmDeleteComment() {
+        window.confirmDeleteComment = async function() {
     if (!currentCommentId) return;
     
     const modal = document.getElementById('comment-delete-modal');
