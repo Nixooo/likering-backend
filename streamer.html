@@ -200,6 +200,8 @@
         align-items: center;
         line-height: 1;
         word-spacing: 0.5em;
+        transform: rotate(-15deg);
+        transform-origin: center;
     }
     
     .username-background-line:nth-child(1) { top: 0%; color: rgba(255, 255, 255, 0.04); }
@@ -1047,9 +1049,9 @@
             const header = document.querySelector('.profile-header');
             const usernameLines = document.querySelectorAll('.username-background-line');
             header.setAttribute('data-username', userData.username);
-            const repeatedUsername = Array(8).fill(userData.username.toLowerCase()).join(' ');
+            const repeatedText = Array(10).fill('likering').join(' ');
             usernameLines.forEach(line => {
-                line.textContent = repeatedUsername;
+                line.textContent = repeatedText;
             });
             
             // Aplicar clase de plan al body para cambiar colores del header
