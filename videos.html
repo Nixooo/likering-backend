@@ -2154,6 +2154,19 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Modal de No Puedes Reportar Tu Propio Video -->
+        <div class="follow-modal-overlay" id="cannot-report-own-video-modal">
+            <div class="follow-modal-container">
+                <div class="follow-modal-content">
+                    <div class="follow-success-icon" style="color: #ffa500;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>No puedes reportar</h3>
+                    <p>No puedes reportar tus propios videos.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
 <script src="config.js"></script>
@@ -3297,6 +3310,20 @@
         const reportVideoModal = document.getElementById('report-video-modal');
         const cancelReportVideoBtn = document.getElementById('cancel-report-video-btn');
         const submitReportVideoBtn = document.getElementById('submit-report-video-btn');
+        const cannotReportOwnVideoModal = document.getElementById('cannot-report-own-video-modal');
+        
+        function showCannotReportOwnVideoModal() {
+            cannotReportOwnVideoModal.classList.add('show');
+            setTimeout(() => {
+                cannotReportOwnVideoModal.classList.remove('show');
+            }, 2500);
+        }
+        
+        cannotReportOwnVideoModal.addEventListener('click', (e) => {
+            if (e.target === cannotReportOwnVideoModal) {
+                cannotReportOwnVideoModal.classList.remove('show');
+            }
+        });
 
         profileBadge.addEventListener('click', e => {
             e.stopPropagation();
@@ -3397,7 +3424,7 @@
             // Verificar si es su propio video
             const videoUsername = currentVideoData.user ? currentVideoData.user.replace('@', '') : '';
             if (loggedInUser.username === videoUsername) {
-                alert('No puedes reportar tus propios videos.');
+                showCannotReportOwnVideoModal();
                 return;
             }
             
