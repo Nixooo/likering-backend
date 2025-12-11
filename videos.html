@@ -6,13 +6,44 @@
     <title>Likering Videos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    /* ===== DESIGN SYSTEM ===== */
+    :root {
+        --primary-pink: #FF2D7A;
+        --primary-blue: #00A8FF;
+        --gradient-1: linear-gradient(135deg, #FF2D7A 0%, #00A8FF 100%);
+        --bg-primary: #0A0A0F;
+        --bg-secondary: #141420;
+        --bg-glass: rgba(255, 255, 255, 0.05);
+        --bg-glass-hover: rgba(255, 255, 255, 0.08);
+        --text-primary: #FFFFFF;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-tertiary: rgba(255, 255, 255, 0.5);
+        --border-color: rgba(255, 255, 255, 0.1);
+        --border-hover: rgba(0, 168, 255, 0.3);
+        --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.2);
+        --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
+        --shadow-glow: 0 0 20px rgba(0, 168, 255, 0.3);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+        --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    * {
+        box-sizing: border-box;
+    }
     
     body {
-        background-color: #000;
+        background-color: var(--bg-primary);
         margin: 0;
-        font-family: 'Poppins', sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
     }
 
     .tiktok-app {
@@ -47,23 +78,33 @@
     }
 
     .comment-item:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--bg-glass);
+        border-radius: var(--radius-md);
     }
 
     .comment-message {
-        background: #2c2c2c;
-        padding: 12px 16px;
-        border-radius: 18px;
-        border-bottom-left-radius: 6px;
+        background: var(--bg-glass);
+        padding: 14px 18px;
+        border-radius: var(--radius-lg);
+        border-bottom-left-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
         word-wrap: break-word;
         word-break: break-word;
         max-width: 100%;
         position: relative;
+        backdrop-filter: blur(10px);
+        transition: all var(--transition-base);
+    }
+    
+    .comment-message:hover {
+        background: var(--bg-glass-hover);
+        border-color: var(--border-hover);
     }
 
     .comment-message.editing {
-        background: #3a3a3a;
-        border: 2px solid var(--plan-color-principal, #fe2c55);
+        background: var(--bg-glass-hover);
+        border: 2px solid var(--primary-pink);
+        box-shadow: 0 0 0 3px rgba(255, 45, 122, 0.1);
     }
 
     .comment-edit-input {
@@ -195,14 +236,16 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         display: flex;
         align-items: center;
         justify-content: center;
         z-index: 1000;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.3s ease;
+        transition: all var(--transition-base);
     }
 
     .comment-delete-modal.show {
@@ -211,20 +254,36 @@
     }
 
     .comment-delete-modal .modal-container {
-        background: #1a1a1a;
-        border: 1px solid #333;
-        border-radius: 16px;
+        background: rgba(20, 20, 32, 0.98);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
         width: 90%;
-        max-width: 400px;
-        padding: 25px;
+        max-width: 420px;
+        padding: 36px 32px;
         text-align: center;
-        color: white;
+        color: var(--text-primary);
         transform: scale(0.9) translateY(20px);
-        transition: transform 0.3s ease;
+        transition: transform var(--transition-base), opacity var(--transition-base);
+        opacity: 0;
+        box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .comment-delete-modal .modal-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #ff4757, #ff2d7a);
     }
 
     .comment-delete-modal.show .modal-container {
         transform: scale(1) translateY(0);
+        opacity: 1;
     }
 
     .comment-delete-modal h3 {
@@ -259,12 +318,25 @@
     }
 
     .comment-delete-modal .delete-btn {
-        background: #ff4757;
+        background: linear-gradient(135deg, #ff4757 0%, #ff2d7a 100%);
         color: white;
+        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
     }
 
     .comment-delete-modal button:hover {
         transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .comment-delete-modal .cancel-btn {
+        background: var(--bg-glass);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .comment-delete-modal .cancel-btn:hover {
+        background: var(--bg-glass-hover);
+        border-color: var(--border-hover);
     }
 
     .comment-delete-modal button:disabled {
@@ -392,21 +464,36 @@
     }
 
     .follow-confirm-modal-container {
-        background: #1e1e1e;
-        border: 1px solid #333;
-        border-radius: 20px;
-        padding: 30px;
+        background: rgba(20, 20, 32, 0.98);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 36px 32px;
         text-align: center;
-        color: white;
-        max-width: 320px;
+        color: var(--text-primary);
+        max-width: 360px;
         width: 90%;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        transform: scale(0.9);
-        transition: transform 0.3s ease;
+        box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        backdrop-filter: blur(20px);
+        transform: scale(0.9) translateY(20px);
+        transition: transform var(--transition-base), opacity var(--transition-base);
+        opacity: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .follow-confirm-modal-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--gradient-1);
     }
 
     .follow-confirm-modal-overlay.show .follow-confirm-modal-container {
-        transform: scale(1);
+        transform: scale(1) translateY(0);
+        opacity: 1;
     }
 
     .follow-confirm-modal-container h3 {
