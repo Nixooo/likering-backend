@@ -125,63 +125,67 @@
     }
 
     .comment-options {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
         display: flex;
-        gap: 5px;
+        gap: 8px;
+        align-items: center;
+        margin-left: auto;
+        opacity: 0;
+        transition: opacity var(--transition-base);
     }
 
     .comment-item:hover .comment-options {
         opacity: 1;
     }
 
-    .comment-option-btn {
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        color: white;
-        font-size: 0.7rem;
+    .edit-comment-btn,
+    .delete-comment-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        color: var(--text-secondary);
+        font-size: 0.85rem;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all var(--transition-base);
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 0;
+        backdrop-filter: blur(10px);
     }
 
-    .comment-option-btn:hover {
-        transform: scale(1.1);
+    .edit-comment-btn:hover {
+        background: rgba(255, 165, 0, 0.15);
+        border-color: rgba(255, 165, 0, 0.3);
+        color: #ffa500;
+        transform: scale(1.05);
     }
 
-    .comment-option-btn.edit {
-        background: #ffa500;
+    .delete-comment-btn:hover {
+        background: rgba(255, 71, 87, 0.15);
+        border-color: rgba(255, 71, 87, 0.3);
+        color: #ff4757;
+        transform: scale(1.05);
     }
 
-    .comment-option-btn.delete {
-        background: #ff4757;
-    }
-
-    .comment-option-btn:disabled {
-        background: #666;
-        cursor: not-allowed;
-        opacity: 0.5;
+    .edit-comment-btn:active,
+    .delete-comment-btn:active {
+        transform: scale(0.95);
     }
 
     .comment-info {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-top: 5px;
-        font-size: 0.65rem;
-        opacity: 0.7;
+        gap: 12px;
+        margin-top: 6px;
+        font-size: 0.8rem;
+        opacity: 0.8;
     }
 
     .comment-time {
-        color: #888;
+        color: var(--text-tertiary);
+        font-size: 0.8rem;
     }
 
     .comment-edited {
@@ -197,27 +201,48 @@
     }
 
     .edit-btn {
-        padding: 6px 12px;
-        border: none;
-        border-radius: 8px;
-        font-size: 0.75rem;
+        padding: 8px 16px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        font-size: 0.85rem;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all var(--transition-base);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
     }
 
     .edit-btn.save {
-        background: #28a745;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border-color: #28a745;
         color: white;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
     }
 
     .edit-btn.cancel {
-        background: #666;
-        color: white;
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--border-color);
+        color: var(--text-secondary);
     }
 
     .edit-btn:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+    }
+    
+    .edit-btn.save:hover {
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.5);
+    }
+    
+    .edit-btn.cancel:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+    }
+
+    .edit-btn:active {
+        transform: translateY(0);
     }
 
     .edit-btn:disabled {
@@ -2316,8 +2341,8 @@
                             <span class="comment-time">${timeAgo}</span>
                             ${isMyComment ? `
                                 <div class="comment-options">
-                                    ${canEdit ? `<button class="edit-comment-btn" onclick="editComment('${comment.commentId}')" title="Editar">✏️</button>` : ''}
-                                    <button class="delete-comment-btn" onclick="deleteComment('${comment.commentId}')" title="Eliminar">🗑️</button>
+                                    ${canEdit ? `<button class="edit-comment-btn" onclick="editComment('${comment.commentId}')" title="Editar comentario"><i class="fas fa-edit"></i></button>` : ''}
+                                    <button class="delete-comment-btn" onclick="deleteComment('${comment.commentId}')" title="Eliminar comentario"><i class="fas fa-trash"></i></button>
                                 </div>
                             ` : ''}
                         </div>
@@ -2681,7 +2706,10 @@
             
             const topLeftInfo = document.createElement('div');
             topLeftInfo.className = 'top-left-info';
-            topLeftInfo.innerHTML = `<h3>${videoData.user}</h3><p class="description">${videoData.description}</p><div class="music-info"><i class="fas fa-music"></i><span>${videoData.music}</span></div>`;
+            const musicHtml = (videoData.music && videoData.music.trim() !== '') 
+                ? `<div class="music-info"><i class="fas fa-music"></i><span>${videoData.music}</span></div>` 
+                : '';
+            topLeftInfo.innerHTML = `<h3>${videoData.user}</h3><p class="description">${videoData.description}</p>${musicHtml}`;
             
             const bottomLeftActions = document.createElement('div');
             bottomLeftActions.className = 'bottom-left-actions';
