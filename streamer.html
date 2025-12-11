@@ -107,6 +107,36 @@
         margin-bottom: -2px;
     }
     
+    /* ===== LIQUID GLASS CIRCLES ===== */
+    .liquid-glass-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0;
+        animation: liquidFloat linear infinite;
+    }
+    
+    @keyframes liquidFloat {
+        0% {
+            transform: translateX(-100px) translateY(0);
+            opacity: 0;
+        }
+        10% {
+            opacity: 0.4;
+        }
+        90% {
+            opacity: 0.4;
+        }
+        100% {
+            transform: translateX(calc(100vw + 100px)) translateY(var(--random-y));
+            opacity: 0;
+        }
+    }
+    
     .username-background-line {
         position: absolute;
         left: 0;
@@ -967,6 +997,44 @@
             return num.toString();
         }
         
+        // Función para crear círculos liquid glass animados
+        function createLiquidGlassCircles() {
+            const header = document.querySelector('.profile-header');
+            if (!header) return;
+            
+            // Limpiar círculos existentes
+            const existingCircles = header.querySelectorAll('.liquid-glass-circle');
+            existingCircles.forEach(circle => circle.remove());
+            
+            // Crear 5-8 círculos aleatorios
+            const circleCount = Math.floor(Math.random() * 4) + 5; // Entre 5 y 8 círculos
+            
+            for (let i = 0; i < circleCount; i++) {
+                const circle = document.createElement('div');
+                circle.className = 'liquid-glass-circle';
+                
+                // Tamaño aleatorio entre 40px y 120px
+                const size = Math.floor(Math.random() * 80) + 40;
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                
+                // Posición Y aleatoria dentro del header
+                const headerHeight = header.offsetHeight;
+                const randomY = Math.floor(Math.random() * (headerHeight - size));
+                circle.style.setProperty('--random-y', `${randomY}px`);
+                
+                // Duración de animación aleatoria entre 15s y 25s
+                const duration = Math.floor(Math.random() * 10) + 15;
+                circle.style.animationDuration = `${duration}s`;
+                
+                // Delay aleatorio para que no todos empiecen al mismo tiempo
+                const delay = Math.random() * 5;
+                circle.style.animationDelay = `${delay}s`;
+                
+                header.appendChild(circle);
+            }
+        }
+        
         async function displayProfileData(userData) {
             const header = document.querySelector('.profile-header');
             const usernameLines = document.querySelectorAll('.username-background-line');
@@ -982,6 +1050,11 @@
             
             document.getElementById('profile-name').textContent = userData.fullName || userData.username;
             document.getElementById('profile-picture').style.backgroundImage = `url('${userData.imageUrl}')`;
+            
+            // Crear círculos liquid glass después de cargar el perfil
+            setTimeout(() => {
+                createLiquidGlassCircles();
+            }, 500);
             document.getElementById('followers-count').textContent = formatNumber(userData.followers || 0);
             document.getElementById('following-count').textContent = formatNumber(userData.following || 0); 
             document.getElementById('likes-count').textContent = formatNumber(userData.likes || 0);
