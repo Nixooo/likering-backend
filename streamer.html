@@ -107,35 +107,80 @@
         margin-bottom: -2px;
     }
     
-    /* ===== LIQUID GLASS CIRCLES ===== */
-    .liquid-glass-circle {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-        pointer-events: none;
-        z-index: 1;
-        opacity: 0;
-        animation: liquidFloat linear infinite;
+    /* ===== SUTILE ANIMATIONS ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
-    @keyframes liquidFloat {
-        0% {
-            transform: translateX(-150px) translateY(var(--random-y));
+    @keyframes fadeIn {
+        from {
             opacity: 0;
         }
-        5% {
-            opacity: 0.4;
+        to {
+            opacity: 1;
         }
-        95% {
-            opacity: 0.4;
+    }
+    
+    @keyframes subtleFloat {
+        0%, 100% {
+            transform: translateY(0);
         }
-        100% {
-            transform: translateX(calc(100vw + 150px)) translateY(var(--random-y));
-            opacity: 0;
+        50% {
+            transform: translateY(-5px);
         }
+    }
+    
+    @keyframes gradientShift {
+        0%, 100% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+    }
+    
+    body {
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    .profile-header {
+        animation: fadeInUp 0.6s ease-out;
+    }
+    
+    .profile-content {
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    .profile-stats {
+        animation: fadeInUp 0.8s ease-out 0.3s both;
+    }
+    
+    .profile-tabs {
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    .video-grid {
+        animation: fadeInUp 0.8s ease-out 0.5s both;
+    }
+    
+    .profile-picture {
+        animation: subtleFloat 6s ease-in-out infinite;
+    }
+    
+    .video-thumbnail {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    }
+    
+    .video-thumbnail:hover {
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
     
     .username-background-line {
@@ -1056,11 +1101,6 @@
             
             document.getElementById('profile-name').textContent = userData.fullName || userData.username;
             document.getElementById('profile-picture').style.backgroundImage = `url('${userData.imageUrl}')`;
-            
-            // Crear círculos liquid glass después de cargar el perfil
-            setTimeout(() => {
-                createLiquidGlassCircles();
-            }, 500);
             document.getElementById('followers-count').textContent = formatNumber(userData.followers || 0);
             document.getElementById('following-count').textContent = formatNumber(userData.following || 0); 
             document.getElementById('likes-count').textContent = formatNumber(userData.likes || 0);
