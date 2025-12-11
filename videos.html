@@ -51,18 +51,19 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
-        background-color: #000;
+        background: linear-gradient(135deg, #0A0A0F 0%, #000000 100%);
         position: relative;
+        overflow: hidden;
     }
 
-    .video-container{
-        flex-grow:1;
-        position:relative;
-        overflow:hidden;
-        background-color:#000;
-        display:flex;
-        justify-content:center;
-        align-items:center;
+    .video-container {
+        flex-grow: 1;
+        position: relative;
+        overflow: hidden;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         touch-action: pan-y;
     }
 
@@ -346,31 +347,33 @@
     }
 
     .floating-menu li#logout-btn {
-        border-top: 1px solid #ddd;
+        border-top: 1px solid var(--border-color);
         margin-top: 8px;
-        padding-top: 12px;
-        color: #dc3545;
+        padding-top: 16px;
+        color: #ff4757;
     }
 
     .floating-menu li#logout-btn:hover {
-        background-color: #ffebee;
-        color: #c62828;
+        background: rgba(255, 71, 87, 0.15);
+        color: #ff6b7a;
+        border-color: rgba(255, 71, 87, 0.3);
     }
 
     .floating-menu li#logout-btn i {
-        color: #dc3545;
+        color: #ff4757;
     }
 
-    .video-wrapper{
-        position:absolute;
-        width:100%;
-        height:100%;
-        color:#fff;
-        transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        cursor:pointer;
+    .video-wrapper {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        color: #fff;
+        transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        cursor: pointer;
         display: flex;
         justify-content: center;
         align-items: center;
+        will-change: transform;
     }
 
 
@@ -396,48 +399,212 @@
         visibility: visible;
     }
 
+    /* ===== FOLLOW MODAL - Ultra Moderno ===== */
     .follow-modal-container {
-        background: #1a1a1a;
-        border: 1px solid #333;
-        border-radius: 20px;
-        padding: 30px;
+        background: rgba(20, 20, 32, 0.98);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 40px 32px;
         text-align: center;
-        color: white;
-        max-width: 300px;
+        color: var(--text-primary);
+        max-width: 340px;
         width: 90%;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        transform: scale(0.8) translateY(30px);
-        transition: transform 0.3s ease;
+        box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        transform: scale(0.9) translateY(30px);
+        transition: transform var(--transition-base), opacity var(--transition-base);
+        opacity: 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .follow-modal-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #28a745, #20c997);
     }
 
     .follow-modal-overlay.show .follow-modal-container {
         transform: scale(1) translateY(0);
+        opacity: 1;
     }
 
     .follow-success-icon {
-        font-size: 3rem;
+        font-size: 4rem;
         color: #28a745;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
         animation: successPulse 0.6s ease;
+        filter: drop-shadow(0 0 20px rgba(40, 167, 69, 0.5));
     }
 
     @keyframes successPulse {
-        0% { transform: scale(0); }
-        50% { transform: scale(1.2); }
-        100% { transform: scale(1); }
+        0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+        50% { transform: scale(1.3) rotate(10deg); }
+        100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
 
     .follow-modal-container h3 {
-        margin: 0 0 10px 0;
-        font-size: 1.4rem;
-        font-weight: 600;
+        margin: 0 0 12px 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        color: var(--text-primary);
     }
 
     .follow-modal-container p {
         margin: 0;
         font-size: 1rem;
-        color: #ccc;
-        line-height: 1.4;
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+    
+    /* ===== REPORT MODAL - Ultra Moderno ===== */
+    .report-modal-container {
+        max-width: 420px;
+    }
+    
+    .report-modal-container::before {
+        background: linear-gradient(90deg, #ef4444, #ff2d7a);
+    }
+    
+    .report-modal-title {
+        margin: 0 0 20px 0 !important;
+        font-size: 1.5rem !important;
+        font-weight: 700 !important;
+        color: #ef4444 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        letter-spacing: -0.3px;
+    }
+    
+    .report-modal-title i {
+        font-size: 1.3em;
+        filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+    }
+    
+    .report-modal-text {
+        margin: 0 0 24px 0 !important;
+        color: var(--text-secondary) !important;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        text-align: center;
+    }
+    
+    .report-modal-text strong {
+        color: var(--text-primary);
+        font-weight: 700;
+    }
+    
+    .report-form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    
+    .report-label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: -0.2px;
+    }
+    
+    .report-select,
+    .report-textarea {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+        font-family: 'Inter', sans-serif;
+        outline: none;
+        transition: all var(--transition-base);
+    }
+    
+    .report-select {
+        cursor: pointer;
+    }
+    
+    .report-select:hover {
+        border-color: var(--border-hover);
+        background: var(--bg-glass-hover);
+    }
+    
+    .report-select:focus {
+        border-color: var(--primary-blue);
+        background: var(--bg-glass-hover);
+        box-shadow: 0 0 0 4px rgba(0, 168, 255, 0.1);
+    }
+    
+    .report-textarea {
+        min-height: 100px;
+        resize: vertical;
+        line-height: 1.5;
+    }
+    
+    .report-textarea:hover {
+        border-color: var(--border-hover);
+        background: var(--bg-glass-hover);
+    }
+    
+    .report-textarea:focus {
+        border-color: var(--primary-blue);
+        background: var(--bg-glass-hover);
+        box-shadow: 0 0 0 4px rgba(0, 168, 255, 0.1);
+    }
+    
+    .report-textarea::placeholder {
+        color: var(--text-tertiary);
+    }
+    
+    .report-modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+    }
+    
+    .report-cancel-btn {
+        flex: 1;
+    }
+    
+    .report-submit-btn {
+        flex: 1;
+        padding: 14px 20px;
+        background: linear-gradient(135deg, #ef4444 0%, #ff2d7a 100%);
+        border: none;
+        border-radius: var(--radius-md);
+        color: white;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        transition: all var(--transition-base);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        font-size: 0.95rem;
+    }
+    
+    .report-submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    }
+    
+    .report-submit-btn:active {
+        transform: translateY(0);
+    }
+    
+    .report-submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
 
     /* ==== NUEVO: ESTILOS PARA MODAL DE CONFIRMACIÓN DE SEGUIR ==== */
@@ -514,71 +681,84 @@
         line-height: 1.4;
     }
 
-    /* Slider Styles */
+    /* ===== SLIDER STYLES - Ultra Moderno ===== */
     .slider-container {
         width: 100%;
         padding: 0;
         box-sizing: border-box;
-        margin-bottom: 25px;
+        margin-bottom: 28px;
         user-select: none;
     }
 
     .slider-track {
         position: relative;
         width: 100%;
-        height: 50px;
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: 25px;
+        height: 56px;
+        background: var(--bg-glass);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-full);
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
+        transition: all var(--transition-base);
+    }
+    
+    .slider-track:hover {
+        border-color: var(--border-hover);
+        background: var(--bg-glass-hover);
     }
 
     .slider-thumb {
         position: absolute;
-        left: 4px;
-        top: 4px;
-        width: 42px;
-        height: 42px;
-        background-color: #fff;
-        border-radius: 50%;
+        left: 6px;
+        top: 6px;
+        width: 44px;
+        height: 44px;
+        background: var(--gradient-1);
+        border-radius: var(--radius-full);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fe2c55;
-        font-size: 1.2rem;
+        color: #fff;
+        font-size: 1.1rem;
         cursor: grab;
         z-index: 2;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        box-shadow: var(--shadow-md), 0 0 0 3px rgba(255, 255, 255, 0.1);
+        transition: all var(--transition-base);
     }
 
     .slider-thumb:active {
         cursor: grabbing;
-        transform: scale(1.05);
+        transform: scale(1.1);
+        box-shadow: var(--shadow-lg), 0 0 0 5px rgba(255, 45, 122, 0.2);
     }
 
     .slider-text {
-        color: #aaa;
-        font-weight: 500;
+        color: var(--text-secondary);
+        font-weight: 600;
         font-size: 0.9rem;
         z-index: 1;
-        transition: opacity 0.2s ease-in-out;
+        transition: opacity var(--transition-fast);
+        letter-spacing: -0.2px;
     }
 
     .cancel-follow-btn {
         background: transparent;
         border: none;
-        color: #888;
+        color: var(--text-secondary);
         font-weight: 600;
         cursor: pointer;
-        padding: 8px 16px;
-        transition: color 0.2s;
-        font-size: 0.9rem;
+        padding: 10px 20px;
+        transition: all var(--transition-fast);
+        font-size: 0.95rem;
+        border-radius: var(--radius-md);
     }
 
     .cancel-follow-btn:hover {
-        color: #fff;
+        color: var(--text-primary);
+        background: var(--bg-glass);
     }
      /* ==== FIN DE NUEVOS ESTILOS ==== */
 
@@ -604,49 +784,52 @@
     }
 
 
+    /* ===== PLAY INDICATOR - Ultra Moderno ===== */
     .play-indicator {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 80px;
-        height: 80px;
+        width: 90px;
+        height: 90px;
         background: rgba(0, 0, 0, 0.7);
-        border-radius: 50%;
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: var(--radius-full);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 2rem;
+        font-size: 2.2rem;
         cursor: pointer;
         z-index: 10;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(5px);
+        transition: all var(--transition-base);
         border: 3px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.1);
+        animation: playPulse 2.5s infinite ease-in-out;
     }
 
     .play-indicator:hover {
-        background: rgba(0, 0, 0, 0.8);
-        transform: translate(-50%, -50%) scale(1.1);
-        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(0, 0, 0, 0.85);
+        transform: translate(-50%, -50%) scale(1.15);
+        border-color: var(--primary-blue);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7), 0 0 0 6px rgba(0, 168, 255, 0.2);
     }
 
     .play-indicator i {
-        margin-left: 3px; /* Centrar visualmente el ícono de play */
+        margin-left: 4px;
+        filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
     }
 
-    /* Animación para el indicador */
     @keyframes playPulse {
         0%, 100% {
             transform: translate(-50%, -50%) scale(1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.1);
         }
         50% {
-            transform: translate(-50%, -50%) scale(1.05);
+            transform: translate(-50%, -50%) scale(1.08);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 6px rgba(255, 255, 255, 0.15);
         }
-    }
-
-    .play-indicator {
-        animation: playPulse 2s infinite ease-in-out;
     }
 
     /* Responsive para móviles */
@@ -681,130 +864,922 @@
 
 
 
-    .video-player{
-        position:absolute;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        z-index:1;
+    .video-player {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        filter: brightness(1.02) contrast(1.05);
     }
-    .video-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(to bottom,rgba(0,0,0,.5) 0,rgba(0,0,0,0) 30%,rgba(0,0,0,0) 70%,rgba(0,0,0,.5) 100%);z-index:2;pointer-events:none}
-    .top-left-info{position:absolute;top:40px;left:20px;right:50px;z-index:3;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-    .top-left-info h3,.top-left-info .description,.top-left-info .music-info{pointer-events:auto}
-    .top-left-info h3{margin:0;font-size:1em;font-weight:700;text-shadow:1px 1px 2px rgba(0,0,0,.7)}
-    .top-left-info .description{font-size:.85em;line-height:1.4;margin:0}
-    .top-left-info .music-info{display:flex;align-items:center;font-size:.8em;font-weight:600}
-    .music-info i{margin-right:8px}
-    .bottom-left-actions{position:absolute;bottom:20px;left:20px;z-index:4;display:flex;align-items:flex-end;color:#fff;gap:20px;pointer-events:none}
-    .bottom-left-actions > div{pointer-events:auto}
-    .profile-picture-container{position:relative}
-    .profile-picture{width:45px;height:45px;border-radius:8px;background-size:cover;border:2px solid #fff;box-shadow:0 0 5px rgba(0,0,0,.5);cursor:pointer}
-    .follow-button{position:absolute;bottom:-8px;right:-8px;width:20px;height:20px;background-color:#fe2c55;border-radius:4px;display:flex;justify-content:center;align-items:center;color:#fff;font-size:16px;line-height:20px;font-weight:700;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.3);transition:opacity .3s ease,transform .3s ease}
-    .interaction-area{display:flex;flex-direction:column;align-items:center;justify-content:center;height:45px;box-sizing:border-box}
-    .interaction-area .icon{font-size:1.8em;cursor:pointer;color:#fff;transition:color .2s ease-in-out,transform .2s ease,text-shadow .2s ease;text-shadow:0 0 5px rgba(0,0,0,.5);margin-bottom:2px}
-    .interaction-area .icon.liked{color:#fe2c55;transform:scale(1.1);text-shadow:0 0 12px #fe2c55}
-    .interaction-area .count{font-size:.8em;font-weight:600}
-    .my-profile-badge{position:absolute;right:20px;bottom:20px;z-index:51;width:45px;height:45px;border-radius:8px;cursor:pointer;overflow:hidden}
-    .my-profile-picture{width:100%;height:100%;background-size:cover;border:2px solid #fff;box-shadow:0 0 5px rgba(0,0,0,.5);border-radius:8px;box-sizing:border-box;transition:filter .3s ease}
-    .my-profile-badge:hover .my-profile-picture{filter:brightness(.6)}
-    .my-profile-badge:hover span{opacity:1}
-    .options-icon{position:absolute;top:45px;right:15px;font-size:1.5em;color:#fff;z-index:3;cursor:pointer;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-    .floating-menu-container,.options-menu-container,.comments-panel-container,.share-menu-container{position:absolute;top:0;left:0;width:100%;height:100%;z-index:50;opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
-    .floating-menu-container.active,.options-menu-container.active,.comments-panel-container.active,.share-menu-container.active{opacity:1;visibility:visible;transition:opacity .3s ease}
-    .floating-menu-container,.options-menu-container,.share-menu-container{background-color:rgba(0,0,0,.4)}
-    .options-menu-container,.share-menu-container{z-index:60;background:transparent}
-    .floating-menu,.options-menu{position:absolute;width:180px;background-color:#f0f0f0;color:#111;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transition:transform .3s ease,opacity .3s ease}
-    .floating-menu{bottom:80px;right:15px;transform:translateY(15px)}
-    .options-menu{top:75px;right:15px;transform:translateY(-15px)}
-    .floating-menu-container.active .floating-menu,.options-menu-container.active .options-menu{transform:translateY(0);opacity:1}
-    .floating-menu::after,.options-menu::before{content:'';position:absolute;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent}
-    .floating-menu::after{bottom:-8px;right:24px;border-top:8px solid #f0f0f0}
-    .options-menu::before{top:-8px;right:12px;border-bottom:8px solid #f0f0f0}
-    .floating-menu ul,.options-menu ul{list-style:none;margin:0;padding:8px}
-    .floating-menu li,.options-menu li{display:flex;align-items:center;padding:12px 15px;cursor:pointer;font-size:.9em;font-weight:600;border-radius:8px;transition:background-color .2s ease}
-    .floating-menu li:hover,.options-menu li:hover{background-color:#ddd}
-    .floating-menu li i,.options-menu li i{width:25px;margin-right:12px;text-align:center;font-size:1.1em}
-    .floating-menu a{text-decoration:none;color:inherit;display:flex;align-items:center;width:100%}
-    .comments-panel-container{z-index:70}
-    .comments-panel{position:absolute;bottom:0;left:0;width:100%;background-color:#181818;border-top-left-radius:16px;border-top-right-radius:16px;transform:translateY(100%);display:flex;flex-direction:column;color:#fff;height:65%;transition:transform .4s ease-out}
-    .comments-panel-container.active .comments-panel{transform:translateY(0)}
-    .comments-header{text-align:center;padding:15px;border-bottom:1px solid #333;position:relative;flex-shrink:0}
-    .comments-header h4{font-weight:600}
-    .close-comments{position:absolute;top:50%;right:15px;transform:translateY(-50%);font-size:1.2rem;color:#888;cursor:pointer}
-    .comments-list{flex-grow:1;overflow-y:auto;padding:15px;scrollbar-width:none;-ms-overflow-style:none}
-    .comments-list::-webkit-scrollbar{display:none}
-    .comment-item{display:flex;gap:12px;margin-bottom:20px}
-    .comment-avatar{width:40px;height:40px;border-radius:8px;background-size:cover;flex-shrink:0}
-    .comment-body{flex-grow:1}
-    .comment-user{font-weight:700;font-size:.9rem;margin-bottom:4px}
-    .comment-text{font-size:.85rem;line-height:1.4}
-    .add-comment-area{display:flex;align-items:center;gap:10px;padding:10px 15px;border-top:1px solid #333;background-color:#181818;flex-shrink:0}
-    .my-avatar-comment{width:35px;height:35px;border-radius:8px;background-size:cover;background-position:center;flex-shrink:0}
-    .add-comment-area input{flex-grow:1;padding:12px 15px;border:none;background-color:#2c2c2c;border-radius:20px;color:#fff;outline:none}
-    .add-comment-area input::placeholder{color:#888}
-    .add-comment-area .send-comment-btn{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;padding:5px}
-    .share-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
-    .share-panel-header h4{margin:0;font-weight:600;font-size:1.1em}
-    .share-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:20px}
-    .share-option{display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer}
-    .share-icon{width:65px;height:65px;border-radius:12px;display:flex;justify-content:center;align-items:center;font-size:2em;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s ease-out,box-shadow .2s ease-out}
-    .share-icon:hover{transform:translateY(-5px) scale(1.05);box-shadow:0 8px 20px rgba(0,0,0,.4)}
-    .share-icon.whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
-    .share-icon.instagram{background:radial-gradient(circle at 30% 107%,#fdf497 0,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285aeb 90%)}
-    .share-icon.copy-link{background:linear-gradient(135deg,#6c757d,#343a40)}
-    .share-option span{font-size:.8em;font-weight:500;color:#ccc}
-    .download-progress-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);z-index:999;display:flex;justify-content:center;align-items:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
-    .download-progress-overlay.active{opacity:1;visibility:visible;transition:opacity .3s}
-    .download-progress-box{background-color:#282828;color:#fff;padding:20px 30px;border-radius:12px;text-align:center;font-weight:600}
-    .download-progress-box i{font-size:1.5em;margin-right:10px}
+    
+    .video-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0) 25%,
+            rgba(0, 0, 0, 0) 75%,
+            rgba(0, 0, 0, 0.7) 100%
+        );
+        z-index: 2;
+        pointer-events: none;
+    }
+    
+    /* ===== TOP LEFT INFO - Ultra Moderno ===== */
+    .top-left-info {
+        position: absolute;
+        top: 50px;
+        left: 24px;
+        right: 80px;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        pointer-events: none;
+    }
+    
+    .top-left-info h3,
+    .top-left-info .description,
+    .top-left-info .music-info {
+        pointer-events: auto;
+    }
+    
+    .top-left-info h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
+        letter-spacing: -0.3px;
+        background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.9) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .top-left-info .description {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+        font-weight: 400;
+    }
+    
+    .top-left-info .music-info {
+        display: flex;
+        align-items: center;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.9);
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+        padding: 8px 14px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        width: fit-content;
+        transition: all var(--transition-base);
+    }
+    
+    .music-info:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: translateX(4px);
+    }
+    
+    .music-info i {
+        margin-right: 10px;
+        font-size: 1em;
+        color: var(--primary-blue);
+        filter: drop-shadow(0 0 8px rgba(0, 168, 255, 0.5));
+    }
+    
+    /* ===== BOTTOM LEFT ACTIONS - Ultra Moderno ===== */
+    .bottom-left-actions {
+        position: absolute;
+        bottom: 30px;
+        left: 24px;
+        z-index: 4;
+        display: flex;
+        align-items: flex-end;
+        color: #fff;
+        gap: 24px;
+        pointer-events: none;
+    }
+    
+    .bottom-left-actions > div {
+        pointer-events: auto;
+    }
+    
+    .profile-picture-container {
+        position: relative;
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+    }
+    
+    .profile-picture {
+        width: 52px;
+        height: 52px;
+        border-radius: var(--radius-md);
+        background-size: cover;
+        border: 2.5px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all var(--transition-base);
+        background-position: center;
+    }
+    
+    .profile-picture:hover {
+        transform: scale(1.08);
+        border-color: var(--primary-blue);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(0, 168, 255, 0.2);
+    }
+    
+    .follow-button {
+        position: absolute;
+        bottom: -10px;
+        right: -10px;
+        width: 24px;
+        height: 24px;
+        background: var(--gradient-1);
+        border-radius: var(--radius-sm);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(255, 45, 122, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.1);
+        transition: all var(--transition-base);
+        border: none;
+    }
+    
+    .follow-button:hover {
+        transform: scale(1.15) rotate(5deg);
+        box-shadow: 0 6px 20px rgba(255, 45, 122, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.2);
+    }
+    
+    .interaction-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-sizing: border-box;
+        padding: 8px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .interaction-area:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    .interaction-area .icon {
+        font-size: 2em;
+        cursor: pointer;
+        color: #fff;
+        transition: all var(--transition-base);
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+        margin-bottom: 0;
+        filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+    }
+    
+    .interaction-area .icon:hover {
+        transform: scale(1.15);
+        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.3));
+    }
+    
+    .interaction-area .icon.liked {
+        color: var(--primary-pink);
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 16px rgba(255, 45, 122, 0.8));
+        animation: heartBeat 0.5s ease-out;
+    }
+    
+    @keyframes heartBeat {
+        0%, 100% { transform: scale(1.1); }
+        25% { transform: scale(1.3) rotate(-5deg); }
+        75% { transform: scale(1.2) rotate(5deg); }
+    }
+    
+    .interaction-area .count {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.95);
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+        letter-spacing: -0.2px;
+    }
+    /* ===== MY PROFILE BADGE - Ultra Moderno ===== */
+    .my-profile-badge {
+        position: absolute;
+        right: 24px;
+        bottom: 30px;
+        z-index: 51;
+        width: 52px;
+        height: 52px;
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        overflow: visible;
+        filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+        transition: all var(--transition-base);
+    }
+    
+    .my-profile-badge:hover {
+        transform: scale(1.08) translateY(-2px);
+        filter: drop-shadow(0 6px 20px rgba(0, 168, 255, 0.4));
+    }
+    
+    .my-profile-picture {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        border: 2.5px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        box-sizing: border-box;
+        transition: all var(--transition-base);
+    }
+    
+    .my-profile-badge:hover .my-profile-picture {
+        filter: brightness(0.9);
+        border-color: var(--primary-blue);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(0, 168, 255, 0.2);
+    }
+    
+    .my-profile-badge:hover span {
+        opacity: 1;
+    }
+    
+    /* ===== OPTIONS ICON - Ultra Moderno ===== */
+    .options-icon {
+        position: absolute;
+        top: 50px;
+        right: 24px;
+        font-size: 1.6em;
+        color: #fff;
+        z-index: 3;
+        cursor: pointer;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-full);
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        transition: all var(--transition-base);
+    }
+    
+    .options-icon:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    /* ===== FLOATING MENUS - Ultra Moderno ===== */
+    .floating-menu-container,
+    .options-menu-container,
+    .comments-panel-container,
+    .share-menu-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 50;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--transition-base), visibility 0s 0.3s;
+    }
+    
+    .floating-menu-container.active,
+    .options-menu-container.active,
+    .comments-panel-container.active,
+    .share-menu-container.active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity var(--transition-base);
+    }
+    
+    .floating-menu-container,
+    .options-menu-container,
+    .share-menu-container {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+    }
+    
+    .options-menu-container,
+    .share-menu-container {
+        z-index: 60;
+        background: rgba(0, 0, 0, 0.5);
+    }
+    
+    .floating-menu,
+    .options-menu {
+        position: absolute;
+        width: 200px;
+        background: rgba(20, 20, 32, 0.95);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        color: var(--text-primary);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        opacity: 0;
+        transition: transform var(--transition-base), opacity var(--transition-base);
+    }
+    
+    .floating-menu {
+        bottom: 90px;
+        right: 20px;
+        transform: translateY(20px);
+    }
+    
+    .options-menu {
+        top: 90px;
+        right: 20px;
+        transform: translateY(-20px);
+    }
+    
+    .floating-menu-container.active .floating-menu,
+    .options-menu-container.active .options-menu {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    
+    .floating-menu::after,
+    .options-menu::before {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+    }
+    
+    .floating-menu::after {
+        bottom: -10px;
+        right: 30px;
+        border-top: 10px solid rgba(20, 20, 32, 0.95);
+    }
+    
+    .options-menu::before {
+        top: -10px;
+        right: 20px;
+        border-bottom: 10px solid rgba(20, 20, 32, 0.95);
+    }
+    
+    .floating-menu ul,
+    .options-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 8px;
+    }
+    
+    .floating-menu li,
+    .options-menu li {
+        display: flex;
+        align-items: center;
+        padding: 14px 18px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+        margin: 4px 0;
+    }
+    
+    .floating-menu li:hover,
+    .options-menu li:hover {
+        background: var(--bg-glass-hover);
+        transform: translateX(4px);
+    }
+    
+    .floating-menu li i,
+    .options-menu li i {
+        width: 24px;
+        margin-right: 14px;
+        text-align: center;
+        font-size: 1.1rem;
+        color: var(--primary-blue);
+    }
+    
+    .floating-menu a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    
+    /* ===== COMMENTS PANEL - Ultra Moderno ===== */
+    .comments-panel-container {
+        z-index: 70;
+    }
+    
+    .comments-panel {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: rgba(20, 20, 32, 0.98);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border-top-left-radius: var(--radius-xl);
+        border-top-right-radius: var(--radius-xl);
+        border-top: 1px solid var(--border-color);
+        transform: translateY(100%);
+        display: flex;
+        flex-direction: column;
+        color: var(--text-primary);
+        height: 70%;
+        max-height: 600px;
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+    }
+    
+    .comments-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-full);
+        margin-top: 8px;
+    }
+    
+    .comments-panel-container.active .comments-panel {
+        transform: translateY(0);
+    }
+    
+    .comments-header {
+        text-align: center;
+        padding: 20px 20px 16px;
+        border-bottom: 1px solid var(--border-color);
+        position: relative;
+        flex-shrink: 0;
+    }
+    
+    .comments-header h4 {
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: -0.3px;
+        color: var(--text-primary);
+    }
+    
+    .close-comments {
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        font-size: 1.3rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-full);
+        transition: all var(--transition-fast);
+    }
+    
+    .close-comments:hover {
+        background: var(--bg-glass);
+        color: var(--text-primary);
+        transform: translateY(-50%) rotate(90deg);
+    }
+    
+    .comments-list {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 20px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+    
+    .comments-list::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .comments-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .comments-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-full);
+    }
+    
+    .comment-item {
+        display: flex;
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+    
+    .comment-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-md);
+        background-size: cover;
+        background-position: center;
+        flex-shrink: 0;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .comment-body {
+        flex-grow: 1;
+    }
+    
+    .comment-user {
+        font-weight: 700;
+        font-size: 0.95rem;
+        margin-bottom: 6px;
+        color: var(--text-primary);
+        letter-spacing: -0.2px;
+    }
+    
+    .comment-text {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        color: var(--text-secondary);
+    }
+    
+    .add-comment-area {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border-color);
+        background: rgba(10, 10, 15, 0.5);
+        flex-shrink: 0;
+    }
+    
+    .my-avatar-comment {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-md);
+        background-size: cover;
+        background-position: center;
+        flex-shrink: 0;
+        border: 2px solid var(--border-color);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .add-comment-area input {
+        flex-grow: 1;
+        padding: 14px 18px;
+        border: 1.5px solid var(--border-color);
+        background: var(--bg-glass);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-xl);
+        color: var(--text-primary);
+        outline: none;
+        font-size: 0.95rem;
+        font-family: 'Inter', sans-serif;
+        transition: all var(--transition-base);
+    }
+    
+    .add-comment-area input:focus {
+        border-color: var(--primary-blue);
+        background: var(--bg-glass-hover);
+        box-shadow: 0 0 0 4px rgba(0, 168, 255, 0.1);
+    }
+    
+    .add-comment-area input::placeholder {
+        color: var(--text-tertiary);
+    }
+    
+    .add-comment-area .send-comment-btn {
+        background: var(--gradient-1);
+        border: none;
+        color: #fff;
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .add-comment-area .send-comment-btn:hover {
+        transform: scale(1.1);
+        box-shadow: var(--shadow-lg), var(--shadow-glow);
+    }
+    
+    .add-comment-area .send-comment-btn:active {
+        transform: scale(0.95);
+    }
+    /* ===== SHARE PANEL - Ultra Moderno ===== */
+    .share-panel {
+        position: absolute;
+        bottom: 100px;
+        right: 20px;
+        background: rgba(20, 20, 32, 0.98);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-xl);
+        padding: 24px;
+        width: 280px;
+        box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        transform: translateY(20px) scale(0.95);
+        opacity: 0;
+        transition: all var(--transition-base);
+    }
+    
+    .share-menu-container.active .share-panel {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    
+    .share-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    
+    .share-panel-header h4 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.15rem;
+        letter-spacing: -0.3px;
+        color: var(--text-primary);
+    }
+    
+    .share-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+    
+    .share-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        padding: 12px;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-base);
+    }
+    
+    .share-option:hover {
+        background: var(--bg-glass);
+        transform: translateY(-4px);
+    }
+    
+    .share-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: var(--radius-lg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 1.8rem;
+        color: #fff;
+        box-shadow: var(--shadow-md);
+        transition: all var(--transition-base);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .share-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s;
+    }
+    
+    .share-icon:hover {
+        transform: translateY(-6px) scale(1.08);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .share-icon:hover::before {
+        left: 100%;
+    }
+    
+    .share-icon.whatsapp {
+        background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    }
+    
+    .share-icon.instagram {
+        background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+    }
+    
+    .share-icon.copy-link {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+    
+    .share-option span {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        letter-spacing: -0.2px;
+    }
+    
+    .share-option:hover span {
+        color: var(--text-primary);
+    }
+    /* ===== DOWNLOAD PROGRESS - Ultra Moderno ===== */
+    .download-progress-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(10px);
+        z-index: 999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--transition-base), visibility 0s 0.3s;
+    }
+    
+    .download-progress-overlay.active {
+        opacity: 1;
+        visibility: visible;
+        transition: opacity var(--transition-base);
+    }
+    
+    .download-progress-box {
+        background: rgba(20, 20, 32, 0.98);
+        backdrop-filter: blur(30px) saturate(180%);
+        color: var(--text-primary);
+        padding: 28px 40px;
+        border-radius: var(--radius-xl);
+        text-align: center;
+        font-weight: 600;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .download-progress-box i {
+        font-size: 1.8em;
+        margin-right: 12px;
+        color: var(--primary-blue);
+        filter: drop-shadow(0 0 10px rgba(0, 168, 255, 0.5));
+    }
+    /* ===== LOADING SPINNER - Ultra Moderno ===== */
     .loading-spinner {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
-        color: white;
+        color: var(--text-primary);
         z-index: 10;
     }
-    .loading-spinner img {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 10px;
-    }
-    .loading-spinner p {
-        font-size: 1.2em;
-        font-weight: 600;
-    }
-    .volume-indicator{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3em;color:rgba(255,255,255,.8);background-color:rgba(0,0,0,.4);padding:15px;border-radius:50%;z-index:5;opacity:0;transition:opacity .3s ease-out;pointer-events:auto;}
-    .volume-indicator.show{opacity:1}
     
-    /* Alinea tu avatar al mismo nivel que el del streamer */
-    .my-profile-badge {
-      bottom: 22px !important;
+    .loading-spinner img {
+        width: 100px;
+        height: 100px;
+        margin-bottom: 16px;
+        filter: drop-shadow(0 0 30px rgba(0, 168, 255, 0.3));
+        animation: logoFloat 2s ease-in-out infinite;
     }
-/* REEMPLAZA ESTE BLOQUE COMPLETO EN TU CSS */
+    
+    @keyframes logoFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .loading-spinner p {
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+    
+    /* ===== VOLUME INDICATOR - Ultra Moderno ===== */
+    .volume-indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 3.5em;
+        color: rgba(255, 255, 255, 0.95);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(20px);
+        padding: 24px 32px;
+        border-radius: var(--radius-xl);
+        z-index: 5;
+        opacity: 0;
+        transition: opacity var(--transition-base);
+        pointer-events: auto;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .volume-indicator.show {
+        opacity: 1;
+    }
+    
+    /* ===== RESPONSIVE - Ultra Moderno ===== */
     @media (max-width: 480px) {
         .bottom-left-actions {
-            left: 15px;
-            /* MODIFICADO: Aumentamos el valor para subir los iconos */
-            bottom: 20px; 
-            gap: 15px;
+            left: 16px;
+            bottom: 24px;
+            gap: 18px;
         }
-
 
         .top-left-info {
-            top: 10px;
-            left: 15px;
+            top: 12px;
+            left: 16px;
+            right: 70px;
+            gap: 12px;
         }
+        
+        .top-left-info h3 {
+            font-size: 1rem;
+        }
+        
+        .top-left-info .description {
+            font-size: 0.85rem;
+        }
+        
+        .top-left-info .music-info {
+            font-size: 0.8rem;
+            padding: 6px 12px;
+        }
+        
         .my-profile-badge {
-            /* MODIFICADO: Aumentamos el valor para que se alinee con los otros iconos */
-            bottom: 95px; 
-            right: 10px;
+            bottom: 100px;
+            right: 16px;
+            width: 48px;
+            height: 48px;
         }
+        
         .options-icon {
-            top: 10px;
+            top: 12px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.4em;
+        }
+        
+        .profile-picture {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .interaction-area .icon {
+            font-size: 1.7em;
+        }
+        
+        .comments-panel {
+            height: 75%;
+        }
+        
+        .share-panel {
+            width: calc(100% - 40px);
+            max-width: 320px;
+        }
+        
+        .share-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .share-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.6rem;
         }
     }
 </style>
@@ -856,12 +1831,12 @@
         
         <!-- Modal de Reportar Video -->
         <div class="follow-modal-overlay" id="report-video-modal">
-            <div class="follow-modal-container">
-                <h3 style="margin-bottom: 20px; color: #ef4444;"><i class="fas fa-flag"></i> Reportar Video</h3>
-                <p style="margin-bottom: 15px; color: #ccc;">Estás reportando un video de <strong id="report-video-username"></strong></p>
-                <div style="margin-bottom: 15px; text-align: left;">
-                    <label style="display: block; margin-bottom: 8px; color: #fff; font-weight: 600;">Motivo del reporte *</label>
-                    <select id="report-video-reason" style="width: 100%; padding: 10px; background: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 0.9rem;">
+            <div class="follow-modal-container report-modal-container">
+                <h3 class="report-modal-title"><i class="fas fa-flag"></i> Reportar Video</h3>
+                <p class="report-modal-text">Estás reportando un video de <strong id="report-video-username"></strong></p>
+                <div class="report-form-group">
+                    <label class="report-label">Motivo del reporte *</label>
+                    <select id="report-video-reason" class="report-select">
                         <option value="">Selecciona un motivo</option>
                         <option value="Contenido inapropiado">Contenido inapropiado</option>
                         <option value="Spam o engañoso">Spam o engañoso</option>
@@ -871,13 +1846,13 @@
                         <option value="Otro">Otro</option>
                     </select>
                 </div>
-                <div style="margin-bottom: 20px; text-align: left;">
-                    <label style="display: block; margin-bottom: 8px; color: #fff; font-weight: 600;">Descripción (opcional)</label>
-                    <textarea id="report-video-description" placeholder="Proporciona más detalles..." style="width: 100%; min-height: 80px; padding: 10px; background: #2c2c2c; border: 1px solid #444; border-radius: 8px; color: #fff; font-size: 0.9rem; resize: vertical; font-family: 'Poppins', sans-serif;"></textarea>
+                <div class="report-form-group">
+                    <label class="report-label">Descripción (opcional)</label>
+                    <textarea id="report-video-description" placeholder="Proporciona más detalles..." class="report-textarea"></textarea>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button id="cancel-report-video-btn" class="cancel-follow-btn" style="flex: 1;">Cancelar</button>
-                    <button id="submit-report-video-btn" style="flex: 1; padding: 10px; background: #ef4444; border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Enviar</button>
+                <div class="report-modal-actions">
+                    <button id="cancel-report-video-btn" class="cancel-follow-btn report-cancel-btn">Cancelar</button>
+                    <button id="submit-report-video-btn" class="report-submit-btn">Enviar</button>
                 </div>
             </div>
         </div>
