@@ -1043,49 +1043,6 @@
             return num.toString();
         }
         
-        // Función para crear círculos liquid glass animados
-        function createLiquidGlassCircles() {
-            const header = document.querySelector('.profile-header');
-            if (!header) return;
-            
-            // Limpiar círculos existentes
-            const existingCircles = header.querySelectorAll('.liquid-glass-circle');
-            existingCircles.forEach(circle => circle.remove());
-            
-            // Crear 6-10 círculos aleatorios
-            const circleCount = Math.floor(Math.random() * 5) + 6; // Entre 6 y 10 círculos
-            
-            for (let i = 0; i < circleCount; i++) {
-                const circle = document.createElement('div');
-                circle.className = 'liquid-glass-circle';
-                
-                // Tamaño aleatorio entre 60px y 150px (más grandes)
-                const size = Math.floor(Math.random() * 90) + 60;
-                circle.style.width = `${size}px`;
-                circle.style.height = `${size}px`;
-                
-                // Posición Y aleatoria en la parte superior donde están los textos del username (primeros 50% del header)
-                const headerHeight = header.offsetHeight;
-                const usernameArea = headerHeight * 0.50; // Área donde están los textos del username
-                const randomY = Math.floor(Math.random() * (usernameArea - size));
-                if (randomY >= 0) {
-                    circle.style.setProperty('--random-y', `${randomY}px`);
-                } else {
-                    circle.style.setProperty('--random-y', '10px');
-                }
-                
-                // Duración de animación aleatoria entre 12s y 20s (más rápido)
-                const duration = Math.floor(Math.random() * 8) + 12;
-                circle.style.animationDuration = `${duration}s`;
-                
-                // Delay aleatorio para que no todos empiecen al mismo tiempo
-                const delay = Math.random() * 8;
-                circle.style.animationDelay = `${delay}s`;
-                
-                header.appendChild(circle);
-            }
-        }
-        
         async function displayProfileData(userData) {
             const header = document.querySelector('.profile-header');
             const usernameLines = document.querySelectorAll('.username-background-line');
