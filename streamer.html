@@ -1007,29 +1007,30 @@
             const existingCircles = header.querySelectorAll('.liquid-glass-circle');
             existingCircles.forEach(circle => circle.remove());
             
-            // Crear 5-8 círculos aleatorios
-            const circleCount = Math.floor(Math.random() * 4) + 5; // Entre 5 y 8 círculos
+            // Crear 6-10 círculos aleatorios
+            const circleCount = Math.floor(Math.random() * 5) + 6; // Entre 6 y 10 círculos
             
             for (let i = 0; i < circleCount; i++) {
                 const circle = document.createElement('div');
                 circle.className = 'liquid-glass-circle';
                 
-                // Tamaño aleatorio entre 40px y 120px
-                const size = Math.floor(Math.random() * 80) + 40;
+                // Tamaño aleatorio entre 60px y 150px (más grandes)
+                const size = Math.floor(Math.random() * 90) + 60;
                 circle.style.width = `${size}px`;
                 circle.style.height = `${size}px`;
                 
-                // Posición Y aleatoria dentro del header
+                // Posición Y aleatoria dentro del área del degradado (primeros 75% del header)
                 const headerHeight = header.offsetHeight;
-                const randomY = Math.floor(Math.random() * (headerHeight - size));
+                const gradientArea = headerHeight * 0.75; // Área del degradado
+                const randomY = Math.floor(Math.random() * (gradientArea - size));
                 circle.style.setProperty('--random-y', `${randomY}px`);
                 
-                // Duración de animación aleatoria entre 15s y 25s
-                const duration = Math.floor(Math.random() * 10) + 15;
+                // Duración de animación aleatoria entre 12s y 20s (más rápido)
+                const duration = Math.floor(Math.random() * 8) + 12;
                 circle.style.animationDuration = `${duration}s`;
                 
                 // Delay aleatorio para que no todos empiecen al mismo tiempo
-                const delay = Math.random() * 5;
+                const delay = Math.random() * 8;
                 circle.style.animationDelay = `${delay}s`;
                 
                 header.appendChild(circle);
