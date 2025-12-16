@@ -989,8 +989,19 @@
             initContextMenu();
             setupFilters();
             setupModals();
+            
+            // Actualizar estado del usuario como online
+            if (loggedInUser && loggedInUser.username) {
+                API.updateUserStatus(loggedInUser.username);
+            }
 
-            conversationsInterval = setInterval(loadConversations, 30000);
+            conversationsInterval = setInterval(() => {
+                loadConversations();
+                // Mantener estado como online mientras está en la página
+                if (loggedInUser && loggedInUser.username) {
+                    API.updateUserStatus(loggedInUser.username);
+                }
+            }, 30000);
         });
 
         async function loadConversations() {
@@ -1022,7 +1033,9 @@
                     filteredConversations = allConversations.filter(conv => conv.unreadCount > 0);
                     break;
                 case 'online':
-                    filteredConversations = allConversations.filter(conv => conv.status === 'online' || conv.status === 'Online');
+                    filteredConversations = allConversations.filter(conv => 
+                        (conv.status === 'online' || conv.is_online === true)
+                    );
                     break;
                 default:
                     filteredConversations = allConversations;
@@ -1091,9 +1104,9 @@
                 const isFromMe = conv.lastMessage.from === loggedInUser.username;
                 const displayPreview = isFromMe ? `Tú: ${preview}` : preview;
                 
-                // Determinar estado (por ahora simulamos, pero puedes obtenerlo del backend)
-                const status = conv.status || 'online'; // Por defecto online
-                const statusClass = status === 'online' || status === 'Online' ? 'online' : 'away';
+                // Obtener estado real del backend
+                const status = conv.status || (conv.is_online ? 'online' : 'offline');
+                const statusClass = status === 'online' ? 'online' : status === 'away' ? 'away' : '';
                 
                 return `
                     <div class="chat-item ${conv.unreadCount > 0 ? 'unread' : ''}" 
@@ -1102,9 +1115,9 @@
                         <div style="position: relative;">
                             <img src="${conv.imageUrl}" alt="Avatar" class="chat-avatar" 
                                  onerror="this.src='https://via.placeholder.com/60/666/FFF?text=${conv.username.charAt(0).toUpperCase()}'">
-                            ${status === 'online' || status === 'Online' ? 
+                            ${status === 'online' ? 
                                 `<div class="status-indicator online"></div>` : 
-                                status === 'away' || status === 'Away' ? 
+                                status === 'away' ? 
                                 `<div class="status-indicator away"></div>` : 
                                 ''}
                         </div>
@@ -1387,17 +1400,23 @@
                 cancelBtn.disabled = true;
                 
                 try {
-                    // Eliminar del backend si existe API, sino solo localmente
-                    // Por ahora eliminamos solo localmente
-                    allConversations = allConversations.filter(conv => conv.username !== conversationToDelete);
-                    applyFilter();
-                    updateUnreadBadge();
+                    // Eliminar del backend permanentemente
+                    const result = await API.deleteConversation(loggedInUser.username, conversationToDelete);
                     
-                    showToast('Conversación eliminada', 'success');
-                    closeModal();
+                    if (result.success) {
+                        // Eliminar también localmente
+                        allConversations = allConversations.filter(conv => conv.username !== conversationToDelete);
+                        applyFilter();
+                        updateUnreadBadge();
+                        
+                        showToast('Conversación eliminada permanentemente', 'success');
+                        closeModal();
+                    } else {
+                        throw new Error(result.message || 'Error al eliminar conversación');
+                    }
                 } catch (error) {
                     console.error('Error al eliminar conversación:', error);
-                    showToast('Error al eliminar la conversación', 'error');
+                    showToast(error.message || 'Error al eliminar la conversación', 'error');
                 } finally {
                     confirmBtn.classList.remove('loading');
                     confirmBtn.disabled = false;

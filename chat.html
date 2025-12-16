@@ -718,10 +718,20 @@
             loadUserProfile();
             loadMessages();
             markAsRead();
+            updateUserStatus();
+            
+            // Actualizar estado del usuario actual como online
+            if (loggedInUser && loggedInUser.username) {
+                API.updateUserStatus(loggedInUser.username);
+            }
             
             messagesInterval = setInterval(() => {
                 loadMessages(true);
                 updateUserStatus();
+                // Mantener estado como online mientras está en la página
+                if (loggedInUser && loggedInUser.username) {
+                    API.updateUserStatus(loggedInUser.username);
+                }
             }, 3000);
         }
 
@@ -740,24 +750,62 @@
             }
         }
 
-        function updateUserStatus() {
-            // Simular estado (puedes obtenerlo del backend)
-            // Por ahora alternamos entre online/offline para demostración
+        async function updateUserStatus() {
             const statusDot = document.getElementById('status-dot');
             const statusText = document.getElementById('status-text');
             
-            // En producción, esto vendría del backend
-            // Por ahora simulamos que está online
-            userStatus = 'online';
-            
-            if (statusDot && statusText) {
-                if (userStatus === 'online') {
-                    statusDot.className = 'status-dot';
-                    statusText.textContent = 'En línea';
-                } else if (userStatus === 'away') {
-                    statusDot.className = 'status-dot away';
-                    statusText.textContent = 'Ausente';
-                } else {
+            try {
+                // Obtener estado del usuario desde el backend
+                const result = await API.getUserProfile(chatUser);
+                if (result.success && result.data) {
+                    // Intentar obtener estado de las conversaciones
+                    const convResult = await API.getConversations(loggedInUser.username);
+                    if (convResult.success && convResult.data) {
+                        const conversation = convResult.data.find(c => c.username === chatUser);
+                        if (conversation) {
+                            userStatus = conversation.status || (conversation.is_online ? 'online' : 'offline');
+                            
+                            if (statusDot && statusText) {
+                                if (userStatus === 'online') {
+                                    statusDot.className = 'status-dot';
+                                    statusText.textContent = 'En línea';
+                                } else if (userStatus === 'away') {
+                                    statusDot.className = 'status-dot away';
+                                    statusText.textContent = 'Ausente';
+                                } else {
+                                    statusDot.className = 'status-dot offline';
+                                    if (conversation.lastSeen) {
+                                        const lastSeenDate = new Date(conversation.lastSeen);
+                                        const now = new Date();
+                                        const diffMinutes = Math.floor((now - lastSeenDate) / 60000);
+                                        
+                                        if (diffMinutes < 60) {
+                                            statusText.textContent = `Hace ${diffMinutes}m`;
+                                        } else if (diffMinutes < 1440) {
+                                            const hours = Math.floor(diffMinutes / 60);
+                                            statusText.textContent = `Hace ${hours}h`;
+                                        } else {
+                                            const days = Math.floor(diffMinutes / 1440);
+                                            statusText.textContent = `Hace ${days}d`;
+                                        }
+                                    } else {
+                                        statusText.textContent = 'Desconectado';
+                                    }
+                                }
+                            }
+                            return;
+                        }
+                    }
+                }
+                
+                // Fallback: mostrar desconectado
+                if (statusDot && statusText) {
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Desconectado';
+                }
+            } catch (error) {
+                console.error('Error al obtener estado:', error);
+                if (statusDot && statusText) {
                     statusDot.className = 'status-dot offline';
                     statusText.textContent = 'Desconectado';
                 }

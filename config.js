@@ -280,6 +280,22 @@ const API = {
         }
     },
 
+    async updateUserStatus(username) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/user/update-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error al actualizar estado:', error);
+            return { success: false, message: 'Error de conexión' };
+        }
+    },
+
     // ==================== MENSAJERÍA ====================
     
     async getConversations(username) {
@@ -346,6 +362,22 @@ const API = {
             return await response.json();
         } catch (error) {
             console.error('Error al marcar como leído:', error);
+            return { success: false, message: 'Error de conexión' };
+        }
+    },
+
+    async deleteConversation(username, otherUser) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/messages/delete-conversation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, otherUser })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Error al eliminar conversación:', error);
             return { success: false, message: 'Error de conexión' };
         }
     },

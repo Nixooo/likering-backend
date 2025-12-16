@@ -1010,8 +1010,8 @@
     }
     
     .profile-picture {
-        width: 52px;
-        height: 52px;
+        width: 70px;
+        height: 70px;
         border-radius: var(--radius-md);
         background-size: cover;
         border: 2.5px solid rgba(255, 255, 255, 0.9);
@@ -1127,8 +1127,8 @@
     }
     
     .my-profile-picture {
-        width: 52px;
-        height: 52px;
+        width: 70px;
+        height: 70px;
         border-radius: var(--radius-md);
         background-size: cover;
         background-position: center;
@@ -3328,8 +3328,22 @@
             e.stopPropagation();
             profileMenuContainer.classList.toggle('active')
         });
-        profileMenuContainer.addEventListener('click', () => profileMenuContainer.classList.remove('active'));
-        floatingMenu.addEventListener('click', e => e.stopPropagation());
+        profileMenuContainer.addEventListener('click', (e) => {
+            // Solo cerrar si se hace click fuera del menú
+            if (e.target === profileMenuContainer) {
+                profileMenuContainer.classList.remove('active');
+            }
+        });
+        floatingMenu.addEventListener('click', e => {
+            e.stopPropagation();
+            // Permitir que los enlaces funcionen normalmente
+            if (e.target.tagName === 'A' || e.target.closest('a')) {
+                const link = e.target.tagName === 'A' ? e.target : e.target.closest('a');
+                if (link && link.href) {
+                    window.location.href = link.href;
+                }
+            }
+        });
         optionsMenuContainer.addEventListener('click', () => optionsMenuContainer.classList.remove('active'));
         optionsMenu.addEventListener('click', e => e.stopPropagation());
         shareButton.addEventListener('click', e => {
