@@ -3,6 +3,9 @@
 
 (function() {
     'use strict';
+    
+    // Asegurar que las funciones estén disponibles globalmente
+    if (typeof window === 'undefined') return;
 
     // Crear estilos de modales si no existen
     if (!document.getElementById('modal-system-styles')) {
@@ -271,6 +274,24 @@
         });
     };
 
+    // Asegurar que las funciones estén disponibles incluso si el script se carga tarde
+    if (typeof window.showModal === 'undefined') {
+        window.showModal = function(message, title, type) {
+            return new Promise((resolve) => {
+                alert(message);
+                resolve();
+            });
+        };
+    }
+    
+    if (typeof window.showConfirmModal === 'undefined') {
+        window.showConfirmModal = function(message, title, type) {
+            return new Promise((resolve) => {
+                resolve(confirm(message));
+            });
+        };
+    }
+    
     // Reemplazar alert y confirm globalmente si se desea
     // window.alert = function(message) { return showModal(message, 'Aviso', 'info'); };
     // window.confirm = function(message) { return showConfirmModal(message, 'Confirmar', 'warning'); };
