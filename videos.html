@@ -2788,7 +2788,7 @@
                     e.stopPropagation();
                     e.preventDefault();
                     if (!loggedInUser) {
-                        alert("Debes iniciar sesión para seguir canales.");
+                        showModal("Debes iniciar sesión para seguir canales.", 'Sesión requerida', 'info');
                         return;
                     }
                     const targetUser = videoData.user.substring(1);
@@ -3531,7 +3531,7 @@
             }
         });
 
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
         e.stopPropagation();
         e.preventDefault();
         
@@ -3656,7 +3656,7 @@
                                         e.stopPropagation();
                                         e.preventDefault();
                                         if (!loggedInUser) {
-                                            alert("Debes iniciar sesión para seguir canales.");
+                                            showModal("Debes iniciar sesión para seguir canales.", 'Sesión requerida', 'info');
                                             return;
                                         }
                                         showFollowConfirmModal(videoUsername);
