@@ -116,33 +116,63 @@
         }
         
         .new-conversation-btn {
-            background: var(--gradient-1);
-            border: none;
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            color: white;
-            font-weight: 600;
-            font-size: 0.9rem;
+            background: transparent;
+            border: 1.5px solid var(--border-color);
+            padding: 0;
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-full);
+            color: var(--text-primary);
+            font-weight: 400;
+            font-size: 1.2rem;
             cursor: pointer;
             transition: all var(--transition-base);
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 16px rgba(255, 45, 122, 0.3);
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
             font-family: 'Inter', sans-serif;
         }
         
-        .new-conversation-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 24px rgba(255, 45, 122, 0.5);
+        .new-conversation-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+            opacity: 0.1;
         }
-
+        
+        .new-conversation-btn:hover {
+            border-color: var(--primary-blue);
+            background: rgba(0, 168, 255, 0.05);
+        }
+        
+        .new-conversation-btn:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
         .new-conversation-btn i {
-            transition: transform var(--transition-base);
+            position: relative;
+            z-index: 1;
+            transition: transform var(--transition-base), color var(--transition-base);
         }
 
         .new-conversation-btn:hover i {
-            transform: rotate(90deg);
+            transform: scale(1.1);
+            color: var(--primary-blue);
+        }
+        
+        .new-conversation-btn span {
+            display: none;
         }
 
         .messages-title {
@@ -838,12 +868,9 @@
             }
 
             .new-conversation-btn {
-                padding: 10px 14px;
-                font-size: 0.85rem;
-            }
-
-            .new-conversation-btn span {
-                display: none;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
             }
 
             .messages-title {
