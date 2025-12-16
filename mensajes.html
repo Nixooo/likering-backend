@@ -63,7 +63,7 @@
             background: var(--bg-primary);
         }
 
-        /* ===== HEADER - Ultra Moderno ===== */
+        /* ===== HEADER - Ultra Moderno con Glassmorphism ===== */
         .messages-header {
             width: 100%;
             padding: 80px 20px 24px;
@@ -72,9 +72,9 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(10, 10, 15, 0.75);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
             border-bottom: 1px solid var(--border-color);
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
         }
@@ -196,6 +196,57 @@
             pointer-events: none;
         }
 
+        /* ===== FILTROS ===== */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 4px;
+        }
+
+        .filter-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all var(--transition-base);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-tab:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--border-hover);
+        }
+
+        .filter-tab.active {
+            background: var(--gradient-1);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 45, 122, 0.3);
+        }
+
+        .filter-tab .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
         /* ===== CHAT LIST - Ultra Moderno ===== */
         .chat-list {
             flex-grow: 1;
@@ -256,6 +307,11 @@
             border-color: rgba(0, 168, 255, 0.3);
         }
 
+        .chat-item.unread .chat-name {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
         .chat-avatar {
             width: 56px;
             height: 56px;
@@ -289,6 +345,12 @@
         .status-online {
             background: #28a745;
             box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
+            animation: pulse-online 2s infinite;
+        }
+
+        @keyframes pulse-online {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
         }
 
         .status-away {
@@ -333,6 +395,9 @@
             text-overflow: ellipsis;
             max-width: 100%;
             line-height: 1.4;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .chat-item.unread .chat-preview {
@@ -355,6 +420,12 @@
             flex-shrink: 0;
             box-shadow: 0 4px 12px rgba(255, 45, 122, 0.4);
             padding: 0 8px;
+            animation: badge-pulse 2s infinite;
+        }
+
+        @keyframes badge-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .chat-item-options {
@@ -838,6 +909,21 @@
                 <input type="text" class="search-input" placeholder="Buscar conversaciones..." id="search-input">
                 <i class="fas fa-search search-icon"></i>
             </div>
+
+            <!-- Filtros -->
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all" id="filter-all">
+                    <span>Todos</span>
+                </button>
+                <button class="filter-tab" data-filter="unread" id="filter-unread">
+                    <span>No leídos</span>
+                    <span class="badge" id="unread-count-badge">0</span>
+                </button>
+                <button class="filter-tab" data-filter="online" id="filter-online">
+                    <i class="fas fa-circle" style="font-size: 0.7rem; color: #28a745;"></i>
+                    <span>En línea</span>
+                </button>
+            </div>
         </header>
 
         <!-- Modal para nueva conversación -->
@@ -866,7 +952,7 @@
 
         <!-- Menú contextual -->
         <div class="context-menu" id="context-menu">
-            <div class="context-menu-item danger" id="delete-conversation">
+            <div class="context-menu-item" id="delete-conversation">
                 <i class="fas fa-trash"></i>
                 <span>Eliminar conversación</span>
             </div>
@@ -885,7 +971,9 @@
     <script>
         let loggedInUser = null;
         let allConversations = [];
+        let filteredConversations = [];
         let conversationsInterval = null;
+        let currentFilter = 'all';
 
         document.addEventListener('DOMContentLoaded', () => {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
@@ -897,6 +985,7 @@
             loadConversations();
             setupEventListeners();
             initContextMenu();
+            setupFilters();
 
             // Actualizar conversaciones cada 30 segundos
             conversationsInterval = setInterval(loadConversations, 30000);
@@ -908,7 +997,8 @@
                 
                 if (result.success) {
                     allConversations = result.data;
-                    displayConversations(allConversations);
+                    applyFilter();
+                    updateUnreadBadge();
                 } else {
                     throw new Error(result.message);
                 }
@@ -924,15 +1014,66 @@
             }
         }
 
+        function applyFilter() {
+            switch(currentFilter) {
+                case 'unread':
+                    filteredConversations = allConversations.filter(conv => conv.unreadCount > 0);
+                    break;
+                case 'online':
+                    // Por ahora mostramos todos, pero aquí puedes filtrar por usuarios en línea
+                    filteredConversations = allConversations;
+                    break;
+                default:
+                    filteredConversations = allConversations;
+            }
+            displayConversations(filteredConversations);
+        }
+
+        function setupFilters() {
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.dataset.filter;
+                    applyFilter();
+                });
+            });
+        }
+
+        function updateUnreadBadge() {
+            const totalUnread = allConversations.reduce((sum, conv) => sum + conv.unreadCount, 0);
+            const badge = document.getElementById('unread-count-badge');
+            if (badge) {
+                if (totalUnread > 0) {
+                    badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+
         function displayConversations(conversations) {
             const chatList = document.getElementById('chat-list');
             
             if (conversations.length === 0) {
+                let emptyMessage = '';
+                switch(currentFilter) {
+                    case 'unread':
+                        emptyMessage = 'No tienes conversaciones sin leer';
+                        break;
+                    case 'online':
+                        emptyMessage = 'No hay usuarios en línea';
+                        break;
+                    default:
+                        emptyMessage = 'Aún no tienes mensajes. ¡Inicia una conversación!';
+                }
+                
                 chatList.innerHTML = `
                     <div class="no-messages">
                         <i class="fas fa-comments"></i>
                         <h3>Sin conversaciones</h3>
-                        <p>Aún no tienes mensajes. ¡Inicia una conversación!</p>
+                        <p>${emptyMessage}</p>
                     </div>
                 `;
                 return;
@@ -1009,31 +1150,36 @@
         function setupEventListeners() {
             // Funcionalidad de búsqueda
             const searchInput = document.getElementById('search-input');
+            let searchTimeout;
+            
             searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
+                clearTimeout(searchTimeout);
+                const searchTerm = e.target.value.toLowerCase().trim();
                 
-                if (searchTerm === '') {
-                    displayConversations(allConversations);
-                    return;
-                }
-                
-                const filteredConversations = allConversations.filter(conv => 
-                    conv.username.toLowerCase().includes(searchTerm) ||
-                    conv.lastMessage.text.toLowerCase().includes(searchTerm)
-                );
-                
-                if (filteredConversations.length === 0) {
-                    const chatList = document.getElementById('chat-list');
-                    chatList.innerHTML = `
-                        <div class="no-messages">
-                            <i class="fas fa-search"></i>
-                            <h3>Sin resultados</h3>
-                            <p>No se encontraron conversaciones que coincidan con "${searchTerm}"</p>
-                        </div>
-                    `;
-                } else {
-                    displayConversations(filteredConversations);
-                }
+                searchTimeout = setTimeout(() => {
+                    if (searchTerm === '') {
+                        applyFilter();
+                        return;
+                    }
+                    
+                    const filtered = filteredConversations.filter(conv => 
+                        conv.username.toLowerCase().includes(searchTerm) ||
+                        conv.lastMessage.text.toLowerCase().includes(searchTerm)
+                    );
+                    
+                    if (filtered.length === 0) {
+                        const chatList = document.getElementById('chat-list');
+                        chatList.innerHTML = `
+                            <div class="no-messages">
+                                <i class="fas fa-search"></i>
+                                <h3>Sin resultados</h3>
+                                <p>No se encontraron conversaciones que coincidan con "${searchTerm}"</p>
+                            </div>
+                        `;
+                    } else {
+                        displayConversations(filtered);
+                    }
+                }, 300); // Debounce de 300ms
             });
 
             // Click en conversaciones
@@ -1227,35 +1373,42 @@
                 // Por ahora, solo eliminamos localmente
                 // Aquí puedes implementar la lógica para eliminar del backend
                 allConversations = allConversations.filter(conv => conv.username !== username);
-                displayConversations(allConversations);
+                applyFilter();
                 
                 // Mostrar mensaje de éxito
-                const successMsg = document.createElement('div');
-                successMsg.style.cssText = `
-                    position: fixed; 
-                    top: 20px; 
-                    right: 20px; 
-                    background: linear-gradient(135deg, #28a745 0%, #20c997 100%); 
-                    color: white; 
-                    padding: 14px 24px; 
-                    border-radius: 12px; 
-                    z-index: 1001; 
-                    animation: fadeInUp 0.3s ease;
-                    box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
-                    font-weight: 600;
-                `;
-                successMsg.textContent = 'Conversación eliminada';
-                document.body.appendChild(successMsg);
-                
-                setTimeout(() => {
-                    successMsg.style.animation = 'fadeInUp 0.3s ease reverse';
-                    setTimeout(() => successMsg.remove(), 300);
-                }, 3000);
+                showToast('Conversación eliminada', 'success');
                 
             } catch (error) {
                 console.error('Error al eliminar conversación:', error);
-                alert('Error al eliminar la conversación');
+                showToast('Error al eliminar la conversación', 'error');
             }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; 
+                top: 20px; 
+                right: 20px; 
+                background: ${type === 'success' ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' : '#ff4757'}; 
+                color: white; 
+                padding: 14px 24px; 
+                border-radius: 12px; 
+                z-index: 1001; 
+                animation: fadeInUp 0.3s ease;
+                box-shadow: 0 4px 16px ${type === 'success' ? 'rgba(40, 167, 69, 0.3)' : 'rgba(255, 71, 87, 0.3)'};
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            `;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'fadeInUp 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
         // Limpiar interval al cerrar la página
