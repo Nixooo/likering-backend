@@ -622,14 +622,6 @@
                 <a href="mensajes.html" class="header-icon">
                     <i class="fas fa-arrow-left"></i>
                 </a>
-                <div style="display: flex; gap: 8px;">
-                    <div class="header-icon call-icon" id="video-call-btn" title="Llamada de video">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <div class="header-icon call-icon" id="voice-call-btn" title="Llamada de voz">
-                        <i class="fas fa-phone"></i>
-                    </div>
-                </div>
             </div>
             
             <div class="chat-user-info">
@@ -666,7 +658,7 @@
                 <textarea class="message-input" id="message-input" placeholder="Escribe un mensaje..." rows="1"></textarea>
             </div>
             <button class="send-button" id="send-button">
-                <i class="fas fa-paper-plane"></i>
+                <i class="fas fa-arrow-right"></i>
             </button>
         </div>
 
@@ -790,13 +782,6 @@
                 }
             });
 
-            document.getElementById('video-call-btn').addEventListener('click', () => {
-                showToast('Función de videollamada próximamente', 'info');
-            });
-
-            document.getElementById('voice-call-btn').addEventListener('click', () => {
-                showToast('Función de llamada próximamente', 'info');
-            });
             
             initDeleteModal();
         }
@@ -910,7 +895,7 @@
             } finally {
                 input.disabled = false;
                 sendButton.disabled = false;
-                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                sendButton.innerHTML = '<i class="fas fa-arrow-right"></i>';
                 input.focus();
             }
         }
