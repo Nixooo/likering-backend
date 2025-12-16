@@ -18,18 +18,18 @@ Crea un archivo `.env` en la raíz del proyecto con las siguientes variables:
 
 ```env
 # Configuración de PostgreSQL (Aiven)
-DB_HOST=tu-host-aiven.a.aivencloud.com
-DB_PORT=12345
-DB_NAME=defaultdb
-DB_USER=avnadmin
-DB_PASSWORD=tu-password-aqui
-DB_SSL=true
+DB_HOST=****
+DB_PORT=****
+DB_NAME=****
+DB_USER=****
+DB_PASSWORD=****
+DB_SSL=****
 
 # Puerto del servidor
-PORT=3000
+PORT=****
 
 # Configuración de producción (opcional)
-NODE_ENV=development
+NODE_ENV=****
 ```
 
 **Nota:** Obtén estas credenciales desde tu panel de Aiven PostgreSQL.
@@ -39,7 +39,7 @@ NODE_ENV=development
 Ejecuta el script SQL en tu base de datos PostgreSQL de Aiven:
 
 ```bash
-psql -h tu-host-aiven.a.aivencloud.com -p 12345 -U avnadmin -d defaultdb -f database.sql
+psql -h ****
 ```
 
 O copia y pega el contenido de `database.sql` en tu cliente SQL de Aiven.
@@ -56,14 +56,14 @@ npm run dev
 npm start
 ```
 
-El servidor estará disponible en `http://localhost:3000`
+El servidor estará disponible en `http://localhost:****`
 
 ### 5. Configurar el frontend
 
 El archivo `config.js` ya está configurado para usar el nuevo backend. Si estás en producción, actualiza la URL en `config.js`:
 
 ```javascript
-const API_BASE_URL = 'https://tu-dominio.com/api';
+const API_BASE_URL = '****;
 ```
 
 ## 📁 Estructura del Proyecto
@@ -167,4 +167,5 @@ Si encuentras algún problema, verifica:
 1. Los logs del servidor (`npm run dev`)
 2. La consola del navegador para errores del frontend
 3. La conexión a la base de datos PostgreSQL
+
 
