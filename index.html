@@ -592,6 +592,7 @@
 
     <!-- IMPORTANTE: Incluir config.js ANTES del script principal -->
     <script src="config.js"></script>
+    <script src="modal-system.js"></script>
     
     <script>
         const IMGBB_API_KEY = "df01bb05ce03159d54c33e1e22eba2cf";
@@ -629,17 +630,18 @@
                         return true;
                     } else {
                         if (!isSilent) {
-                            alert(result.message || 'Error al iniciar sesión');
-                            loginForm.classList.add('shake');
-                            loginPasswordInput.value = '';
-                            setTimeout(() => loginForm.classList.remove('shake'), 500);
+                            showModal(result.message || 'Error al iniciar sesión', 'Error', 'error').then(() => {
+                                loginForm.classList.add('shake');
+                                loginPasswordInput.value = '';
+                                setTimeout(() => loginForm.classList.remove('shake'), 500);
+                            });
                         }
                         return false;
                     }
                 } catch (error) {
                     console.error('Error al verificar el usuario:', error);
                     if (!isSilent) {
-                        alert('No se pudo conectar con el servidor. Verifica tu conexión.');
+                        showModal('No se pudo conectar con el servidor. Verifica tu conexión.', 'Error de conexión', 'error');
                     }
                     return false;
                 }
@@ -715,7 +717,7 @@
                 const password = loginPasswordInput.value;
 
                 if (!username || !password) {
-                    alert('Por favor, ingresa usuario y contraseña.');
+                    showModal('Por favor, ingresa usuario y contraseña.', 'Campos requeridos', 'info');
                     return;
                 }
 
@@ -763,15 +765,15 @@
                 const imageFile = imageUpload.files[0];
 
                 if (!username || !password || !passwordConfirm || !imageFile) {
-                    alert('Por favor, completa todos los campos.');
+                    showModal('Por favor, completa todos los campos.', 'Campos requeridos', 'info');
                     return;
                 }
                 if (password !== passwordConfirm) {
-                    alert('Las contraseñas no coinciden.');
+                    showModal('Las contraseñas no coinciden.', 'Error de validación', 'error');
                     return;
                 }
                 if (username.length < 3) {
-                    alert('El nombre de usuario debe tener al menos 3 caracteres.');
+                    showModal('El nombre de usuario debe tener al menos 3 caracteres.', 'Error de validación', 'error');
                     return;
                 }
 
@@ -804,15 +806,15 @@
                     const result = await API.register(username, password, imageUrl, registerData.estado);
                     
                     if (result.success) {
-                        alert('¡Registro exitoso! Ahora puedes iniciar sesión.');
+                        showModal('¡Registro exitoso! Ahora puedes iniciar sesión.', 'Éxito', 'success');
                         localStorage.setItem('loggedInUser', JSON.stringify(result.data));
                         window.location.href = 'videos.html';
                     } else {
-                        alert(result.message || 'Error al registrar usuario');
+                        showModal(result.message || 'Error al registrar usuario', 'Error', 'error');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('Hubo un error al registrar el usuario. Intenta de nuevo.');
+                    showModal('Hubo un error al registrar el usuario. Intenta de nuevo.', 'Error', 'error');
                 } finally {
                     registerBtn.disabled = false;
                     registerBtn.textContent = 'Registrarse';

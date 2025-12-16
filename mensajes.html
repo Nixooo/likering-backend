@@ -26,7 +26,6 @@
             --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
             --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.2);
             --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.4);
-            --shadow-glow: 0 0 20px rgba(0, 168, 255, 0.3);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
@@ -34,7 +33,6 @@
             --radius-full: 9999px;
             --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
@@ -63,25 +61,25 @@
             background: var(--bg-primary);
         }
 
-        /* ===== HEADER - Ultra Moderno con Glassmorphism ===== */
+        /* ===== HEADER - Estilo similar a imagen ===== */
         .messages-header {
             width: 100%;
-            padding: 80px 20px 24px;
+            padding: 70px 20px 20px;
             color: var(--text-primary);
             flex-shrink: 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            background: rgba(10, 10, 15, 0.75);
+            background: rgba(10, 10, 15, 0.95);
             backdrop-filter: blur(30px) saturate(180%);
             -webkit-backdrop-filter: blur(30px) saturate(180%);
             border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
         }
 
         .header-top-row {
             position: absolute;
-            top: 20px;
+            top: 16px;
             left: 20px;
             right: 20px;
             display: flex;
@@ -91,40 +89,38 @@
         }
 
         .header-icon {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-full);
             background: var(--bg-glass);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all var(--transition-base);
             text-decoration: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-sm);
         }
 
         .header-icon:hover {
             background: var(--bg-glass-hover);
             border-color: var(--border-hover);
-            transform: scale(1.08);
-            box-shadow: var(--shadow-md);
+            transform: scale(1.05);
         }
         
+        /* ===== BOTÓN NUEVA CONVERSACIÓN - Minimalista ===== */
         .new-conversation-btn {
             background: transparent;
             border: 1.5px solid var(--border-color);
             padding: 0;
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-full);
             color: var(--text-primary);
-            font-weight: 400;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all var(--transition-base);
             display: flex;
@@ -176,61 +172,18 @@
         }
 
         .messages-title {
-            text-align: center;
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 800;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            text-align: left;
+            margin: 0 0 20px 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
             letter-spacing: -0.5px;
         }
 
-        .search-container {
-            margin-top: 24px;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            background: var(--bg-glass);
-            backdrop-filter: blur(10px);
-            border: 1.5px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 14px 50px 14px 18px;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            transition: all var(--transition-base);
-        }
-
-        .search-input:focus {
-            outline: none;
-            background: var(--bg-glass-hover);
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(0, 168, 255, 0.1);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-tertiary);
-        }
-
-        .search-icon {
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 1rem;
-            pointer-events: none;
-        }
-
-        /* ===== FILTROS ===== */
+        /* ===== FILTROS - Estilo similar a imagen ===== */
         .filter-tabs {
             display: flex;
             gap: 8px;
-            margin-top: 16px;
             overflow-x: auto;
             scrollbar-width: none;
             -ms-overflow-style: none;
@@ -242,54 +195,52 @@
         }
 
         .filter-tab {
-            padding: 8px 16px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-color);
+            padding: 8px 20px;
+            background: transparent;
+            border: none;
             border-radius: var(--radius-full);
             color: var(--text-secondary);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
             transition: all var(--transition-base);
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .filter-tab:hover {
-            background: var(--bg-glass-hover);
-            border-color: var(--border-hover);
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            position: relative;
         }
 
         .filter-tab.active {
             background: var(--gradient-1);
-            border-color: transparent;
             color: white;
-            box-shadow: 0 4px 12px rgba(255, 45, 122, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 45, 122, 0.3);
         }
 
         .filter-tab .badge {
             background: rgba(255, 255, 255, 0.2);
-            padding: 2px 6px;
+            padding: 2px 8px;
             border-radius: var(--radius-full);
             font-size: 0.75rem;
             font-weight: 700;
+            min-width: 20px;
+            text-align: center;
         }
 
-        /* ===== CHAT LIST - Ultra Moderno ===== */
+        /* ===== CHAT LIST ===== */
         .chat-list {
             flex-grow: 1;
             overflow-y: auto;
             padding: 8px 0;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
             position: relative;
             z-index: 2;
         }
         
         .chat-list::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
         
         .chat-list::-webkit-scrollbar-track {
@@ -297,44 +248,30 @@
         }
         
         .chat-list::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: var(--radius-full);
-        }
-        
-        .chat-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
         }
 
         .chat-item {
             display: flex;
             align-items: center;
-            padding: 16px 20px;
-            margin: 4px 16px;
+            padding: 14px 20px;
+            margin: 2px 16px;
             cursor: pointer;
             transition: all var(--transition-base);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             position: relative;
             background: transparent;
-            border: 1px solid transparent;
+            border: none;
         }
 
         .chat-item:hover {
             background: var(--bg-glass);
             backdrop-filter: blur(10px);
-            border-color: var(--border-color);
-            transform: translateX(4px);
-            box-shadow: var(--shadow-sm);
         }
 
         .chat-item.unread {
-            background: rgba(0, 168, 255, 0.08);
-            backdrop-filter: blur(10px);
-            border-color: rgba(0, 168, 255, 0.2);
-        }
-
-        .chat-item.unread:hover {
-            background: rgba(0, 168, 255, 0.12);
-            border-color: rgba(0, 168, 255, 0.3);
+            background: rgba(0, 168, 255, 0.05);
         }
 
         .chat-item.unread .chat-name {
@@ -343,65 +280,60 @@
         }
 
         .chat-avatar {
-            width: 56px;
-            height: 56px;
+            width: 52px;
+            height: 52px;
             border-radius: var(--radius-md);
             object-fit: cover;
-            margin-right: 16px;
+            margin-right: 14px;
             flex-shrink: 0;
-            border: 2.5px solid rgba(255, 255, 255, 0.15);
-            box-shadow: var(--shadow-md);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             transition: all var(--transition-base);
             position: relative;
         }
 
         .chat-item:hover .chat-avatar {
-            transform: scale(1.05);
+            transform: scale(1.03);
             border-color: var(--primary-blue);
-            box-shadow: 0 8px 24px rgba(0, 168, 255, 0.3);
         }
 
         .status-indicator {
             position: absolute;
             bottom: 2px;
             right: 2px;
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border: 2.5px solid var(--bg-primary);
+            border: 2px solid var(--bg-primary);
             background: var(--text-tertiary);
         }
 
-        .status-online {
+        .status-indicator.online {
             background: #28a745;
-            box-shadow: 0 0 8px rgba(40, 167, 69, 0.5);
-            animation: pulse-online 2s infinite;
+            box-shadow: 0 0 6px rgba(40, 167, 69, 0.5);
         }
 
-        @keyframes pulse-online {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.1); }
-        }
-
-        .status-away {
+        .status-indicator.away {
             background: #FFA500;
         }
 
         .chat-info {
             flex-grow: 1;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .chat-info-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 6px;
+            gap: 8px;
         }
 
         .chat-name {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -410,15 +342,14 @@
         }
 
         .chat-time {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
             flex-shrink: 0;
-            margin-left: 12px;
             font-weight: 500;
         }
 
         .chat-preview {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
@@ -438,26 +369,21 @@
         .unread-badge {
             background: var(--gradient-1);
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             border-radius: var(--radius-full);
-            min-width: 24px;
-            height: 24px;
+            min-width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-left: 12px;
+            margin-left: auto;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(255, 45, 122, 0.4);
-            padding: 0 8px;
-            animation: badge-pulse 2s infinite;
+            padding: 0 6px;
+            box-shadow: 0 2px 8px rgba(255, 45, 122, 0.4);
         }
 
-        @keyframes badge-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
+        /* ===== OPCIONES DE CHAT - Arreglado para no sobreponerse ===== */
         .chat-item-options {
             position: absolute;
             right: 20px;
@@ -465,22 +391,24 @@
             transform: translateY(-50%);
             opacity: 0;
             transition: opacity var(--transition-base);
-            z-index: 10;
+            z-index: 5;
+            pointer-events: none;
         }
 
         .chat-item:hover .chat-item-options {
             opacity: 1;
+            pointer-events: auto;
         }
 
         .options-btn {
             background: var(--bg-glass);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: var(--radius-md);
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: all var(--transition-base);
             display: flex;
@@ -495,7 +423,7 @@
             transform: scale(1.1);
         }
 
-        /* ===== MODAL - Ultra Moderno ===== */
+        /* ===== MODAL - Nueva conversación ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -703,6 +631,32 @@
             transform: none !important;
         }
 
+        /* ===== MODAL DE CONFIRMACIÓN ===== */
+        .confirm-modal-container {
+            max-width: 380px;
+        }
+
+        .confirm-modal-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: var(--primary-blue);
+            display: flex;
+            justify-content: center;
+        }
+
+        .confirm-modal-text {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .confirm-modal-text strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
         /* ===== CONTEXT MENU ===== */
         .context-menu {
             position: fixed;
@@ -825,11 +779,7 @@
         .chat-item:nth-child(3) { animation-delay: 0.15s; }
         .chat-item:nth-child(4) { animation-delay: 0.2s; }
         .chat-item:nth-child(5) { animation-delay: 0.25s; }
-        .chat-item:nth-child(6) { animation-delay: 0.3s; }
-        .chat-item:nth-child(7) { animation-delay: 0.35s; }
-        .chat-item:nth-child(8) { animation-delay: 0.4s; }
-        .chat-item:nth-child(9) { animation-delay: 0.45s; }
-        .chat-item:nth-child(n+10) { animation-delay: 0.5s; }
+        .chat-item:nth-child(n+6) { animation-delay: 0.3s; }
 
         /* ===== BACKGROUND DECORATION ===== */
         .app-screen::before {
@@ -852,47 +802,47 @@
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .messages-header {
-                padding: 70px 16px 20px;
+                padding: 60px 16px 16px;
             }
 
             .header-top-row {
-                top: 16px;
+                top: 12px;
                 left: 16px;
                 right: 16px;
             }
 
             .header-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 1rem;
-            }
-
-            .new-conversation-btn {
-                width: 40px;
-                height: 40px;
-                font-size: 1.1rem;
-            }
-
-            .messages-title {
-                font-size: 1.6rem;
-            }
-
-            .chat-item {
-                padding: 14px 16px;
-                margin: 4px 12px;
-            }
-
-            .chat-avatar {
-                width: 50px;
-                height: 50px;
-            }
-
-            .chat-name {
+                width: 36px;
+                height: 36px;
                 font-size: 0.95rem;
             }
 
+            .new-conversation-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .messages-title {
+                font-size: 1.5rem;
+            }
+
+            .chat-item {
+                padding: 12px 16px;
+                margin: 2px 12px;
+            }
+
+            .chat-avatar {
+                width: 48px;
+                height: 48px;
+            }
+
+            .chat-name {
+                font-size: 0.9rem;
+            }
+
             .chat-preview {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
             }
 
             .modal-container {
@@ -924,7 +874,7 @@
                 <a href="videos.html" class="header-icon">
                     <i class="fas fa-arrow-left"></i>
                 </a>
-                <button class="new-conversation-btn" id="new-message-btn">
+                <button class="new-conversation-btn" id="new-message-btn" title="Nueva conversación">
                     <i class="fas fa-plus"></i>
                     <span>Nueva conversación</span>
                 </button>
@@ -932,19 +882,13 @@
             
             <h1 class="messages-title">Mensajes</h1>
             
-            <div class="search-container">
-                <input type="text" class="search-input" placeholder="Buscar conversaciones..." id="search-input">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-
-            <!-- Filtros -->
             <div class="filter-tabs">
                 <button class="filter-tab active" data-filter="all" id="filter-all">
                     <span>Todos</span>
                 </button>
                 <button class="filter-tab" data-filter="unread" id="filter-unread">
                     <span>No leídos</span>
-                    <span class="badge" id="unread-count-badge">0</span>
+                    <span class="badge" id="unread-count-badge" style="display: none;">0</span>
                 </button>
                 <button class="filter-tab" data-filter="online" id="filter-online">
                     <i class="fas fa-circle" style="font-size: 0.7rem; color: #28a745;"></i>
@@ -977,9 +921,39 @@
             </div>
         </div>
 
+        <!-- Modal de confirmación para eliminar -->
+        <div class="modal-overlay" id="confirm-delete-modal">
+            <div class="modal-container confirm-modal-container">
+                <div class="modal-header">
+                    <h3>Eliminar conversación</h3>
+                    <button class="modal-close" id="close-confirm-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="text-align: center;">
+                    <div class="confirm-modal-icon">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <p class="confirm-modal-text">
+                        ¿Estás seguro de que quieres eliminar la conversación con <strong id="delete-username-text"></strong>?
+                    </p>
+                    <p class="confirm-modal-text" style="font-size: 0.85rem; color: var(--text-tertiary);">
+                        Esta acción no se puede deshacer.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" id="cancel-delete-btn">Cancelar</button>
+                    <button class="modal-btn danger" id="confirm-delete-btn">
+                        <i class="fas fa-trash"></i>
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Menú contextual -->
         <div class="context-menu" id="context-menu">
-            <div class="context-menu-item" id="delete-conversation">
+            <div class="context-menu-item danger" id="delete-conversation">
                 <i class="fas fa-trash"></i>
                 <span>Eliminar conversación</span>
             </div>
@@ -1001,6 +975,7 @@
         let filteredConversations = [];
         let conversationsInterval = null;
         let currentFilter = 'all';
+        let conversationToDelete = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
@@ -1013,8 +988,8 @@
             setupEventListeners();
             initContextMenu();
             setupFilters();
+            setupModals();
 
-            // Actualizar conversaciones cada 30 segundos
             conversationsInterval = setInterval(loadConversations, 30000);
         });
 
@@ -1047,8 +1022,7 @@
                     filteredConversations = allConversations.filter(conv => conv.unreadCount > 0);
                     break;
                 case 'online':
-                    // Por ahora mostramos todos, pero aquí puedes filtrar por usuarios en línea
-                    filteredConversations = allConversations;
+                    filteredConversations = allConversations.filter(conv => conv.status === 'online' || conv.status === 'Online');
                     break;
                 default:
                     filteredConversations = allConversations;
@@ -1106,7 +1080,6 @@
                 return;
             }
             
-            // Ordenar por timestamp del último mensaje (más reciente primero)
             conversations.sort((a, b) => new Date(b.lastMessage.timestamp) - new Date(a.lastMessage.timestamp));
             
             chatList.innerHTML = conversations.map((conv, index) => {
@@ -1118,6 +1091,10 @@
                 const isFromMe = conv.lastMessage.from === loggedInUser.username;
                 const displayPreview = isFromMe ? `Tú: ${preview}` : preview;
                 
+                // Determinar estado (por ahora simulamos, pero puedes obtenerlo del backend)
+                const status = conv.status || 'online'; // Por defecto online
+                const statusClass = status === 'online' || status === 'Online' ? 'online' : 'away';
+                
                 return `
                     <div class="chat-item ${conv.unreadCount > 0 ? 'unread' : ''}" 
                          data-user="${conv.username}" 
@@ -1125,7 +1102,11 @@
                         <div style="position: relative;">
                             <img src="${conv.imageUrl}" alt="Avatar" class="chat-avatar" 
                                  onerror="this.src='https://via.placeholder.com/60/666/FFF?text=${conv.username.charAt(0).toUpperCase()}'">
-                            <div class="status-indicator status-online"></div>
+                            ${status === 'online' || status === 'Online' ? 
+                                `<div class="status-indicator online"></div>` : 
+                                status === 'away' || status === 'Away' ? 
+                                `<div class="status-indicator away"></div>` : 
+                                ''}
                         </div>
                         <div class="chat-info">
                             <div class="chat-info-header">
@@ -1150,71 +1131,61 @@
             const messageTime = new Date(timestamp);
             const diff = now - messageTime;
             
-            // Menos de 1 minuto
             if (diff < 60000) return 'Ahora';
-            
-            // Menos de 1 hora
             if (diff < 3600000) {
                 const minutes = Math.floor(diff / 60000);
                 return `${minutes}m`;
             }
-            
-            // Mismo día
             if (messageTime.toDateString() === now.toDateString()) {
                 return messageTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             }
-            
-            // Esta semana
             if (diff < 604800000) {
                 const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
                 return days[messageTime.getDay()];
             }
-            
-            // Fecha completa
             return messageTime.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit'});
         }
 
         function setupEventListeners() {
-            // Funcionalidad de búsqueda
             const searchInput = document.getElementById('search-input');
             let searchTimeout;
             
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(searchTimeout);
-                const searchTerm = e.target.value.toLowerCase().trim();
-                
-                searchTimeout = setTimeout(() => {
-                    if (searchTerm === '') {
-                        applyFilter();
-                        return;
-                    }
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    const searchTerm = e.target.value.toLowerCase().trim();
                     
-                    const filtered = filteredConversations.filter(conv => 
-                        conv.username.toLowerCase().includes(searchTerm) ||
-                        conv.lastMessage.text.toLowerCase().includes(searchTerm)
-                    );
-                    
-                    if (filtered.length === 0) {
-                        const chatList = document.getElementById('chat-list');
-                        chatList.innerHTML = `
-                            <div class="no-messages">
-                                <i class="fas fa-search"></i>
-                                <h3>Sin resultados</h3>
-                                <p>No se encontraron conversaciones que coincidan con "${searchTerm}"</p>
-                            </div>
-                        `;
-                    } else {
-                        displayConversations(filtered);
-                    }
-                }, 300); // Debounce de 300ms
-            });
+                    searchTimeout = setTimeout(() => {
+                        if (searchTerm === '') {
+                            applyFilter();
+                            return;
+                        }
+                        
+                        const filtered = filteredConversations.filter(conv => 
+                            conv.username.toLowerCase().includes(searchTerm) ||
+                            conv.lastMessage.text.toLowerCase().includes(searchTerm)
+                        );
+                        
+                        if (filtered.length === 0) {
+                            const chatList = document.getElementById('chat-list');
+                            chatList.innerHTML = `
+                                <div class="no-messages">
+                                    <i class="fas fa-search"></i>
+                                    <h3>Sin resultados</h3>
+                                    <p>No se encontraron conversaciones que coincidan con "${searchTerm}"</p>
+                                </div>
+                            `;
+                        } else {
+                            displayConversations(filtered);
+                        }
+                    }, 300);
+                });
+            }
 
-            // Click en conversaciones
             document.getElementById('chat-list').addEventListener('click', (e) => {
                 const chatItem = e.target.closest('.chat-item');
                 const optionsBtn = e.target.closest('.options-btn');
                 
-                // No navegar si se hace clic en el botón de opciones
                 if (optionsBtn) {
                     return;
                 }
@@ -1222,7 +1193,6 @@
                 if (chatItem) {
                     const username = chatItem.dataset.user;
                     if (username) {
-                        // Limpiar interval antes de navegar
                         if (conversationsInterval) {
                             clearInterval(conversationsInterval);
                         }
@@ -1230,58 +1200,52 @@
                     }
                 }
             });
+        }
 
-            // Modal para nuevo mensaje
-            const modal = document.getElementById('new-chat-modal');
+        function setupModals() {
+            const newChatModal = document.getElementById('new-chat-modal');
             const usernameInput = document.getElementById('username-input');
             const modalError = document.getElementById('modal-error');
             
-            // Abrir modal
             document.getElementById('new-message-btn').addEventListener('click', () => {
-                modal.classList.add('show');
+                newChatModal.classList.add('show');
                 usernameInput.focus();
                 usernameInput.value = '';
                 modalError.classList.remove('show');
             });
             
-            // Cerrar modal
-            function closeModal() {
-                modal.classList.remove('show');
+            function closeNewChatModal() {
+                newChatModal.classList.remove('show');
                 usernameInput.value = '';
                 modalError.classList.remove('show');
             }
             
-            document.getElementById('close-modal').addEventListener('click', closeModal);
-            document.getElementById('cancel-btn').addEventListener('click', closeModal);
+            document.getElementById('close-modal').addEventListener('click', closeNewChatModal);
+            document.getElementById('cancel-btn').addEventListener('click', closeNewChatModal);
             
-            // Cerrar modal al hacer clic en el overlay
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal();
+            newChatModal.addEventListener('click', (e) => {
+                if (e.target === newChatModal) {
+                    closeNewChatModal();
                 }
             });
             
-            // Cerrar modal con Escape
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('show')) {
-                    closeModal();
+                if (e.key === 'Escape' && newChatModal.classList.contains('show')) {
+                    closeNewChatModal();
                 }
             });
             
-            // Iniciar chat con Enter
             usernameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     startNewChat();
                 }
             });
             
-            // Botón de iniciar chat
             document.getElementById('start-chat-btn').addEventListener('click', startNewChat);
             
             function startNewChat() {
                 const username = usernameInput.value.trim().replace('@', '');
                 
-                // Validaciones
                 if (!username) {
                     showModalError('Por favor ingresa un nombre de usuario');
                     return;
@@ -1302,12 +1266,10 @@
                     return;
                 }
                 
-                // Limpiar interval antes de navegar
                 if (conversationsInterval) {
                     clearInterval(conversationsInterval);
                 }
                 
-                // Navegar al chat
                 window.location.href = `chat.html?user=${username}`;
             }
             
@@ -1316,13 +1278,11 @@
                 modalError.classList.add('show');
                 usernameInput.focus();
                 
-                // Auto-ocultar error después de 5 segundos
                 setTimeout(() => {
                     modalError.classList.remove('show');
                 }, 5000);
             }
             
-            // Limpiar error al escribir
             usernameInput.addEventListener('input', () => {
                 if (modalError.classList.contains('show')) {
                     modalError.classList.remove('show');
@@ -1330,17 +1290,13 @@
             });
         }
 
-        // Variables para el menú contextual
         let contextMenu = null;
         let selectedUsername = null;
 
-        // Inicializar menú contextual
         function initContextMenu() {
             contextMenu = document.getElementById('context-menu');
             
-            // Event listeners para opciones
             document.addEventListener('click', (e) => {
-                // Botón de opciones
                 if (e.target.closest('.options-btn')) {
                     e.stopPropagation();
                     const btn = e.target.closest('.options-btn');
@@ -1350,16 +1306,14 @@
                     return;
                 }
                 
-                // Cerrar menú si se hace clic fuera
                 if (contextMenu && !contextMenu.contains(e.target)) {
                     hideContextMenu();
                 }
             });
             
-            // Eliminar conversación
             document.getElementById('delete-conversation').addEventListener('click', () => {
                 if (selectedUsername) {
-                    deleteConversation(selectedUsername);
+                    showDeleteConfirmModal(selectedUsername);
                 }
                 hideContextMenu();
             });
@@ -1372,7 +1326,6 @@
             contextMenu.style.top = `${y}px`;
             contextMenu.classList.add('show');
             
-            // Ajustar posición si se sale de la pantalla
             const rect = contextMenu.getBoundingClientRect();
             if (rect.right > window.innerWidth) {
                 contextMenu.style.left = `${window.innerWidth - rect.width - 16}px`;
@@ -1392,23 +1345,65 @@
             }
         }
 
-        async function deleteConversation(username) {
-            const confirmDelete = confirm(`¿Estás seguro de que quieres eliminar la conversación con @${username}?`);
-            if (!confirmDelete) return;
+        function showDeleteConfirmModal(username) {
+            conversationToDelete = username;
+            document.getElementById('delete-username-text').textContent = `@${username}`;
+            document.getElementById('confirm-delete-modal').classList.add('show');
+        }
+
+        function setupDeleteModal() {
+            const modal = document.getElementById('confirm-delete-modal');
+            const cancelBtn = document.getElementById('cancel-delete-btn');
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            const closeBtn = document.getElementById('close-confirm-modal');
             
-            try {
-                // Por ahora, solo eliminamos localmente
-                // Aquí puedes implementar la lógica para eliminar del backend
-                allConversations = allConversations.filter(conv => conv.username !== username);
-                applyFilter();
-                
-                // Mostrar mensaje de éxito
-                showToast('Conversación eliminada', 'success');
-                
-            } catch (error) {
-                console.error('Error al eliminar conversación:', error);
-                showToast('Error al eliminar la conversación', 'error');
+            function closeModal() {
+                modal.classList.remove('show');
+                conversationToDelete = null;
+                confirmBtn.classList.remove('loading');
+                confirmBtn.disabled = false;
             }
+            
+            cancelBtn.addEventListener('click', closeModal);
+            closeBtn.addEventListener('click', closeModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+            
+            confirmBtn.addEventListener('click', async () => {
+                if (!conversationToDelete) return;
+                
+                confirmBtn.classList.add('loading');
+                confirmBtn.disabled = true;
+                cancelBtn.disabled = true;
+                
+                try {
+                    // Eliminar del backend si existe API, sino solo localmente
+                    // Por ahora eliminamos solo localmente
+                    allConversations = allConversations.filter(conv => conv.username !== conversationToDelete);
+                    applyFilter();
+                    updateUnreadBadge();
+                    
+                    showToast('Conversación eliminada', 'success');
+                    closeModal();
+                } catch (error) {
+                    console.error('Error al eliminar conversación:', error);
+                    showToast('Error al eliminar la conversación', 'error');
+                } finally {
+                    confirmBtn.classList.remove('loading');
+                    confirmBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                }
+            });
         }
 
         function showToast(message, type = 'success') {
@@ -1417,17 +1412,18 @@
                 position: fixed; 
                 top: 20px; 
                 right: 20px; 
-                background: ${type === 'success' ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' : '#ff4757'}; 
+                background: ${type === 'success' ? 'linear-gradient(135deg, #28a745 0%, #20c997 100%)' : 'linear-gradient(135deg, #ff4757 0%, #ff2d7a 100%)'}; 
                 color: white; 
                 padding: 14px 24px; 
                 border-radius: 12px; 
                 z-index: 1001; 
                 animation: fadeInUp 0.3s ease;
-                box-shadow: 0 4px 16px ${type === 'success' ? 'rgba(40, 167, 69, 0.3)' : 'rgba(255, 71, 87, 0.3)'};
+                box-shadow: 0 4px 16px rgba(0,0,0,0.3);
                 font-weight: 600;
                 display: flex;
                 align-items: center;
                 gap: 10px;
+                font-family: 'Inter', sans-serif;
             `;
             toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> <span>${message}</span>`;
             document.body.appendChild(toast);
@@ -1438,21 +1434,21 @@
             }, 3000);
         }
 
-        // Limpiar interval al cerrar la página
+        // Inicializar modal de eliminación
+        setupDeleteModal();
+
         window.addEventListener('beforeunload', () => {
             if (conversationsInterval) {
                 clearInterval(conversationsInterval);
             }
         });
 
-        // Pausar actualizaciones cuando la página no está visible
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 if (conversationsInterval) {
                     clearInterval(conversationsInterval);
                 }
             } else {
-                // Reanudar actualizaciones cuando la página vuelve a ser visible
                 loadConversations();
                 conversationsInterval = setInterval(loadConversations, 30000);
             }

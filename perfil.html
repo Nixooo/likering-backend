@@ -984,6 +984,7 @@
     </div>
 
     <script src="config.js"></script>
+<script src="modal-system.js"></script>
     <script>
     
     const CLOUDINARY_CLOUD_NAME = "dc7s64lvz";
@@ -1247,7 +1248,7 @@
             console.error('Error al copiar el enlace:', err);
             linkInput.select();
             document.execCommand('copy');
-            alert('¡Enlace del perfil copiado al portapapeles!');
+            showModal('¡Enlace del perfil copiado al portapapeles!', 'Éxito', 'success');
         }
     }
 
@@ -1262,7 +1263,7 @@
 
     async function handleNewProfilePicture(file) {
         const editModal = document.getElementById('edit-profile-modal');
-        alert('Subiendo nueva foto...');
+        showModal('Subiendo nueva foto...', 'Procesando', 'info');
         try {
             const newImageUrl = await uploadToCloudinary(file);
             const result = await API.updateProfilePicture(loggedInUser.username, newImageUrl);
@@ -1270,11 +1271,11 @@
                 document.getElementById('profile-picture').style.backgroundImage = `url('${newImageUrl}')`;
                 loggedInUser.imageUrl = newImageUrl;
                 localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                alert('Foto de perfil actualizada.');
+                showModal('Foto de perfil actualizada.', 'Éxito', 'success');
                 editModal.classList.remove('visible');
             } else { throw new Error(result.message); }
         } catch (error) {
-            alert(`Error al subir la foto: ${error.message}`);
+            showModal(`Error al subir la foto: ${error.message}`, 'Error', 'error');
         }
     }
 
@@ -1293,7 +1294,7 @@
         try {
              const result = await API.updatePassword(loggedInUser.username, newPass);
              if(result.success) {
-                alert('Contraseña actualizada con éxito.');
+                showModal('Contraseña actualizada con éxito.', 'Éxito', 'success');
                 document.getElementById('edit-profile-modal').classList.remove('visible');
              } else { throw new Error(result.message); }
         } catch (error) {
@@ -1309,7 +1310,7 @@
                 cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                 document.getElementById('camera-video').srcObject = cameraStream;
             } catch (error) {
-                alert("No se pudo acceder a la cámara.");
+                showModal("No se pudo acceder a la cámara.", 'Error', 'error');
                 document.querySelector('#back-to-main-edit-btn').click();
             }
         }

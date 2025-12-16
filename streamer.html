@@ -876,6 +876,7 @@
     </div>
     
     <script src="config.js"></script>
+<script src="modal-system.js"></script>
     <script>
         let currentUser = null;
         let loggedInUser = null;
@@ -1188,12 +1189,12 @@
             document.getElementById('report-menu-option').addEventListener('click', () => {
                 floatingMenu.classList.remove('active');
                 if (!loggedInUser) {
-                    alert('Debes iniciar sesión para reportar usuarios.');
+                    showModal('Debes iniciar sesión para reportar usuarios.', 'Sesión requerida', 'info');
                     window.location.href = 'index.html';
                     return;
                 }
                 if (loggedInUser.username === currentUser.username) {
-                    alert('No puedes reportarte a ti mismo.');
+                    showModal('No puedes reportarte a ti mismo.', 'Acción no permitida', 'info');
                     return;
                 }
                 document.getElementById('report-username').textContent = currentUser.username;
@@ -1203,7 +1204,7 @@
             // Follow button
             document.getElementById('follow-btn').addEventListener('click', async () => {
                 if (!loggedInUser) {
-                    alert('Debes iniciar sesión para seguir a otros usuarios.');
+                    showModal('Debes iniciar sesión para seguir a otros usuarios.', 'Sesión requerida', 'info');
                     window.location.href = 'index.html';
                     return;
                 }
@@ -1215,7 +1216,8 @@
                 const isFollowing = followBtn.classList.contains('following');
                 
                 if (isFollowing) {
-                    if (!confirm(`¿Dejar de seguir a @${currentUser.username}?`)) {
+                    const confirmUnfollow = await showConfirmModal(`¿Dejar de seguir a @${currentUser.username}?`, 'Dejar de seguir', 'warning');
+                    if (!confirmUnfollow) {
                         return;
                     }
                     
@@ -1235,7 +1237,7 @@
                         }
                     } catch (error) {
                         console.error('Error al dejar de seguir:', error);
-                        alert('Error al dejar de seguir usuario. Inténtalo de nuevo.');
+                        showModal('Error al dejar de seguir usuario. Inténtalo de nuevo.', 'Error', 'error');
                     } finally {
                         followBtn.disabled = false;
                     }
@@ -1252,11 +1254,11 @@
                             const followersCount = parseInt(document.getElementById('followers-count').textContent.replace(/[^0-9.]/g, '')) || 0;
                             document.getElementById('followers-count').textContent = formatNumber(followersCount + 1);
                         } else {
-                            alert(result.message || 'Error al seguir usuario');
+                            showModal(result.message || 'Error al seguir usuario', 'Error', 'error');
                         }
                     } catch (error) {
                         console.error('Error al seguir:', error);
-                        alert('Error al seguir usuario. Inténtalo de nuevo.');
+                        showModal('Error al seguir usuario. Inténtalo de nuevo.', 'Error', 'error');
                     } finally {
                         followBtn.disabled = false;
                     }
@@ -1294,10 +1296,10 @@
                         window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + profileUrl)}`, '_blank');
                     } else if (type === 'instagram') {
                         await navigator.clipboard.writeText(profileUrl);
-                        alert('Enlace copiado al portapapeles');
+                        showModal('Enlace copiado al portapapeles', 'Éxito', 'success');
                     } else if (type === 'copy') {
                         await navigator.clipboard.writeText(profileUrl);
-                        alert('Enlace copiado al portapapeles');
+                        showModal('Enlace copiado al portapapeles', 'Éxito', 'success');
                     }
                     
                     document.getElementById('share-modal').classList.remove('visible');
@@ -1324,18 +1326,18 @@
                 const description = document.getElementById('report-description').value.trim();
                 
                 if (!reason) {
-                    alert('Por favor, selecciona un motivo para el reporte.');
+                    showModal('Por favor, selecciona un motivo para el reporte.', 'Campo requerido', 'info');
                     return;
                 }
                 
                 if (!loggedInUser || !loggedInUser.username) {
-                    alert('Debes iniciar sesión para reportar usuarios.');
+                    showModal('Debes iniciar sesión para reportar usuarios.', 'Sesión requerida', 'info');
                     window.location.href = 'index.html';
                     return;
                 }
                 
                 if (loggedInUser.username === currentUser.username) {
-                    alert('No puedes reportarte a ti mismo.');
+                    showModal('No puedes reportarte a ti mismo.', 'Acción no permitida', 'info');
                     return;
                 }
                 
@@ -1384,7 +1386,7 @@
                     }
                     
                     if (result.success) {
-                        alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');
+                        showModal('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.', 'Éxito', 'success');
                         document.getElementById('report-modal').classList.remove('visible');
                         document.getElementById('report-reason').value = '';
                         document.getElementById('report-description').value = '';
@@ -1393,7 +1395,7 @@
                     }
                 } catch (error) {
                     console.error('Error al enviar reporte:', error);
-                    alert('Error al enviar el reporte: ' + error.message);
+                    showModal('Error al enviar el reporte: ' + error.message, 'Error', 'error');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = 'Enviar';

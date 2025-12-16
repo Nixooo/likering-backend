@@ -63,9 +63,9 @@
             background: var(--bg-primary);
         }
 
-        /* ===== HEADER - Minimalista ===== */
+        /* ===== HEADER - Estilo similar a imagen ===== */
         .chat-header {
-            background: rgba(10, 10, 15, 0.9);
+            background: rgba(10, 10, 15, 0.95);
             backdrop-filter: blur(20px) saturate(180%);
             padding: 60px 20px 16px;
             border-bottom: 1px solid var(--border-color);
@@ -82,6 +82,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 12px;
         }
 
         .header-icon {
@@ -104,6 +105,10 @@
             background: var(--bg-glass);
             border-color: var(--border-hover);
             transform: scale(1.05);
+        }
+
+        .header-icon.call-icon {
+            margin-left: 8px;
         }
 
         .chat-user-info {
@@ -150,6 +155,16 @@
             height: 8px;
             border-radius: 50%;
             background: #28a745;
+            box-shadow: 0 0 6px rgba(40, 167, 69, 0.5);
+        }
+
+        .status-dot.away {
+            background: #FFA500;
+        }
+
+        .status-dot.offline {
+            background: var(--text-tertiary);
+            box-shadow: none;
         }
 
         /* ===== MESSAGES CONTAINER ===== */
@@ -179,12 +194,13 @@
             border-radius: var(--radius-full);
         }
 
-        /* ===== MESSAGE BUBBLES ===== */
+        /* ===== MESSAGE BUBBLES - Estilo similar a imagen ===== */
         .message-wrapper {
             display: flex;
             flex-direction: column;
             max-width: 70%;
             animation: messageSlideIn 0.3s ease-out;
+            position: relative;
         }
 
         .message-wrapper.sent {
@@ -205,6 +221,7 @@
             position: relative;
             line-height: 1.4;
             font-size: 0.95rem;
+            max-width: 100%;
         }
 
         .message-wrapper.sent .message-bubble {
@@ -214,9 +231,9 @@
         }
 
         .message-wrapper.received .message-bubble {
-            background: var(--bg-glass);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
             border-bottom-left-radius: 4px;
         }
 
@@ -238,26 +255,29 @@
             display: flex;
             align-items: center;
             gap: 2px;
-        }
-
-        .message-status i {
-            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .message-status.read {
             color: var(--primary-blue);
         }
 
-        /* ===== INPUT AREA ===== */
+        .message-status i {
+            font-size: 0.65rem;
+        }
+
+        /* ===== INPUT AREA - Estilo similar a imagen ===== */
         .message-input-container {
             padding: 16px 20px;
-            background: rgba(10, 10, 15, 0.9);
+            background: rgba(10, 10, 15, 0.95);
             backdrop-filter: blur(20px);
             border-top: 1px solid var(--border-color);
             display: flex;
             gap: 10px;
             align-items: flex-end;
             flex-shrink: 0;
+            position: relative;
+            z-index: 10;
         }
 
         .message-input-wrapper {
@@ -265,16 +285,18 @@
             position: relative;
             display: flex;
             align-items: center;
-            background: var(--bg-glass);
-            border: 1.5px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 8px 16px;
             transition: all var(--transition-base);
+            min-height: 48px;
         }
 
         .message-input-wrapper:focus-within {
             border-color: var(--primary-blue);
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .message-input {
@@ -286,35 +308,39 @@
             font-family: 'Inter', sans-serif;
             outline: none;
             resize: none;
-            min-height: 36px;
+            min-height: 32px;
             max-height: 100px;
             line-height: 1.5;
             padding: 4px 0;
+            width: 100%;
         }
 
         .message-input::placeholder {
             color: var(--text-tertiary);
         }
 
+        /* ===== BOTÓN ENVIAR - Nuevo icono ===== */
         .send-button {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: var(--radius-full);
             background: var(--primary-blue);
             border: none;
             color: white;
-            font-size: 0.9rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all var(--transition-base);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 168, 255, 0.3);
         }
 
         .send-button:hover:not(:disabled) {
             background: var(--primary-pink);
             transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(255, 45, 122, 0.4);
         }
 
         .send-button:disabled {
@@ -329,8 +355,8 @@
             align-items: center;
             gap: 6px;
             padding: 10px 14px;
-            background: var(--bg-glass);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
             border-radius: 18px;
             border-bottom-left-radius: 4px;
             max-width: 70px;
@@ -421,6 +447,7 @@
             transform: scale(0.95) translateY(10px);
             transition: transform var(--transition-base);
             overflow: hidden;
+            position: relative;
         }
 
         .modal-overlay.show .modal-container {
@@ -436,8 +463,8 @@
         }
 
         .modal-warning-icon {
-            color: #ff4757;
             font-size: 1.5rem;
+            color: #ff4757;
         }
 
         .modal-header h3 {
@@ -575,7 +602,7 @@
             }
 
             .message-input {
-                font-size: 16px; /* Evita zoom en iOS */
+                font-size: 16px;
             }
         }
 
@@ -595,8 +622,13 @@
                 <a href="mensajes.html" class="header-icon">
                     <i class="fas fa-arrow-left"></i>
                 </a>
-                <div class="header-icon" id="info-btn">
-                    <i class="fas fa-user"></i>
+                <div style="display: flex; gap: 8px;">
+                    <div class="header-icon call-icon" id="video-call-btn" title="Llamada de video">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="header-icon call-icon" id="voice-call-btn" title="Llamada de voz">
+                        <i class="fas fa-phone"></i>
+                    </div>
                 </div>
             </div>
             
@@ -605,8 +637,8 @@
                 <div class="chat-user-details">
                     <h2 id="chat-username">@usuario</h2>
                     <div class="chat-user-status">
-                        <div class="status-dot"></div>
-                        <span>En línea</span>
+                        <div class="status-dot" id="status-dot"></div>
+                        <span id="status-text">En línea</span>
                     </div>
                 </div>
             </div>
@@ -667,6 +699,7 @@
         let messagesInterval = null;
         let lastMessagesHash = '';
         let currentMessageId = null;
+        let userStatus = 'online'; // Estado del usuario
 
         document.addEventListener('DOMContentLoaded', () => {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
@@ -685,6 +718,7 @@
 
             initializeChat();
             setupEventListeners();
+            updateUserStatus();
         });
 
         function initializeChat() {
@@ -695,6 +729,7 @@
             
             messagesInterval = setInterval(() => {
                 loadMessages(true);
+                updateUserStatus();
             }, 3000);
         }
 
@@ -710,6 +745,30 @@
                 }
             } catch (error) {
                 console.error('Error loading user profile:', error);
+            }
+        }
+
+        function updateUserStatus() {
+            // Simular estado (puedes obtenerlo del backend)
+            // Por ahora alternamos entre online/offline para demostración
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            
+            // En producción, esto vendría del backend
+            // Por ahora simulamos que está online
+            userStatus = 'online';
+            
+            if (statusDot && statusText) {
+                if (userStatus === 'online') {
+                    statusDot.className = 'status-dot';
+                    statusText.textContent = 'En línea';
+                } else if (userStatus === 'away') {
+                    statusDot.className = 'status-dot away';
+                    statusText.textContent = 'Ausente';
+                } else {
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Desconectado';
+                }
             }
         }
 
@@ -731,8 +790,12 @@
                 }
             });
 
-            document.getElementById('info-btn').addEventListener('click', () => {
-                window.location.href = `streamer.html?user=${chatUser}`;
+            document.getElementById('video-call-btn').addEventListener('click', () => {
+                showToast('Función de videollamada próximamente', 'info');
+            });
+
+            document.getElementById('voice-call-btn').addEventListener('click', () => {
+                showToast('Función de llamada próximamente', 'info');
             });
             
             initDeleteModal();
@@ -907,11 +970,12 @@
 
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'var(--primary-blue)' : type === 'error' ? '#ff4757' : 'var(--primary-blue)';
             toast.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: ${type === 'success' ? 'var(--primary-blue)' : '#ff4757'};
+                background: ${bgColor};
                 color: white;
                 padding: 12px 20px;
                 border-radius: 12px;
@@ -919,6 +983,7 @@
                 font-size: 0.9rem;
                 font-weight: 500;
                 box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+                animation: messageSlideIn 0.3s ease;
             `;
             toast.textContent = message;
             document.body.appendChild(toast);
@@ -944,6 +1009,7 @@
         window.addEventListener('focus', () => {
             markAsRead();
             loadMessages();
+            updateUserStatus();
         });
 
         document.addEventListener('visibilitychange', () => {
@@ -952,7 +1018,11 @@
             } else {
                 markAsRead();
                 loadMessages();
-                messagesInterval = setInterval(() => loadMessages(true), 3000);
+                updateUserStatus();
+                messagesInterval = setInterval(() => {
+                    loadMessages(true);
+                    updateUserStatus();
+                }, 3000);
             }
         });
     </script>

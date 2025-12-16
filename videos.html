@@ -2170,6 +2170,7 @@
     </div>
 
 <script src="config.js"></script>
+<script src="modal-system.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
         const videoContainer = document.querySelector('.video-container');
@@ -2436,7 +2437,7 @@
     const newText = editInput.value.trim();
     
     if (!newText || !commentId) {
-        alert('El comentario no puede estar vacío.');
+        showModal('El comentario no puede estar vacío.', 'Campo requerido', 'info');
         return;
     }
     
@@ -2461,7 +2462,7 @@
             throw new Error(result.message);
         }
     } catch (error) {
-        alert(`Error al editar comentario: ${error.message}`);
+        showModal(`Error al editar comentario: ${error.message}`, 'Error', 'error');
     } finally {
         saveBtn.disabled = false;
         cancelBtn.disabled = false;
@@ -2531,7 +2532,7 @@
             throw new Error(result.message);
         }
     } catch (error) {
-        alert(`Error al eliminar comentario: ${error.message}`);
+        showModal(`Error al eliminar comentario: ${error.message}`, 'Error', 'error');
     } finally {
         deleteBtn.disabled = false;
         cancelBtn.disabled = false;
@@ -2598,7 +2599,7 @@
             throw new Error(result.message); 
         }
     } catch (error) {
-        alert(`Error al enviar comentario: ${error.message}`);
+        showModal(`Error al enviar comentario: ${error.message}`, 'Error', 'error');
     } finally {
         sendCommentBtn.disabled = false;
         sendCommentBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
@@ -2819,13 +2820,13 @@
             likeArea.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (videoData.user === `@${loggedInUser.username}`) {
-                    alert("No puedes dar like a tus propios videos.");
+                    showModal("No puedes dar like a tus propios videos.", 'Acción no permitida', 'info');
                     return;
                 }
                 if (videoData.videoId && loggedInUser) {
                     handleLikeClick(likeArea, videoData.videoId);
                 } else {
-                    alert("Debes iniciar sesión para dar like.");
+                    showModal("Debes iniciar sesión para dar like.", 'Sesión requerida', 'info');
                 }
             });
             
@@ -3361,10 +3362,10 @@
                 } else if (optionType === 'instagram') {
                     // Instagram no permite compartir directamente, copiar enlace
                     await navigator.clipboard.writeText(videoUrl);
-                    alert('Enlace copiado al portapapeles');
+                    showModal('Enlace copiado al portapapeles', 'Éxito', 'success');
                 } else if (optionType === 'copy') {
                     await navigator.clipboard.writeText(videoUrl);
-                    alert('Enlace copiado al portapapeles');
+                    showModal('Enlace copiado al portapapeles', 'Éxito', 'success');
                 }
                 
                 shareModal.classList.remove('show');
@@ -3376,7 +3377,7 @@
             optionsMenuContainer.classList.remove('active');
             const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
             if (!currentVideoData || !currentVideoData.videoUrl) {
-                alert('No se pudo encontrar la URL del video para descargar.');
+                showModal('No se pudo encontrar la URL del video para descargar.', 'Error', 'error');
                 return;
             }
             downloadOverlay.classList.add('active');
@@ -3410,14 +3411,14 @@
             optionsMenuContainer.classList.remove('active');
             
             if (!loggedInUser) {
-                alert('Debes iniciar sesión para reportar videos.');
+                showModal('Debes iniciar sesión para reportar videos.', 'Sesión requerida', 'info');
                 window.location.href = 'index.html';
                 return;
             }
             
             const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
             if (!currentVideoData) {
-                alert('Error al obtener información del video.');
+                showModal('Error al obtener información del video.', 'Error', 'error');
                 return;
             }
             
@@ -3444,12 +3445,12 @@
             const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
             
             if (!reason) {
-                alert('Por favor, selecciona un motivo para el reporte.');
+                showModal('Por favor, selecciona un motivo para el reporte.', 'Campo requerido', 'info');
                 return;
             }
             
             if (!currentVideoData || !currentVideoData.videoId) {
-                alert('Error al obtener información del video.');
+                showModal('Error al obtener información del video.', 'Error', 'error');
                 return;
             }
             
@@ -3507,7 +3508,7 @@
                 }
                 
                 if (result.success) {
-                    alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');
+                    showModal('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.', 'Éxito', 'success');
                     reportVideoModal.classList.remove('show');
                     document.getElementById('report-video-reason').value = '';
                     document.getElementById('report-video-description').value = '';
@@ -3516,7 +3517,7 @@
                 }
             } catch (error) {
                 console.error('Error al enviar reporte:', error);
-                alert('Error al enviar el reporte: ' + error.message);
+                showModal('Error al enviar el reporte: ' + error.message, 'Error', 'error');
             } finally {
                 submitReportVideoBtn.disabled = false;
                 submitReportVideoBtn.innerHTML = 'Enviar';
@@ -3534,7 +3535,7 @@
         e.stopPropagation();
         e.preventDefault();
         
-        const confirmLogout = confirm('¿Estás seguro de que quieres cerrar sesión?');
+        const confirmLogout = await showConfirmModal('¿Estás seguro de que quieres cerrar sesión?', 'Cerrar sesión', 'warning');
         if (confirmLogout) {
             localStorage.removeItem('loggedInUser');
             localStorage.removeItem('userVideos');

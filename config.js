@@ -362,6 +362,16 @@ const API = {
         }
     },
 
+    async getLikedVideosForUser(username) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/videos/liked-by-user?username=${encodeURIComponent(username)}`);
+            return await response.json();
+        } catch (error) {
+            console.error('Error al obtener videos que le gustaron al usuario:', error);
+            return { success: false, message: 'Error de conexión', data: [] };
+        }
+    },
+
     async saveVideoData(usuario, titulo, descripcion, videoUrl, thumbnailUrl, musicUrl) {
         try {
             const response = await fetch(`${API_BASE_URL}/videos/save`, {
