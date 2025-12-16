@@ -755,47 +755,61 @@
             const statusText = document.getElementById('status-text');
             
             try {
-                // Obtener estado del usuario desde el backend
+                // Obtener estado del usuario directamente desde el backend
                 const result = await API.getUserProfile(chatUser);
                 if (result.success && result.data) {
-                    // Intentar obtener estado de las conversaciones
-                    const convResult = await API.getConversations(loggedInUser.username);
-                    if (convResult.success && convResult.data) {
-                        const conversation = convResult.data.find(c => c.username === chatUser);
-                        if (conversation) {
-                            userStatus = conversation.status || (conversation.is_online ? 'online' : 'offline');
-                            
-                            if (statusDot && statusText) {
-                                if (userStatus === 'online') {
-                                    statusDot.className = 'status-dot';
-                                    statusText.textContent = 'En línea';
-                                } else if (userStatus === 'away') {
-                                    statusDot.className = 'status-dot away';
-                                    statusText.textContent = 'Ausente';
+                    const userData = result.data;
+                    userStatus = userData.status || (userData.is_online ? 'online' : 'offline');
+                    
+                    if (statusDot && statusText) {
+                        if (userStatus === 'online') {
+                            statusDot.className = 'status-dot';
+                            statusText.textContent = 'En línea';
+                        } else if (userStatus === 'away') {
+                            statusDot.className = 'status-dot away';
+                            statusText.textContent = 'Ausente';
+                        } else {
+                            statusDot.className = 'status-dot offline';
+                            if (userData.last_seen) {
+                                const lastSeenDate = new Date(userData.last_seen);
+                                const now = new Date();
+                                const diffMinutes = Math.floor((now - lastSeenDate) / 60000);
+                                
+                                if (diffMinutes < 1) {
+                                    statusText.textContent = 'Hace un momento';
+                                } else if (diffMinutes < 60) {
+                                    statusText.textContent = `Hace ${diffMinutes}m`;
+                                } else if (diffMinutes < 1440) {
+                                    const hours = Math.floor(diffMinutes / 60);
+                                    statusText.textContent = `Hace ${hours}h`;
                                 } else {
-                                    statusDot.className = 'status-dot offline';
-                                    if (conversation.lastSeen) {
-                                        const lastSeenDate = new Date(conversation.lastSeen);
-                                        const now = new Date();
-                                        const diffMinutes = Math.floor((now - lastSeenDate) / 60000);
-                                        
-                                        if (diffMinutes < 60) {
-                                            statusText.textContent = `Hace ${diffMinutes}m`;
-                                        } else if (diffMinutes < 1440) {
-                                            const hours = Math.floor(diffMinutes / 60);
-                                            statusText.textContent = `Hace ${hours}h`;
-                                        } else {
-                                            const days = Math.floor(diffMinutes / 1440);
-                                            statusText.textContent = `Hace ${days}d`;
-                                        }
+                                    const days = Math.floor(diffMinutes / 1440);
+                                    if (days === 1) {
+                                        statusText.textContent = 'Ayer';
+                                    } else if (days < 7) {
+                                        statusText.textContent = `Hace ${days}d`;
                                     } else {
-                                        statusText.textContent = 'Desconectado';
+                                        const weeks = Math.floor(days / 7);
+                                        if (weeks === 1) {
+                                            statusText.textContent = 'Hace 1 semana';
+                                        } else if (weeks < 4) {
+                                            statusText.textContent = `Hace ${weeks} semanas`;
+                                        } else {
+                                            const months = Math.floor(days / 30);
+                                            if (months === 1) {
+                                                statusText.textContent = 'Hace 1 mes';
+                                            } else {
+                                                statusText.textContent = `Hace ${months} meses`;
+                                            }
+                                        }
                                     }
                                 }
+                            } else {
+                                statusText.textContent = 'Desconectado';
                             }
-                            return;
                         }
                     }
+                    return;
                 }
                 
                 // Fallback: mostrar desconectado

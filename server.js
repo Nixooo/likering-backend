@@ -250,6 +250,39 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
+        // Obtener estado del usuario (is_online y last_seen)
+        let status = 'offline';
+        let lastSeen = null;
+        let isOnline = false;
+        try {
+            const statusResult = await pool.query(
+                'SELECT is_online, last_seen FROM users WHERE username = $1',
+                [user]
+            );
+            if (statusResult.rows.length > 0) {
+                isOnline = statusResult.rows[0].is_online === true;
+                const lastSeenTime = statusResult.rows[0].last_seen;
+                
+                if (isOnline) {
+                    status = 'online';
+                } else if (lastSeenTime) {
+                    const lastSeenDate = new Date(lastSeenTime);
+                    const now = new Date();
+                    const diffMinutes = Math.floor((now - lastSeenDate) / 60000);
+                    
+                    if (diffMinutes < 5) {
+                        status = 'away';
+                    } else {
+                        status = 'offline';
+                        lastSeen = lastSeenTime;
+                    }
+                }
+            }
+        } catch (error) {
+            // Si las columnas no existen, usar valores por defecto
+            console.warn('Advertencia: Campos is_online/last_seen no encontrados para', user);
+        }
+
         // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
         const userId = userData.id || userData.user_id;
         
@@ -264,7 +297,10 @@ app.get('/api/user/profile', async (req, res) => {
                 followers: followersCount,
                 following: followingCount,
                 likes: likesCount,
-                posts: postsCount
+                posts: postsCount,
+                status: status,
+                is_online: isOnline,
+                last_seen: lastSeen
             }
         });
     } catch (error) {
