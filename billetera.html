@@ -125,6 +125,81 @@
         .btn-primary { background-color: var(--plan-color-principal); color: var(--dark-background); } /* Botón dinámico */
         .btn-secondary { background-color: #3a3a3a; color: var(--text-primary); }
 
+        /* Payment Gateway Styles */
+        .payment-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .option-card {
+            background: linear-gradient(145deg, #1f2a36, #11161a);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 15px;
+            min-width: 100px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            flex: 1;
+        }
+        .option-card.selected {
+            border-color: var(--plan-color-principal);
+            background: rgba(0, 164, 230, 0.1);
+            transform: translateY(-2px);
+        }
+        .option-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+        .option-credits {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .payment-method {
+            background: linear-gradient(145deg, #1f2a36, #11161a);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .payment-method h3 {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+        .method-icons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+        .method-icons i {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .method-icons i:hover { opacity: 1; }
+        
+        .input-group-pay { margin-bottom: 15px; }
+        .pay-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0f1418;
+            border: 1px solid #2e3b4e;
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .pay-input:focus { border-color: var(--plan-color-principal); }
+        .pay-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+
     </style>
 </head>
 <body>
@@ -138,39 +213,90 @@
             <div class="overlay"></div>
 
             <div class="wallet-content">
-                <div class="wallet-header">
-                    <h1>Billetera</h1>
+                <div id="wallet-view">
+                    <div class="wallet-header">
+                        <h1>Billetera</h1>
+                    </div>
+
+                    <div class="wallet-card">
+                        <div class="card-header">
+                            <div class="plan-name" id="plan-name"></div>
+                            <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
+                        </div>
+                        <div class="wallet-section">
+                            <h2>Disponibles</h2>
+                            <div class="wallet-row">
+                                <span class="label">Like Disponible:</span>
+                                <span class="value" id="likes-disponibles">0</span>
+                            </div>
+                        </div>
+                        <hr class="separator">
+                        <div class="wallet-section ganancias">
+                            <h2>Ganancias</h2>
+                             <div class="wallet-row">
+                                <span class="label">Like Ganados:</span>
+                                <span class="value" id="likes-ganados">0</span>
+                            </div>
+                            <div class="wallet-row">
+                                <span class="label">Dinero Generado:</span>
+                                <span class="value" id="dinero-ganado">$0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-primary">Retirar</button>
+                        <button class="btn-secondary" id="buy-button">Comprar</button>
+                    </div>
                 </div>
 
-                <div class="wallet-card">
-                    <div class="card-header">
-                        <div class="plan-name" id="plan-name"></div>
-                        <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
+                <!-- Payment Gateway Section -->
+                <div id="payment-gateway" style="display: none; height: 100%; flex-direction: column;">
+                    <div class="wallet-header">
+                        <h1>Recargar Saldo</h1>
                     </div>
-                    <div class="wallet-section">
-                        <h2>Disponibles</h2>
-                        <div class="wallet-row">
-                            <span class="label">Like Disponible:</span>
-                            <span class="value" id="likes-disponibles">0</span>
+                    
+                    <div class="payment-options">
+                        <div class="option-card selected" onclick="selectOption(this, 5)">
+                            <div class="option-amount">$5.00</div>
+                            <div class="option-credits">500 Likes</div>
+                        </div>
+                        <div class="option-card" onclick="selectOption(this, 10)">
+                            <div class="option-amount">$10.00</div>
+                            <div class="option-credits">1200 Likes</div>
+                        </div>
+                        <div class="option-card" onclick="selectOption(this, 20)">
+                            <div class="option-amount">$20.00</div>
+                            <div class="option-credits">2500 Likes</div>
                         </div>
                     </div>
-                    <hr class="separator">
-                    <div class="wallet-section ganancias">
-                        <h2>Ganancias</h2>
-                         <div class="wallet-row">
-                            <span class="label">Like Ganados:</span>
-                            <span class="value" id="likes-ganados">0</span>
-                        </div>
-                        <div class="wallet-row">
-                            <span class="label">Dinero Generado:</span>
-                            <span class="value" id="dinero-ganado">$0</span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="action-buttons">
-                    <button class="btn-primary">Retirar</button>
-                    <button class="btn-secondary" id="buy-button">Comprar</button>
+                    <div class="payment-method">
+                        <h3>Método de Pago</h3>
+                        <div class="method-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-paypal"></i>
+                        </div>
+                        
+                        <form id="payment-form">
+                            <div class="input-group-pay">
+                                <input type="text" placeholder="Número de Tarjeta" class="pay-input" required>
+                            </div>
+                            <div class="pay-row">
+                                <input type="text" placeholder="MM/YY" class="pay-input" required style="width: 48%">
+                                <input type="text" placeholder="CVC" class="pay-input" required style="width: 48%">
+                            </div>
+                            <div class="input-group-pay">
+                                <input type="text" placeholder="Nombre en la Tarjeta" class="pay-input" required>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="action-buttons" style="margin-top: auto;">
+                        <button class="btn-primary" id="process-payment-btn">Pagar Ahora</button>
+                        <button class="btn-secondary" id="cancel-payment-btn">Cancelar</button>
+                    </div>
                 </div>
             </div>
 
@@ -220,9 +346,91 @@
             }
         });
         
-        // La lógica para el panel de compra no necesita cambios
+        // Payment Gateway Logic
+        const walletView = document.getElementById('wallet-view');
+        const paymentGateway = document.getElementById('payment-gateway');
         const buyButton = document.getElementById('buy-button');
-        // ...resto del script del panel de compra sin cambios...
+        const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+        const processPaymentBtn = document.getElementById('process-payment-btn');
+        
+        let selectedAmount = 5; // Default
+
+        // Show Payment Gateway
+        if (buyButton) {
+            buyButton.addEventListener('click', () => {
+                walletView.style.display = 'none';
+                paymentGateway.style.display = 'flex';
+            });
+        }
+
+        // Hide Payment Gateway
+        if (cancelPaymentBtn) {
+            cancelPaymentBtn.addEventListener('click', () => {
+                paymentGateway.style.display = 'none';
+                walletView.style.display = 'block';
+            });
+        }
+
+        // Select Option
+        window.selectOption = function(element, amount) {
+            // Remove selected class from all options
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            // Add selected class to clicked option
+            element.classList.add('selected');
+            selectedAmount = amount;
+        }
+
+        // Process Payment (Simulation)
+        if (processPaymentBtn) {
+            processPaymentBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent form submission
+                const form = document.getElementById('payment-form');
+                
+                // Simple validation check
+                const inputs = form.querySelectorAll('input');
+                let isValid = true;
+                inputs.forEach(input => {
+                    if (!input.value.trim()) isValid = false;
+                });
+
+                if (isValid) {
+                    // Simulate processing
+                    const originalText = processPaymentBtn.textContent;
+                    processPaymentBtn.textContent = 'Procesando...';
+                    processPaymentBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        alert(`¡Pago de $${selectedAmount}.00 exitoso! Tus Likes han sido acreditados.`);
+                        
+                        // Update local storage (simulation)
+                        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                        if (loggedInUser) {
+                            let likesToAdd = 0;
+                            if (selectedAmount === 5) likesToAdd = 500;
+                            if (selectedAmount === 10) likesToAdd = 1200;
+                            if (selectedAmount === 20) likesToAdd = 2500;
+                            
+                            loggedInUser.likesDisponibles = (parseInt(loggedInUser.likesDisponibles || 0) + likesToAdd).toString();
+                            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                            
+                            // Update UI
+                            document.getElementById('likes-disponibles').textContent = loggedInUser.likesDisponibles;
+                        }
+
+                        // Reset UI
+                        processPaymentBtn.textContent = originalText;
+                        processPaymentBtn.disabled = false;
+                        paymentGateway.style.display = 'none';
+                        walletView.style.display = 'block';
+                        form.reset();
+                    }, 2000);
+                } else {
+                    alert('Por favor complete todos los campos de pago.');
+                }
+            });
+        }
     </script>
 
 </body>
