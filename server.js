@@ -94,18 +94,6 @@ app.post('/api/login', async (req, res) => {
             return res.json({ success: false, message: 'Usuario o contraseña incorrectos' });
         }
 
-        // Actualizar estado del usuario como online
-        try {
-            await pool.query(
-                `UPDATE users SET is_online = true, last_seen = CURRENT_TIMESTAMP 
-                 WHERE username = $1`,
-                [username]
-            );
-        } catch (error) {
-            // Si las columnas no existen, intentar crearlas (solo en desarrollo)
-            console.warn('Advertencia: Campos is_online/last_seen no encontrados. Ejecuta el script SQL para agregarlos.');
-        }
-
         // Retornar datos del usuario (sin password)
         // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
         const userId = user.id || user.user_id;
@@ -250,39 +238,6 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
-        // Obtener estado del usuario (is_online y last_seen)
-        let status = 'offline';
-        let lastSeen = null;
-        let isOnline = false;
-        try {
-            const statusResult = await pool.query(
-                'SELECT is_online, last_seen FROM users WHERE username = $1',
-                [user]
-            );
-            if (statusResult.rows.length > 0) {
-                isOnline = statusResult.rows[0].is_online === true;
-                const lastSeenTime = statusResult.rows[0].last_seen;
-                
-                if (isOnline) {
-                    status = 'online';
-                } else if (lastSeenTime) {
-                    const lastSeenDate = new Date(lastSeenTime);
-                    const now = new Date();
-                    const diffMinutes = Math.floor((now - lastSeenDate) / 60000);
-                    
-                    if (diffMinutes < 5) {
-                        status = 'away';
-                    } else {
-                        status = 'offline';
-                        lastSeen = lastSeenTime;
-                    }
-                }
-            }
-        } catch (error) {
-            // Si las columnas no existen, usar valores por defecto
-            console.warn('Advertencia: Campos is_online/last_seen no encontrados para', user);
-        }
-
         // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
         const userId = userData.id || userData.user_id;
         
@@ -297,10 +252,7 @@ app.get('/api/user/profile', async (req, res) => {
                 followers: followersCount,
                 following: followingCount,
                 likes: likesCount,
-                posts: postsCount,
-                status: status,
-                is_online: isOnline,
-                last_seen: lastSeen
+                posts: postsCount
             }
         });
     } catch (error) {
@@ -327,34 +279,6 @@ app.post('/api/user/update-profile-picture', async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar foto:', error);
         res.json({ success: false, message: 'Error al actualizar foto de perfil' });
-    }
-});
-
-// Actualizar estado del usuario (online/offline)
-app.post('/api/user/update-status', async (req, res) => {
-    try {
-        const { username } = req.body;
-
-        if (!username) {
-            return res.json({ success: false, message: 'Usuario requerido' });
-        }
-
-        // Actualizar estado como online y last_seen
-        try {
-            await pool.query(
-                `UPDATE users SET is_online = true, last_seen = CURRENT_TIMESTAMP 
-                 WHERE username = $1`,
-                [username]
-            );
-            res.json({ success: true, message: 'Estado actualizado' });
-        } catch (error) {
-            // Si las columnas no existen, retornar éxito de todas formas
-            console.warn('Advertencia: Campos is_online/last_seen no encontrados');
-            res.json({ success: true, message: 'Estado actualizado (columnas no disponibles)' });
-        }
-    } catch (error) {
-        console.error('Error al actualizar estado:', error);
-        res.json({ success: false, message: 'Error al actualizar estado' });
     }
 });
 
@@ -1139,7 +1063,7 @@ app.get('/api/messages/conversations', async (req, res) => {
 
         console.log('📨 Conversaciones encontradas:', result.rows.length);
 
-        // Obtener imágenes de perfil, último mensaje completo y estado
+        // Obtener imágenes de perfil y último mensaje completo
         const conversations = await Promise.all(result.rows.map(async (row) => {
             try {
                 const userData = await getUserByUsername(row.other_user);
@@ -1161,38 +1085,6 @@ app.get('/api/messages/conversations', async (req, res) => {
                     created_at: row.last_message_time 
                 };
                 
-                // Obtener estado del usuario (is_online y last_seen)
-                let status = 'offline';
-                let lastSeen = null;
-                try {
-                    const statusResult = await pool.query(
-                        'SELECT is_online, last_seen FROM users WHERE username = $1',
-                        [row.other_user]
-                    );
-                    if (statusResult.rows.length > 0) {
-                        const isOnline = statusResult.rows[0].is_online;
-                        const lastSeenTime = statusResult.rows[0].last_seen;
-                        
-                        if (isOnline) {
-                            status = 'online';
-                        } else if (lastSeenTime) {
-                            const lastSeenDate = new Date(lastSeenTime);
-                            const now = new Date();
-                            const diffMinutes = Math.floor((now - lastSeenDate) / 60000);
-                            
-                            if (diffMinutes < 5) {
-                                status = 'away';
-                            } else {
-                                status = 'offline';
-                                lastSeen = lastSeenTime;
-                            }
-                        }
-                    }
-                } catch (error) {
-                    // Si las columnas no existen, usar valores por defecto
-                    console.warn('Advertencia: Campos is_online/last_seen no encontrados para', row.other_user);
-                }
-                
                 return {
                     username: row.other_user,
                     lastMessage: {
@@ -1202,10 +1094,7 @@ app.get('/api/messages/conversations', async (req, res) => {
                     },
                     lastMessageTime: lastMessageTime,
                     unreadCount: parseInt(row.unread_count) || 0,
-                    imageUrl: userData?.image_url || '',
-                    status: status,
-                    lastSeen: lastSeen,
-                    is_online: status === 'online'
+                    imageUrl: userData?.image_url || ''
                 };
             } catch (err) {
                 console.error('Error obteniendo datos de usuario:', row.other_user, err);
@@ -1220,10 +1109,7 @@ app.get('/api/messages/conversations', async (req, res) => {
                     },
                     lastMessageTime: lastMessageTime,
                     unreadCount: parseInt(row.unread_count) || 0,
-                    imageUrl: '',
-                    status: 'offline',
-                    lastSeen: null,
-                    is_online: false
+                    imageUrl: ''
                 };
             }
         }));
@@ -1364,28 +1250,6 @@ app.post('/api/messages/mark-read', async (req, res) => {
     }
 });
 
-// Eliminar conversación permanentemente
-app.post('/api/messages/delete-conversation', async (req, res) => {
-    try {
-        const { username, otherUser } = req.body;
-
-        if (!username || !otherUser) {
-            return res.json({ success: false, message: 'Usuario y otro usuario requeridos' });
-        }
-
-        // Eliminar todos los mensajes entre los dos usuarios
-        await pool.query(
-            'DELETE FROM messages WHERE (from_username = $1 AND to_username = $2) OR (from_username = $2 AND to_username = $1)',
-            [username, otherUser]
-        );
-
-        res.json({ success: true, message: 'Conversación eliminada permanentemente' });
-    } catch (error) {
-        console.error('Error al eliminar conversación:', error);
-        res.json({ success: false, message: 'Error al eliminar conversación' });
-    }
-});
-
 // ==================== RUTA DE REPORTES ====================
 
 // Endpoint público para crear reportes
@@ -1488,6 +1352,51 @@ app.post('/api/public/reports', async (req, res) => {
     } catch (error) {
         console.error('Error al crear reporte:', error);
         res.json({ success: false, error: 'Error al crear el reporte: ' + error.message });
+    }
+});
+
+// ==================== PASARELA DE PAGOS (WOMPI) ====================
+
+// Endpoint para recibir notificaciones de pago (Webhook)
+app.post('/api/wompi/webhook', async (req, res) => {
+    try {
+        const { event, data } = req.body;
+
+        // Verificar que sea un evento de transacción terminada
+        if (event === 'transaction.updated') {
+            const transaction = data.transaction;
+            const { status, reference, amount_in_cents, id: transactionId } = transaction;
+
+            console.log(`💳 Transacción Wompi recibida: ${transactionId} [${status}] - Ref: ${reference}`);
+
+            if (status === 'APPROVED') {
+                // La referencia debe contener el ID del usuario: "USER_ID_TIMESTAMP"
+                // Formato esperado: LIKERING_USERID_TIMESTAMP
+                const parts = reference.split('_');
+                const userId = parts[1];
+
+                if (userId) {
+                    // Calcular cuántos likes dar (ejemplo: 100 pesos = 1 like)
+                    // Wompi envía el monto en centavos
+                    const amount = amount_in_cents / 100;
+                    const likesToAdd = Math.floor(amount / 100); 
+
+                    console.log(`✅ Pago aprobado. Acreditando ${likesToAdd} likes al usuario ${userId}`);
+
+                    // Actualizar en la base de datos
+                    await pool.query(
+                        'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE id = $2',
+                        [likesToAdd, userId]
+                    );
+                }
+            }
+        }
+
+        // Siempre responder 200 a Wompi
+        res.status(200).send('OK');
+    } catch (error) {
+        console.error('❌ Error en Webhook de Wompi:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 

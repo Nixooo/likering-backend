@@ -92,9 +92,7 @@
         @keyframes image-fade {
             0% { opacity: 0; } 8% { opacity: 1; } 25% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; }
         }
-        .wallet-content {
-            position: relative; z-index: 3; display: flex; flex-direction: column; padding: 25px; height: 100%;
-        }
+        .wallet-content { position: relative; z-index: 3; display: flex; flex-direction: column; padding: 25px; height: 100%; }
         .wallet-header { text-align: center; padding-top: 30px; margin-bottom: 25px; }
         .wallet-header h1 { font-size: 1.5rem; font-weight: 600; }
         
@@ -119,86 +117,91 @@
         .ganancias .wallet-row .value { font-size: 1.5rem; font-weight: 700; }
         .separator { border: none; height: 1px; background-color: rgba(255, 255, 255, 0.1); margin: 20px 0; }
         
-        .action-buttons { display: flex; gap: 15px; width: 100%; margin-top: auto; padding-bottom: 20px; }
-        .action-buttons button { flex-grow: 1; padding: 16px; border-radius: 12px; border: none; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; }
+        .action-buttons { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-top: auto; padding-bottom: 20px; }
+        .action-buttons button { flex: 1 1 calc(50% - 10px); padding: 12px; border-radius: 12px; border: none; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; text-align: center; }
         .action-buttons button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .btn-primary { background-color: var(--plan-color-principal); color: var(--dark-background); } /* Botón dinámico */
         .btn-secondary { background-color: #3a3a3a; color: var(--text-primary); }
 
-        /* Payment Gateway Styles */
-        .payment-options {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            overflow-x: auto;
-            padding-bottom: 5px;
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
         }
-        .option-card {
-            background: linear-gradient(145deg, #1f2a36, #11161a);
-            border: 2px solid transparent;
-            border-radius: 16px;
-            padding: 15px;
-            min-width: 100px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-            flex: 1;
-        }
-        .option-card.selected {
-            border-color: var(--plan-color-principal);
-            background: rgba(0, 164, 230, 0.1);
-            transform: translateY(-2px);
-        }
-        .option-amount {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-        }
-        .option-credits {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        
-        .payment-method {
-            background: linear-gradient(145deg, #1f2a36, #11161a);
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            width: 90%;
+            background: #151515;
             border-radius: 20px;
             padding: 20px;
-            margin-bottom: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
         }
-        .payment-method h3 {
-            font-size: 1rem;
+
+        .modal-title {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .modal-description {
+            font-size: 0.8rem;
             color: var(--text-secondary);
             margin-bottom: 15px;
-            font-weight: 500;
         }
-        .method-icons {
+
+        .modal-row {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            color: var(--text-primary);
+            flex-direction: column;
+            margin-bottom: 10px;
         }
-        .method-icons i {
-            opacity: 0.5;
-            transition: opacity 0.2s;
+
+        .modal-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
         }
-        .method-icons i:hover { opacity: 1; }
-        
-        .input-group-pay { margin-bottom: 15px; }
-        .pay-input {
-            width: 100%;
-            padding: 12px 15px;
-            background: #0f1418;
-            border: 1px solid #2e3b4e;
+
+        .modal-row input,
+        .modal-row select {
             border-radius: 10px;
+            border: none;
+            padding: 10px;
+            background: #222;
             color: var(--text-primary);
             font-size: 0.9rem;
-            outline: none;
-            transition: border-color 0.2s;
         }
-        .pay-input:focus { border-color: var(--plan-color-principal); }
-        .pay-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
+
+        .modal-row input:focus,
+        .modal-row select:focus {
+            outline: 2px solid var(--plan-color-principal);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel { background: #333; color: var(--text-primary); }
+        .btn-confirm { background: var(--plan-color-principal); color: #000; }
 
     </style>
 </head>
@@ -213,97 +216,135 @@
             <div class="overlay"></div>
 
             <div class="wallet-content">
-                <div id="wallet-view">
-                    <div class="wallet-header">
-                        <h1>Billetera</h1>
-                    </div>
+                <div class="wallet-header">
+                    <h1>Billetera</h1>
+                </div>
 
-                    <div class="wallet-card">
-                        <div class="card-header">
-                            <div class="plan-name" id="plan-name"></div>
-                            <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
-                        </div>
-                        <div class="wallet-section">
-                            <h2>Disponibles</h2>
-                            <div class="wallet-row">
-                                <span class="label">Like Disponible:</span>
-                                <span class="value" id="likes-disponibles">0</span>
-                            </div>
-                        </div>
-                        <hr class="separator">
-                        <div class="wallet-section ganancias">
-                            <h2>Ganancias</h2>
-                             <div class="wallet-row">
-                                <span class="label">Like Ganados:</span>
-                                <span class="value" id="likes-ganados">0</span>
-                            </div>
-                            <div class="wallet-row">
-                                <span class="label">Dinero Generado:</span>
-                                <span class="value" id="dinero-ganado">$0</span>
-                            </div>
+                <div class="wallet-card">
+                    <div class="card-header">
+                        <div class="plan-name" id="plan-name"></div>
+                        <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
+                    </div>
+                    <div class="wallet-section">
+                        <h2>Disponibles</h2>
+                        <div class="wallet-row">
+                            <span class="label">Like Disponible:</span>
+                            <span class="value" id="likes-disponibles">0</span>
                         </div>
                     </div>
-
-                    <div class="action-buttons">
-                        <button class="btn-primary">Retirar</button>
-                        <button class="btn-secondary" id="buy-button">Comprar</button>
+                    <hr class="separator">
+                    <div class="wallet-section ganancias">
+                        <h2>Ganancias</h2>
+                         <div class="wallet-row">
+                            <span class="label">Like Ganados:</span>
+                            <span class="value" id="likes-ganados">0</span>
+                        </div>
+                        <div class="wallet-row">
+                            <span class="label">Dinero Generado:</span>
+                            <span class="value" id="dinero-ganado">$0</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Payment Gateway Section -->
-                <div id="payment-gateway" style="display: none; height: 100%; flex-direction: column;">
-                    <div class="wallet-header">
-                        <h1>Recargar Saldo</h1>
-                    </div>
-                    
-                    <div class="payment-options">
-                        <div class="option-card selected" onclick="selectOption(this, 5)">
-                            <div class="option-amount">$5.00</div>
-                            <div class="option-credits">500 Likes</div>
-                        </div>
-                        <div class="option-card" onclick="selectOption(this, 10)">
-                            <div class="option-amount">$10.00</div>
-                            <div class="option-credits">1200 Likes</div>
-                        </div>
-                        <div class="option-card" onclick="selectOption(this, 20)">
-                            <div class="option-amount">$20.00</div>
-                            <div class="option-credits">2500 Likes</div>
-                        </div>
-                    </div>
-
-                    <div class="payment-method">
-                        <h3>Método de Pago</h3>
-                        <div class="method-icons">
-                            <i class="fab fa-cc-visa"></i>
-                            <i class="fab fa-cc-mastercard"></i>
-                            <i class="fab fa-paypal"></i>
-                        </div>
-                        
-                        <form id="payment-form">
-                            <div class="input-group-pay">
-                                <input type="text" placeholder="Número de Tarjeta" class="pay-input" required>
-                            </div>
-                            <div class="pay-row">
-                                <input type="text" placeholder="MM/YY" class="pay-input" required style="width: 48%">
-                                <input type="text" placeholder="CVC" class="pay-input" required style="width: 48%">
-                            </div>
-                            <div class="input-group-pay">
-                                <input type="text" placeholder="Nombre en la Tarjeta" class="pay-input" required>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="action-buttons" style="margin-top: auto;">
-                        <button class="btn-primary" id="process-payment-btn">Pagar Ahora</button>
-                        <button class="btn-secondary" id="cancel-payment-btn">Cancelar</button>
-                    </div>
+                <div class="action-buttons">
+                    <button class="btn-primary" id="withdraw-button">Retirar</button>
+                    <button class="btn-secondary" id="add-funds-button">Agregar fondos</button>
+                    <button class="btn-secondary" id="transfer-button">Transferir</button>
                 </div>
             </div>
 
         </div>
     </div>
 
+    <div class="modal-overlay" id="withdraw-modal">
+        <div class="modal">
+            <div class="modal-title">Retirar fondos</div>
+            <div class="modal-description">
+                Tus retiros serán procesados manualmente una vez aprobados.
+            </div>
+            <div class="modal-row">
+                <label for="withdraw-amount">Monto a retirar (COP)</label>
+                <input type="number" id="withdraw-amount" min="1000" step="1000" placeholder="Ej: 20000">
+            </div>
+            <div class="modal-row">
+                <label for="withdraw-method">Método de retiro</label>
+                <select id="withdraw-method">
+                    <option value="nequi">Nequi</option>
+                    <option value="bancolombia">Cuenta Bancolombia</option>
+                </select>
+            </div>
+            <div class="modal-row">
+                <label for="withdraw-destination">Número de celular / cuenta</label>
+                <input type="text" id="withdraw-destination" placeholder="Ej: 3001234567">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" data-close-modal="withdraw-modal">Cancelar</button>
+                <button class="btn-confirm" id="confirm-withdraw">Solicitar retiro</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal">
+            <div class="modal-title">Transferir fondos</div>
+            <div class="modal-description">
+                Envía likes disponibles a otro usuario de Likering.
+            </div>
+            <div class="modal-row">
+                <label for="transfer-username">Usuario destino</label>
+                <input type="text" id="transfer-username" placeholder="@usuario">
+            </div>
+            <div class="modal-row">
+                <label for="transfer-amount">Cantidad de likes a transferir</label>
+                <input type="number" id="transfer-amount" min="1" step="1" placeholder="Ej: 50">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" data-close-modal="transfer-modal">Cancelar</button>
+                <button class="btn-confirm" id="confirm-transfer">Transferir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script de Wompi -->
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+
     <script>
+        function openWompiCheckout(userId) {
+            const checkout = new WompiCheckout({
+                currency: 'COP',
+                amountInCents: 2500000,
+                publicKey: 'pub_test_Q5yS9jCDiGue9W96N8f0X7k13mSj8X6r',
+                reference: `LIKERING_${userId}_${Date.now()}`,
+                redirectUrl: 'https://likering.onrender.com/billetera.html'
+            });
+
+            checkout.open(function (result) {
+                const transaction = result.transaction;
+                if (transaction && transaction.status === 'APPROVED') {
+                    alert('Pago exitoso. Tus likes se verán reflejados en unos minutos.');
+                    location.reload();
+                } else if (transaction) {
+                    alert('El pago no pudo ser procesado: ' + transaction.status);
+                } else {
+                    alert('No se pudo obtener el estado de la transacción.');
+                }
+            });
+        }
+
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
         // NUEVO: Función para formatear el número como moneda
         function formatCurrency(value) {
             // Si el valor no es válido o es 0, retorna "$ 0"
@@ -325,112 +366,96 @@
             if (loggedInUser && loggedInUser.plan) {
                 const plan = loggedInUser.plan;
                 
-                // Aplicar el tema de color
                 document.querySelector('.app-screen').classList.add(`plan-${plan}`);
-                
-                // Actualizar el nombre del plan
                 const planNameElement = document.getElementById('plan-name');
                 planNameElement.textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
-                
-                // Actualizar datos de la billetera
                 document.getElementById('likes-disponibles').textContent = loggedInUser.likesDisponibles || '0';
                 document.getElementById('likes-ganados').textContent = loggedInUser.likesGanados || '0';
-
-                // USAMOS LA NUEVA FUNCIÓN para formatear el valor
                 const dineroValue = loggedInUser.dineroGanado || '0';
                 document.getElementById('dinero-ganado').textContent = formatCurrency(dineroValue);
 
+                const userId = loggedInUser.id || loggedInUser.user_id;
+
+                const addFundsButton = document.getElementById('add-funds-button');
+                if (addFundsButton) {
+                    addFundsButton.addEventListener('click', () => {
+                        openWompiCheckout(userId);
+                    });
+                }
+
+                const withdrawButton = document.getElementById('withdraw-button');
+                if (withdrawButton) {
+                    withdrawButton.addEventListener('click', () => {
+                        const currentBalance = document.getElementById('likes-disponibles').textContent;
+                        const withdrawAmountInput = document.getElementById('withdraw-amount');
+                        if (withdrawAmountInput) {
+                            withdrawAmountInput.value = '';
+                        }
+                        openModal('withdraw-modal');
+                    });
+                }
+
+                const transferButton = document.getElementById('transfer-button');
+                if (transferButton) {
+                    transferButton.addEventListener('click', () => {
+                        const transferUsernameInput = document.getElementById('transfer-username');
+                        const transferAmountInput = document.getElementById('transfer-amount');
+                        if (transferUsernameInput) {
+                            transferUsernameInput.value = '';
+                        }
+                        if (transferAmountInput) {
+                            transferAmountInput.value = '';
+                        }
+                        openModal('transfer-modal');
+                    });
+                }
+
+                document.querySelectorAll('.btn-cancel[data-close-modal]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const modalId = button.getAttribute('data-close-modal');
+                        if (modalId) {
+                            closeModal(modalId);
+                        }
+                    });
+                });
+
+                const confirmWithdraw = document.getElementById('confirm-withdraw');
+                if (confirmWithdraw) {
+                    confirmWithdraw.addEventListener('click', () => {
+                        const amount = parseInt(document.getElementById('withdraw-amount').value, 10);
+                        const method = document.getElementById('withdraw-method').value;
+                        const destination = document.getElementById('withdraw-destination').value.trim();
+
+                        if (!amount || amount <= 0 || !destination) {
+                            alert('Completa los datos del retiro antes de continuar.');
+                            return;
+                        }
+
+                        alert('Solicitud de retiro creada. Esta función se conectará a Wompi y al backend próximamente.');
+                        closeModal('withdraw-modal');
+                    });
+                }
+
+                const confirmTransfer = document.getElementById('confirm-transfer');
+                if (confirmTransfer) {
+                    confirmTransfer.addEventListener('click', () => {
+                        const username = document.getElementById('transfer-username').value.trim();
+                        const amount = parseInt(document.getElementById('transfer-amount').value, 10);
+
+                        if (!username || !amount || amount <= 0) {
+                            alert('Ingresa un usuario destino y una cantidad válida de likes.');
+                            return;
+                        }
+
+                        alert('Transferencia preparada. Esta acción se conectará al backend para mover likes entre usuarios.');
+                        closeModal('transfer-modal');
+                    });
+                }
+
             } else {
-                // Si no hay datos de sesión, volver al login
                 window.location.href = 'index.html';
             }
         });
-        
-        // Payment Gateway Logic
-        const walletView = document.getElementById('wallet-view');
-        const paymentGateway = document.getElementById('payment-gateway');
-        const buyButton = document.getElementById('buy-button');
-        const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
-        const processPaymentBtn = document.getElementById('process-payment-btn');
-        
-        let selectedAmount = 5; // Default
-
-        // Show Payment Gateway
-        if (buyButton) {
-            buyButton.addEventListener('click', () => {
-                walletView.style.display = 'none';
-                paymentGateway.style.display = 'flex';
-            });
-        }
-
-        // Hide Payment Gateway
-        if (cancelPaymentBtn) {
-            cancelPaymentBtn.addEventListener('click', () => {
-                paymentGateway.style.display = 'none';
-                walletView.style.display = 'block';
-            });
-        }
-
-        // Select Option
-        window.selectOption = function(element, amount) {
-            // Remove selected class from all options
-            document.querySelectorAll('.option-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            // Add selected class to clicked option
-            element.classList.add('selected');
-            selectedAmount = amount;
-        }
-
-        // Process Payment (Simulation)
-        if (processPaymentBtn) {
-            processPaymentBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // Prevent form submission
-                const form = document.getElementById('payment-form');
-                
-                // Simple validation check
-                const inputs = form.querySelectorAll('input');
-                let isValid = true;
-                inputs.forEach(input => {
-                    if (!input.value.trim()) isValid = false;
-                });
-
-                if (isValid) {
-                    // Simulate processing
-                    const originalText = processPaymentBtn.textContent;
-                    processPaymentBtn.textContent = 'Procesando...';
-                    processPaymentBtn.disabled = true;
-                    
-                    setTimeout(() => {
-                        alert(`¡Pago de $${selectedAmount}.00 exitoso! Tus Likes han sido acreditados.`);
-                        
-                        // Update local storage (simulation)
-                        const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-                        if (loggedInUser) {
-                            let likesToAdd = 0;
-                            if (selectedAmount === 5) likesToAdd = 500;
-                            if (selectedAmount === 10) likesToAdd = 1200;
-                            if (selectedAmount === 20) likesToAdd = 2500;
-                            
-                            loggedInUser.likesDisponibles = (parseInt(loggedInUser.likesDisponibles || 0) + likesToAdd).toString();
-                            localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                            
-                            // Update UI
-                            document.getElementById('likes-disponibles').textContent = loggedInUser.likesDisponibles;
-                        }
-
-                        // Reset UI
-                        processPaymentBtn.textContent = originalText;
-                        processPaymentBtn.disabled = false;
-                        paymentGateway.style.display = 'none';
-                        walletView.style.display = 'block';
-                        form.reset();
-                    }, 2000);
-                } else {
-                    alert('Por favor complete todos los campos de pago.');
-                }
-            });
-        }
     </script>
 
 </body>
