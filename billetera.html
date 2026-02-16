@@ -76,8 +76,36 @@
             flex-direction: column;
             padding: 25px;
         }
-        .wallet-header { text-align: left; margin-bottom: 25px; }
-        .wallet-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .wallet-header { margin-bottom: 25px; }
+        .wallet-header-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .wallet-back {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--light-grey);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .wallet-back:hover {
+            background: var(--plan-color-principal);
+            transform: translateY(-2px);
+        }
+        .wallet-header-text h1 { font-size: 1.6rem; font-weight: 600; }
+        .wallet-subtitle {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
         
         .wallet-card {
             width: 100%; padding: 25px; border-radius: 20px;
@@ -85,6 +113,24 @@
             border-top: 2px solid var(--plan-color-principal); /* Borde dinámico */
             margin-bottom: 30px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 30px rgba(0, 164, 230, 0.15);
+        }
+        .wallet-balance {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        .balance-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .balance-amount {
+            font-size: 2.4rem;
+            font-weight: 700;
+        }
+        .balance-hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
         .card-logo { width: 40px; height: auto; opacity: 0.7; }
@@ -100,11 +146,99 @@
         .ganancias .wallet-row .value { font-size: 1.5rem; font-weight: 700; }
         .separator { border: none; height: 1px; background-color: rgba(255, 255, 255, 0.1); margin: 20px 0; }
         
-        .action-buttons { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-top: auto; padding-bottom: 20px; }
+        .action-buttons { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; margin-top: 20px; padding-bottom: 10px; }
         .action-buttons button { flex: 1 1 calc(50% - 10px); padding: 12px; border-radius: 12px; border: none; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s ease; text-align: center; }
         .action-buttons button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         .btn-primary { background-color: var(--plan-color-principal); color: var(--dark-background); } /* Botón dinámico */
         .btn-secondary { background-color: #3a3a3a; color: var(--text-primary); }
+
+        .wallet-utilities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .utility-button {
+            flex: 1 1 calc(50% - 10px);
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(33,33,33,0.9);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .utility-button:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+        }
+
+        .wallet-history {
+            display: none;
+            margin-top: 25px;
+            background: rgba(18, 18, 18, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .wallet-history.visible { display: block; }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .history-header h2 {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .history-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+        .filter-chip.active {
+            background: var(--plan-color-principal);
+            color: #000;
+            border-color: var(--plan-color-principal);
+        }
+        .history-empty {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            display: none;
+        }
+        .history-table th,
+        .history-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            text-align: left;
+        }
+        .history-table th {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
 
         .modal-overlay {
             position: fixed;
@@ -198,13 +332,24 @@
 
         <div class="wallet-content">
             <div class="wallet-header">
-                <h1>Billetera</h1>
+                <div class="wallet-header-row">
+                    <a href="videos.html" class="wallet-back"><i class="fas fa-arrow-left"></i></a>
+                    <div class="wallet-header-text">
+                        <h1>Billetera</h1>
+                        <span class="wallet-subtitle">Gestiona tus fondos, retiros y recargas</span>
+                    </div>
+                </div>
             </div>
 
             <div class="wallet-card">
                 <div class="card-header">
                     <div class="plan-name" id="plan-name"></div>
                     <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
+                </div>
+                <div class="wallet-balance">
+                    <span class="balance-label">Balance</span>
+                    <span class="balance-amount" id="balance-amount">$0</span>
+                    <span class="balance-hint">Basado en tu dinero generado en Likering</span>
                 </div>
                 <div class="wallet-section">
                     <h2>Disponibles</h2>
@@ -231,6 +376,38 @@
                 <button class="btn-primary" id="withdraw-button">Retirar</button>
                 <button class="btn-secondary" id="add-funds-button">Agregar fondos</button>
                 <button class="btn-secondary" id="transfer-button">Transferir</button>
+            </div>
+
+            <div class="wallet-utilities">
+                <button class="utility-button" id="history-button">
+                    <i class="fas fa-clock"></i><span>Ver historial</span>
+                </button>
+                <button class="utility-button" id="export-history-button">
+                    <i class="fas fa-file-export"></i><span>Exportar historial</span>
+                </button>
+            </div>
+
+            <div class="wallet-history" id="wallet-history">
+                <div class="history-header">
+                    <h2>Historial de movimientos</h2>
+                    <div class="history-filters">
+                        <button class="filter-chip active" data-filter="all">Todo</button>
+                        <button class="filter-chip" data-filter="in">Entradas</button>
+                        <button class="filter-chip" data-filter="out">Salidas</button>
+                    </div>
+                </div>
+                <div class="history-empty" id="history-empty">Aún no tienes movimientos registrados.</div>
+                <table class="history-table" id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Detalle</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -351,7 +528,12 @@
                 document.getElementById('likes-disponibles').textContent = loggedInUser.likesDisponibles || '0';
                 document.getElementById('likes-ganados').textContent = loggedInUser.likesGanados || '0';
                 const dineroValue = loggedInUser.dineroGanado || '0';
-                document.getElementById('dinero-ganado').textContent = formatCurrency(dineroValue);
+                const dineroFormateado = formatCurrency(dineroValue);
+                document.getElementById('dinero-ganado').textContent = dineroFormateado;
+                const balanceElement = document.getElementById('balance-amount');
+                if (balanceElement) {
+                    balanceElement.textContent = dineroFormateado;
+                }
 
                 const userId = loggedInUser.id || loggedInUser.user_id;
 
@@ -428,6 +610,44 @@
 
                         alert('Transferencia preparada. Esta acción se conectará al backend para mover likes entre usuarios.');
                         closeModal('transfer-modal');
+                    });
+                }
+
+                const historySection = document.getElementById('wallet-history');
+                const historyButton = document.getElementById('history-button');
+                const exportHistoryButton = document.getElementById('export-history-button');
+                const historyTableBody = document.querySelector('#history-table tbody');
+
+                if (historyButton && historySection) {
+                    historyButton.addEventListener('click', () => {
+                        historySection.classList.toggle('visible');
+                    });
+                }
+
+                if (exportHistoryButton && historyTableBody) {
+                    exportHistoryButton.addEventListener('click', () => {
+                        const rows = historyTableBody.querySelectorAll('tr');
+                        if (!rows || rows.length === 0) {
+                            alert('Aún no hay movimientos para exportar.');
+                            return;
+                        }
+
+                        let csv = 'Fecha,Tipo,Detalle,Monto\n';
+                        rows.forEach(row => {
+                            const cols = row.querySelectorAll('td');
+                            const values = Array.from(cols).map(col => `"${col.textContent.trim().replace(/"/g, '""')}"`);
+                            csv += values.join(',') + '\n';
+                        });
+
+                        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'historial_billetera.csv';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
                     });
                 }
 
