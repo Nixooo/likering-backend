@@ -38,43 +38,18 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #1a1a1a;
-        }
-        .iphone-frame {
-            width: 375px;
-            height: 812px;
-            background-color: #000;
-            border-radius: 40px;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.2);
-            position: relative;
-            border: 8px solid #222;
+            background-color: var(--dark-background);
+            color: var(--text-primary);
         }
         .app-screen {
             width: 100%;
-            height: 100%;
+            min-height: 100vh;
             position: relative;
             overflow: hidden;
-            border-radius: 32px;
             display: flex;
-            flex-direction: column;
-            color: var(--text-primary);
-        }
-        .iphone-frame::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 150px;
-            height: 25px;
-            background-color: #000;
-            border-bottom-left-radius: 15px;
-            border-bottom-right-radius: 15px;
-            z-index: 101;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 80px 20px 40px;
         }
         .background-slideshow, .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -92,8 +67,16 @@
         @keyframes image-fade {
             0% { opacity: 0; } 8% { opacity: 1; } 25% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; }
         }
-        .wallet-content { position: relative; z-index: 3; display: flex; flex-direction: column; padding: 25px; height: 100%; }
-        .wallet-header { text-align: center; padding-top: 30px; margin-bottom: 25px; }
+        .wallet-content {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+        .wallet-header { text-align: left; margin-bottom: 25px; }
         .wallet-header h1 { font-size: 1.5rem; font-weight: 600; }
         
         .wallet-card {
@@ -124,7 +107,7 @@
         .btn-secondary { background-color: #3a3a3a; color: var(--text-primary); }
 
         .modal-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -207,52 +190,48 @@
 </head>
 <body>
 
-    <div class="iphone-frame">
-        <div class="app-screen">
-            
-            <div class="background-slideshow">
-                <div></div> <div></div> <div></div> <div></div>
+    <div class="app-screen">
+        <div class="background-slideshow">
+            <div></div> <div></div> <div></div> <div></div>
+        </div>
+        <div class="overlay"></div>
+
+        <div class="wallet-content">
+            <div class="wallet-header">
+                <h1>Billetera</h1>
             </div>
-            <div class="overlay"></div>
 
-            <div class="wallet-content">
-                <div class="wallet-header">
-                    <h1>Billetera</h1>
+            <div class="wallet-card">
+                <div class="card-header">
+                    <div class="plan-name" id="plan-name"></div>
+                    <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
                 </div>
-
-                <div class="wallet-card">
-                    <div class="card-header">
-                        <div class="plan-name" id="plan-name"></div>
-                        <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Logo" class="card-logo">
-                    </div>
-                    <div class="wallet-section">
-                        <h2>Disponibles</h2>
-                        <div class="wallet-row">
-                            <span class="label">Like Disponible:</span>
-                            <span class="value" id="likes-disponibles">0</span>
-                        </div>
-                    </div>
-                    <hr class="separator">
-                    <div class="wallet-section ganancias">
-                        <h2>Ganancias</h2>
-                         <div class="wallet-row">
-                            <span class="label">Like Ganados:</span>
-                            <span class="value" id="likes-ganados">0</span>
-                        </div>
-                        <div class="wallet-row">
-                            <span class="label">Dinero Generado:</span>
-                            <span class="value" id="dinero-ganado">$0</span>
-                        </div>
+                <div class="wallet-section">
+                    <h2>Disponibles</h2>
+                    <div class="wallet-row">
+                        <span class="label">Like Disponible:</span>
+                        <span class="value" id="likes-disponibles">0</span>
                     </div>
                 </div>
-
-                <div class="action-buttons">
-                    <button class="btn-primary" id="withdraw-button">Retirar</button>
-                    <button class="btn-secondary" id="add-funds-button">Agregar fondos</button>
-                    <button class="btn-secondary" id="transfer-button">Transferir</button>
+                <hr class="separator">
+                <div class="wallet-section ganancias">
+                    <h2>Ganancias</h2>
+                    <div class="wallet-row">
+                        <span class="label">Like Ganados:</span>
+                        <span class="value" id="likes-ganados">0</span>
+                    </div>
+                    <div class="wallet-row">
+                        <span class="label">Dinero Generado:</span>
+                        <span class="value" id="dinero-ganado">$0</span>
+                    </div>
                 </div>
             </div>
 
+            <div class="action-buttons">
+                <button class="btn-primary" id="withdraw-button">Retirar</button>
+                <button class="btn-secondary" id="add-funds-button">Agregar fondos</button>
+                <button class="btn-secondary" id="transfer-button">Transferir</button>
+            </div>
         </div>
     </div>
 
