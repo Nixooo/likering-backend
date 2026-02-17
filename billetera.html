@@ -179,6 +179,27 @@
             transform: translateY(-2px);
         }
 
+        .upgrade-plan-container {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(18, 18, 18, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+        .upgrade-plan-container h2 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .upgrade-plan-container p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .upgrade-plan-container form {
+            display: inline-block;
+        }
+
         .wallet-history {
             display: none;
             margin-top: 25px;
@@ -376,6 +397,30 @@
                 <button class="btn-primary" id="withdraw-button">Retirar</button>
                 <button class="btn-secondary" id="add-funds-button">Agregar fondos</button>
                 <button class="btn-secondary" id="transfer-button">Transferir</button>
+            </div>
+
+            <div class="upgrade-plan-container">
+                <h2>Upgrade Plan Rojo</h2>
+                <p>Mejora tu plan actual al Plan Rojo con pago seguro vía ePayco.</p>
+                <form>
+                    <script 
+                        src="https://checkout.epayco.co/checkout.js"
+                        data-epayco-key="3ff3765f414c8fd321b6983d13cde02f"
+                        class="epayco-button"
+                        data-epayco-amount="7.74"
+                        data-epayco-tax="1.14"
+                        data-epayco-tax-base="6"
+                        data-epayco-name="Plan Rojo"
+                        data-epayco-description="Plan Rojo"
+                        data-epayco-currency="usd"
+                        data-epayco-country="co"
+                        data-epayco-test="false"
+                        data-epayco-external="true"
+                        data-epayco-response=""
+                        data-epayco-confirmation=""
+                        data-epayco-button="https://multimedia.epayco.co/dashboard/btns/btn3.png">
+                    </script>
+                </form>
             </div>
 
             <div class="wallet-utilities">
