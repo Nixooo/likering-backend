@@ -555,6 +555,163 @@
         .modal-content-custom .modal-close-btn:active {
             transform: translateY(0);
         }
+
+        /* ===== TERMS CHECKBOX ===== */
+        .terms-checkbox-container {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .terms-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            line-height: 1.5;
+        }
+
+        .terms-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: var(--primary-blue);
+            flex-shrink: 0;
+        }
+
+        .terms-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+        }
+
+        .terms-link:hover {
+            color: var(--primary-pink);
+            text-decoration: underline;
+        }
+
+        /* ===== TERMS MODAL ===== */
+        .terms-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            opacity: 0;
+            transition: opacity var(--transition-base);
+            padding: 20px;
+        }
+
+        .terms-modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .terms-modal-content {
+            background: rgba(20, 20, 32, 0.98);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            backdrop-filter: blur(20px);
+            transform: scale(0.9) translateY(20px);
+            transition: transform var(--transition-base), opacity var(--transition-base);
+            opacity: 0;
+            position: relative;
+        }
+
+        .terms-modal-overlay.show .terms-modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .terms-modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-1);
+        }
+
+        .terms-modal-content h2 {
+            margin: 0 0 24px 0;
+            color: var(--text-primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .terms-modal-content h3 {
+            margin: 24px 0 12px 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .terms-modal-content p {
+            margin: 0 0 16px 0;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .terms-modal-content ul {
+            margin: 0 0 16px 0;
+            padding-left: 24px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .terms-modal-content li {
+            margin-bottom: 8px;
+        }
+
+        .terms-modal-close {
+            margin-top: 32px;
+            padding: 14px 36px;
+            background: var(--gradient-1);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all var(--transition-base);
+            box-shadow: var(--shadow-md);
+            width: 100%;
+        }
+
+        .terms-modal-close:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+        }
+
+        .terms-modal-close:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -583,6 +740,12 @@
                     <div class="input-group"><i class="fas fa-user"></i><input type="text" id="register-username" placeholder="Nombre de usuario"></div>
                     <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="register-password" placeholder="Contraseña"></div>
                     <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="register-password-confirm" placeholder="Confirmar contraseña"></div>
+                    <div class="terms-checkbox-container">
+                        <label class="terms-label">
+                            <input type="checkbox" id="accept-terms" required>
+                            <span>Acepto los <a href="#" id="read-terms-link" class="terms-link">términos y condiciones</a></span>
+                        </label>
+                    </div>
                     <button class="form-button" id="register-btn">Registrarse</button>
                     <a class="switch-form-link" id="show-login">¿Ya tienes cuenta? Inicia Sesión</a>
                 </div>
@@ -757,15 +920,101 @@
                 }
             });
 
+            // Función para mostrar modal de términos y condiciones
+            function showTermsModal() {
+                let modal = document.getElementById('terms-modal');
+                if (!modal) {
+                    modal = document.createElement('div');
+                    modal.id = 'terms-modal';
+                    modal.className = 'terms-modal-overlay';
+                    modal.innerHTML = `
+                        <div class="terms-modal-content">
+                            <h2>Términos y Condiciones</h2>
+                            <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            
+                            <h3>1. Aceptación de los Términos</h3>
+                            <p>Al acceder y utilizar Likering, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo con alguna parte de estos términos, no debes utilizar nuestro servicio.</p>
+                            
+                            <h3>2. Uso del Servicio</h3>
+                            <p>Likering es una plataforma que permite a los usuarios interactuar con contenido mediante likes y ganar dinero. Al utilizar nuestro servicio, te comprometes a:</p>
+                            <ul>
+                                <li>Proporcionar información veraz y precisa durante el registro</li>
+                                <li>Mantener la seguridad de tu cuenta y contraseña</li>
+                                <li>No utilizar el servicio para actividades ilegales o fraudulentas</li>
+                                <li>Respetar los derechos de otros usuarios</li>
+                                <li>No intentar manipular o explotar el sistema de ganancias</li>
+                            </ul>
+                            
+                            <h3>3. Cuentas de Usuario</h3>
+                            <p>Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. Debes notificarnos inmediatamente de cualquier uso no autorizado de tu cuenta.</p>
+                            
+                            <h3>4. Contenido del Usuario</h3>
+                            <p>Al subir contenido a Likering, garantizas que tienes todos los derechos necesarios sobre dicho contenido y que no infringe los derechos de terceros.</p>
+                            
+                            <h3>5. Pagos y Ganancias</h3>
+                            <p>Las ganancias están sujetas a verificación y pueden ser modificadas o canceladas si se detecta actividad fraudulenta o violación de estos términos.</p>
+                            
+                            <h3>6. Modificaciones del Servicio</h3>
+                            <p>Nos reservamos el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio en cualquier momento sin previo aviso.</p>
+                            
+                            <h3>7. Limitación de Responsabilidad</h3>
+                            <p>Likering no será responsable de ningún daño directo, indirecto, incidental o consecuente resultante del uso o la imposibilidad de usar nuestro servicio.</p>
+                            
+                            <h3>8. Privacidad</h3>
+                            <p>Tu privacidad es importante para nosotros. Consulta nuestra Política de Privacidad para obtener más información sobre cómo recopilamos y utilizamos tus datos.</p>
+                            
+                            <h3>9. Terminación</h3>
+                            <p>Nos reservamos el derecho de terminar o suspender tu cuenta en cualquier momento, con o sin causa, con o sin previo aviso.</p>
+                            
+                            <h3>10. Cambios en los Términos</h3>
+                            <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor inmediatamente después de su publicación.</p>
+                            
+                            <button class="terms-modal-close" onclick="document.getElementById('terms-modal').classList.remove('show')">Cerrar</button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+                    
+                    // Cerrar al hacer clic fuera del modal
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.classList.remove('show');
+                        }
+                    });
+                    
+                    // Cerrar con ESC
+                    document.addEventListener('keydown', function escHandler(e) {
+                        if (e.key === 'Escape' && modal.classList.contains('show')) {
+                            modal.classList.remove('show');
+                            document.removeEventListener('keydown', escHandler);
+                        }
+                    });
+                }
+                modal.classList.add('show');
+            }
+
+            // Event listener para el enlace de términos y condiciones
+            const readTermsLink = document.getElementById('read-terms-link');
+            if (readTermsLink) {
+                readTermsLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showTermsModal();
+                });
+            }
+
             registerBtn.addEventListener('click', async (event) => {
                 event.preventDefault();
                 const username = document.getElementById('register-username').value.trim();
                 const password = document.getElementById('register-password').value;
                 const passwordConfirm = document.getElementById('register-password-confirm').value;
                 const imageFile = imageUpload.files[0];
+                const acceptTerms = document.getElementById('accept-terms').checked;
 
                 if (!username || !password || !passwordConfirm || !imageFile) {
                     showModal('Por favor, completa todos los campos.', 'Campos requeridos', 'info');
+                    return;
+                }
+                if (!acceptTerms) {
+                    showModal('Debes aceptar los términos y condiciones para continuar con el registro.', 'Términos y Condiciones', 'error');
                     return;
                 }
                 if (password !== passwordConfirm) {
