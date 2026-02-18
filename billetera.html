@@ -204,86 +204,366 @@
         /* Modal de Upgrade de Planes */
         .upgrade-modal {
             width: 95%;
-            max-width: 1200px;
+            max-width: 1400px;
             max-height: 90vh;
-            overflow-y: auto;
+            overflow: hidden;
             background: linear-gradient(145deg, #1f2a36, #11161a);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 24px;
+            padding: 40px 30px;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
         }
         .upgrade-modal-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-align: center;
+            background: linear-gradient(135deg, #FF2D7A 0%, #00A8FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .upgrade-modal-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-secondary);
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
+        
+        /* Contenedor del slider horizontal */
+        .plans-slider-container {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 50px;
+        }
+        
+        .plans-slider-wrapper {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            padding: 20px 0;
+            margin: 0 -20px;
+        }
+        
+        .plans-slider-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .plans-slider-wrapper::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .plans-slider-wrapper::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF2D7A 0%, #00A8FF 100%);
+            border-radius: 10px;
+        }
+        
         .plans-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            display: flex;
+            gap: 24px;
+            padding: 10px 20px;
+            min-width: max-content;
         }
+        
+        /* Tarjetas de planes mejoradas */
         .plan-card {
             background: rgba(18, 18, 18, 0.95);
-            border-radius: 16px;
-            padding: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        .plan-card:hover {
-            border-color: var(--plan-color-principal);
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-        }
-        .plan-card.plan-azul { border-top: 4px solid var(--plan-azul); }
-        .plan-card.plan-rojo { border-top: 4px solid var(--plan-rojo); }
-        .plan-card.plan-naranja { border-top: 4px solid var(--plan-naranja); }
-        .plan-card.plan-amarillo { border-top: 4px solid var(--plan-amarillo); }
-        .plan-card.plan-rosado { border-top: 4px solid #FF69B4; }
-        .plan-card.plan-fucsia { border-top: 4px solid #FF00FF; }
-        .plan-card.plan-verde { border-top: 4px solid var(--plan-verde); }
-        .plan-card.plan-marron { border-top: 4px solid #8B4513; }
-        .plan-card.plan-gris { border-top: 4px solid #808080; }
-        .plan-card.plan-morado { border-top: 4px solid var(--plan-morado); }
-        
-        .plan-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        .plan-price {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--plan-color-principal);
-            margin-bottom: 15px;
-        }
-        .plan-benefits {
-            list-style: none;
+            border-radius: 20px;
             padding: 0;
-            margin: 15px 0;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            min-width: 300px;
+            max-width: 300px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
         }
-        .plan-benefits li {
-            padding: 8px 0;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
+        
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: var(--plan-color-principal);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 168, 255, 0.2);
+        }
+        
+        .plan-card:hover .plan-price {
+            transform: scale(1.05);
+        }
+        
+        .plan-card:hover::before {
+            opacity: 1;
+        }
+        
+        .plan-card.plan-azul { 
+            --plan-accent: var(--plan-azul);
+        }
+        .plan-card.plan-rojo { 
+            --plan-accent: var(--plan-rojo);
+        }
+        .plan-card.plan-naranja { 
+            --plan-accent: var(--plan-naranja);
+        }
+        .plan-card.plan-amarillo { 
+            --plan-accent: var(--plan-amarillo);
+        }
+        .plan-card.plan-rosado { 
+            --plan-accent: #FF69B4;
+        }
+        .plan-card.plan-fucsia { 
+            --plan-accent: #FF00FF;
+        }
+        .plan-card.plan-verde { 
+            --plan-accent: var(--plan-verde);
+        }
+        .plan-card.plan-marron { 
+            --plan-accent: #8B4513;
+        }
+        .plan-card.plan-gris { 
+            --plan-accent: #808080;
+        }
+        .plan-card.plan-morado { 
+            --plan-accent: var(--plan-morado);
+        }
+        
+        .plan-card.plan-azul::before,
+        .plan-card.plan-azul:hover { border-color: var(--plan-azul); }
+        .plan-card.plan-rojo::before,
+        .plan-card.plan-rojo:hover { border-color: var(--plan-rojo); }
+        .plan-card.plan-naranja::before,
+        .plan-card.plan-naranja:hover { border-color: var(--plan-naranja); }
+        .plan-card.plan-amarillo::before,
+        .plan-card.plan-amarillo:hover { border-color: var(--plan-amarillo); }
+        .plan-card.plan-rosado::before,
+        .plan-card.plan-rosado:hover { border-color: #FF69B4; }
+        .plan-card.plan-fucsia::before,
+        .plan-card.plan-fucsia:hover { border-color: #FF00FF; }
+        .plan-card.plan-verde::before,
+        .plan-card.plan-verde:hover { border-color: var(--plan-verde); }
+        .plan-card.plan-marron::before,
+        .plan-card.plan-marron:hover { border-color: #8B4513; }
+        .plan-card.plan-gris::before,
+        .plan-card.plan-gris:hover { border-color: #808080; }
+        .plan-card.plan-morado::before,
+        .plan-card.plan-morado:hover { border-color: var(--plan-morado); }
+        
+        .plan-card.plan-azul .plan-benefits li::before { 
+            color: var(--plan-azul);
+            background: rgba(0, 123, 255, 0.15);
+        }
+        .plan-card.plan-rojo .plan-benefits li::before { 
+            color: var(--plan-rojo);
+            background: rgba(255, 0, 0, 0.15);
+        }
+        .plan-card.plan-naranja .plan-benefits li::before { 
+            color: var(--plan-naranja);
+            background: rgba(255, 165, 0, 0.15);
+        }
+        .plan-card.plan-amarillo .plan-benefits li::before { 
+            color: var(--plan-amarillo);
+            background: rgba(255, 255, 0, 0.15);
+        }
+        .plan-card.plan-rosado .plan-benefits li::before { 
+            color: #FF69B4;
+            background: rgba(255, 105, 180, 0.15);
+        }
+        .plan-card.plan-fucsia .plan-benefits li::before { 
+            color: #FF00FF;
+            background: rgba(255, 0, 255, 0.15);
+        }
+        .plan-card.plan-verde .plan-benefits li::before { 
+            color: var(--plan-verde);
+            background: rgba(0, 255, 0, 0.15);
+        }
+        .plan-card.plan-marron .plan-benefits li::before { 
+            color: #8B4513;
+            background: rgba(139, 69, 19, 0.15);
+        }
+        .plan-card.plan-gris .plan-benefits li::before { 
+            color: #808080;
+            background: rgba(128, 128, 128, 0.15);
+        }
+        .plan-card.plan-morado .plan-benefits li::before { 
+            color: var(--plan-morado);
+            background: rgba(128, 0, 128, 0.15);
+        }
+        
+        .plan-card-header {
+            padding: 24px 24px 16px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
+        
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .plan-name::before {
+            content: '✨';
+            font-size: 1.2rem;
+        }
+        
+        .plan-price-container {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--plan-accent, #00A8FF) 0%, var(--plan-accent, #00A8FF) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            transition: transform 0.3s ease;
+        }
+        
+        .plan-currency {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .plan-period {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+        
+        .plan-benefits {
+            list-style: none;
+            padding: 20px 24px;
+            margin: 0;
+            flex: 1;
+        }
+        
+        .plan-benefits li {
+            padding: 12px 0;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
         .plan-benefits li:last-child {
             border-bottom: none;
         }
+        
+        .plan-benefits li::before {
+            content: '✓';
+            color: var(--plan-accent, #00A8FF);
+            font-weight: 700;
+            font-size: 0.9rem;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 168, 255, 0.1);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
         .plan-benefits li strong {
             color: var(--text-primary);
+            font-weight: 600;
         }
+        
         .plan-button-container {
-            margin-top: 20px;
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .plan-unavailable-btn {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: not-allowed;
+        }
+        
+        /* Botones de navegación del slider */
+        .slider-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+        
+        .slider-nav-btn:hover {
+            background: linear-gradient(135deg, #FF2D7A 0%, #00A8FF 100%);
+            border-color: transparent;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 168, 255, 0.4);
+        }
+        
+        .slider-nav-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        
+        .slider-nav-btn.prev {
+            left: 0;
+        }
+        
+        .slider-nav-btn.next {
+            right: 0;
+        }
+        
+        .slider-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .slider-nav-btn:disabled:hover {
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: none;
         }
 
         .wallet-history {
@@ -578,10 +858,20 @@
     <div class="modal-overlay" id="upgrade-modal">
         <div class="upgrade-modal">
             <div class="upgrade-modal-title">🚀 Mejorar Plan</div>
-            <div class="upgrade-modal-subtitle">Elige el plan que mejor se adapte a tus necesidades</div>
+            <div class="upgrade-modal-subtitle">Desliza para ver todos los planes disponibles</div>
             
-            <div class="plans-grid" id="plans-grid">
-                <!-- Los planes se generarán dinámicamente con JavaScript -->
+            <div class="plans-slider-container">
+                <button class="slider-nav-btn prev" id="prev-plan-btn" aria-label="Plan anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="plans-slider-wrapper" id="plans-slider-wrapper">
+                    <div class="plans-grid" id="plans-grid">
+                        <!-- Los planes se generarán dinámicamente con JavaScript -->
+                    </div>
+                </div>
+                <button class="slider-nav-btn next" id="next-plan-btn" aria-label="Plan siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
@@ -714,14 +1004,24 @@
                 const hasEpaycoButton = epaycoConfig !== undefined;
 
                 planCard.innerHTML = `
-                    <div class="plan-name">Plan ${plan.name}</div>
-                    <div class="plan-price">$${plan.price} USD</div>
+                    <div class="plan-card-header">
+                        <div class="plan-name">Plan ${plan.name}</div>
+                        <div class="plan-price-container">
+                            <span class="plan-price">${plan.price}</span>
+                            <span class="plan-currency">USD</span>
+                            <span class="plan-period">/único</span>
+                        </div>
+                    </div>
                     <ul class="plan-benefits">
                         <li><strong>Ganancia máxima:</strong> $${plan.maxEarnings.toLocaleString()} USD</li>
                         <li><strong>Likes para regalar:</strong> ${plan.likes}</li>
                         <li><strong>Total con impuestos:</strong> $${displayTotal} USD</li>
                     </ul>
-                    ${hasEpaycoButton ? `<div class="plan-button-container" id="epayco-button-${plan.color}"></div>` : ''}
+                    ${
+                        hasEpaycoButton
+                            ? `<div class="plan-button-container" id="epayco-button-${plan.color}"></div>`
+                            : `<div class="plan-button-container"><button class="plan-unavailable-btn" disabled>No disponible</button></div>`
+                    }
                 `;
 
                 plansGrid.appendChild(planCard);
@@ -798,7 +1098,55 @@
                         // Generar los planes cuando se abre el modal
                         generateUpgradePlans(userId);
                         openModal('upgrade-modal');
+                        // Inicializar navegación del slider después de generar los planes
+                        setTimeout(() => {
+                            initPlanSlider();
+                        }, 100);
                     });
+                }
+                
+                // Función para inicializar la navegación del slider de planes
+                function initPlanSlider() {
+                    const sliderWrapper = document.getElementById('plans-slider-wrapper');
+                    const prevBtn = document.getElementById('prev-plan-btn');
+                    const nextBtn = document.getElementById('next-plan-btn');
+                    
+                    if (!sliderWrapper || !prevBtn || !nextBtn) return;
+                    
+                    // Función para actualizar el estado de los botones
+                    function updateNavButtons() {
+                        const scrollLeft = sliderWrapper.scrollLeft;
+                        const scrollWidth = sliderWrapper.scrollWidth;
+                        const clientWidth = sliderWrapper.clientWidth;
+                        
+                        prevBtn.disabled = scrollLeft === 0;
+                        nextBtn.disabled = scrollLeft + clientWidth >= scrollWidth - 10;
+                    }
+
+                    // Evitar duplicar listeners si se abre el modal varias veces
+                    if (sliderWrapper.dataset.sliderInit === '1') {
+                        updateNavButtons();
+                        return;
+                    }
+                    sliderWrapper.dataset.sliderInit = '1';
+
+                    // Navegación con botones
+                    prevBtn.addEventListener('click', () => {
+                        sliderWrapper.scrollBy({ left: -320, behavior: 'smooth' });
+                    });
+                    
+                    nextBtn.addEventListener('click', () => {
+                        sliderWrapper.scrollBy({ left: 320, behavior: 'smooth' });
+                    });
+                    
+                    // Actualizar botones al hacer scroll
+                    sliderWrapper.addEventListener('scroll', updateNavButtons);
+                    
+                    // Actualizar cuando cambia el tamaño de la ventana
+                    window.addEventListener('resize', updateNavButtons);
+
+                    // Estado inicial
+                    updateNavButtons();
                 }
 
                 const addFundsButton = document.getElementById('add-funds-button');
