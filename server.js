@@ -5,6 +5,14 @@ const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
 
+// Inicializar SDK de ePayco según documentación: https://github.com/epayco/epayco-node
+const epayco = require('epayco-sdk-node')({
+    apiKey: process.env.EPAYCO_PUBLIC_KEY || '3ff3765f414c8fd321b6983d13cde02f',
+    privateKey: process.env.EPAYCO_PRIVATE_KEY || '',
+    lang: 'ES',
+    test: process.env.EPAYCO_TEST === 'true' || false
+});
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -1397,6 +1405,137 @@ app.post('/api/wompi/webhook', async (req, res) => {
     } catch (error) {
         console.error('❌ Error en Webhook de Wompi:', error);
         res.status(500).send('Internal Server Error');
+    }
+});
+
+// ==================== PASARELA DE PAGOS (EPAYCO) ====================
+// Documentación: https://github.com/epayco/epayco-node
+
+// Endpoint para recibir confirmaciones de pago de ePayco (Webhook/Confirmation)
+// ePayco envía los datos con prefijos x_ cuando se usa checkout embebido
+app.post('/api/epayco/confirmation', async (req, res) => {
+    try {
+        // ePayco puede enviar datos como query params (GET) o body (POST)
+        const data = req.method === 'GET' ? req.query : req.body;
+        
+        const {
+            x_ref_payco,        // Referencia de la transacción
+            x_cod_response,     // Código de respuesta (1 = aprobado, otros = rechazado)
+            x_response,         // Respuesta (Aceptada/Rechazada)
+            x_response_reason_text, // Razón de la respuesta
+            x_id_invoice,        // ID de la factura
+            x_amount,            // Monto
+            x_currency_code,     // Código de moneda
+            x_customer_id,       // ID del cliente en ePayco
+            x_extra1,            // Campo extra1 (usaremos para userId)
+            x_extra2,            // Campo extra2
+            x_extra3             // Campo extra3
+        } = data;
+
+        console.log(`💳 Confirmación ePayco recibida: Ref: ${x_ref_payco}, Estado: ${x_cod_response} (${x_response})`);
+
+        // Verificar que el pago fue aprobado (x_cod_response === 1)
+        if (x_cod_response === '1' || x_cod_response === 1) {
+            // Intentar obtener userId de x_extra1 o de x_ref_payco
+            let userId = null;
+            
+            if (x_extra1) {
+                // Si x_extra1 contiene el userId directamente
+                userId = x_extra1;
+            } else if (x_ref_payco) {
+                // Intentar extraer de la referencia (formato: LIKERING_USERID_TIMESTAMP)
+                const parts = x_ref_payco.split('_');
+                if (parts.length > 1) {
+                    userId = parts[1];
+                }
+            }
+
+            if (userId) {
+                console.log(`✅ Pago ePayco aprobado. Actualizando plan a "rojo" para usuario ${userId}`);
+                
+                // Actualizar plan del usuario a "rojo"
+                await pool.query(
+                    'UPDATE users SET plan = $1 WHERE id = $2',
+                    ['rojo', userId]
+                );
+
+                console.log(`✅ Plan actualizado exitosamente para usuario ${userId}`);
+            } else {
+                console.warn('⚠️ No se pudo extraer el userId de la transacción ePayco');
+                console.warn('Datos recibidos:', { x_ref_payco, x_extra1, x_extra2, x_extra3 });
+            }
+        } else {
+            console.log(`⚠️ Pago ePayco no aprobado: ${x_response_reason_text || x_response} (Código: ${x_cod_response})`);
+        }
+
+        // Siempre responder 200 a ePayco (requerido por ePayco)
+        res.status(200).send('OK');
+    } catch (error) {
+        console.error('❌ Error en Confirmación de ePayco:', error);
+        // Aún así responder 200 para que ePayco no reintente
+        res.status(200).send('OK');
+    }
+});
+
+// Endpoint GET también (ePayco puede usar GET para confirmaciones)
+// Reutilizar la misma lógica del POST
+app.get('/api/epayco/confirmation', async (req, res) => {
+    try {
+        const data = req.query;
+        
+        const {
+            x_ref_payco,
+            x_cod_response,
+            x_response,
+            x_response_reason_text,
+            x_id_invoice,
+            x_amount,
+            x_currency_code,
+            x_customer_id,
+            x_extra1,
+            x_extra2,
+            x_extra3
+        } = data;
+
+        console.log(`💳 Confirmación ePayco (GET) recibida: Ref: ${x_ref_payco}, Estado: ${x_cod_response}`);
+
+        if (x_cod_response === '1' || x_cod_response === 1) {
+            let userId = null;
+            
+            if (x_extra1) {
+                userId = x_extra1;
+            } else if (x_ref_payco) {
+                const parts = x_ref_payco.split('_');
+                if (parts.length > 1) {
+                    userId = parts[1];
+                }
+            }
+
+            if (userId) {
+                console.log(`✅ Pago ePayco aprobado. Actualizando plan a "rojo" para usuario ${userId}`);
+                await pool.query('UPDATE users SET plan = $1 WHERE id = $2', ['rojo', userId]);
+            }
+        }
+
+        res.status(200).send('OK');
+    } catch (error) {
+        console.error('❌ Error en Confirmación GET de ePayco:', error);
+        res.status(200).send('OK');
+    }
+});
+
+// Endpoint para verificar estado de una transacción usando el SDK
+app.get('/api/epayco/transaction/:ref', async (req, res) => {
+    try {
+        const { ref } = req.params;
+        
+        // Usar el SDK para obtener información de la transacción
+        const transaction = await epayco.charge.get(ref);
+        
+        res.json({ success: true, transaction });
+    } catch (error) {
+        console.error('❌ Error al obtener transacción ePayco:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

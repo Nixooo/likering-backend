@@ -402,24 +402,8 @@
             <div class="upgrade-plan-container">
                 <h2>Upgrade Plan Rojo</h2>
                 <p>Mejora tu plan actual al Plan Rojo con pago seguro vía ePayco.</p>
-                <form>
-                    <script 
-                        src="https://checkout.epayco.co/checkout.js"
-                        data-epayco-key="3ff3765f414c8fd321b6983d13cde02f"
-                        class="epayco-button"
-                        data-epayco-amount="7.74"
-                        data-epayco-tax="1.14"
-                        data-epayco-tax-base="6"
-                        data-epayco-name="Plan Rojo"
-                        data-epayco-description="Plan Rojo"
-                        data-epayco-currency="usd"
-                        data-epayco-country="co"
-                        data-epayco-test="false"
-                        data-epayco-external="true"
-                        data-epayco-response=""
-                        data-epayco-confirmation=""
-                        data-epayco-button="https://multimedia.epayco.co/dashboard/btns/btn3.png">
-                    </script>
+                <form id="epayco-upgrade-form">
+                    <div id="epayco-button-container"></div>
                 </form>
             </div>
 
@@ -562,6 +546,14 @@
 
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Verificar si hay respuesta de ePayco en la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('epayco_response') === 'success') {
+                alert('✅ Pago procesado exitosamente. Tu plan será actualizado en unos momentos.');
+                // Limpiar parámetros de la URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
 
             if (loggedInUser && loggedInUser.plan) {
@@ -581,6 +573,45 @@
                 }
 
                 const userId = loggedInUser.id || loggedInUser.user_id;
+
+                // Configurar botón de ePayco dinámicamente con el userId
+                const epaycoContainer = document.getElementById('epayco-button-container');
+                if (epaycoContainer && userId) {
+                    const baseUrl = window.location.origin;
+                    const reference = `LIKERING_${userId}_${Date.now()}`;
+                    
+                    // Crear script de ePayco dinámicamente
+                    const epaycoScript = document.createElement('script');
+                    epaycoScript.src = 'https://checkout.epayco.co/checkout.js';
+                    epaycoScript.className = 'epayco-button';
+                    
+                    // Configurar atributos según documentación de ePayco
+                    epaycoScript.setAttribute('data-epayco-key', '3ff3765f414c8fd321b6983d13cde02f');
+                    epaycoScript.setAttribute('data-epayco-amount', '7.74');
+                    epaycoScript.setAttribute('data-epayco-tax', '1.14');
+                    epaycoScript.setAttribute('data-epayco-tax-base', '6');
+                    epaycoScript.setAttribute('data-epayco-name', 'Plan Rojo');
+                    epaycoScript.setAttribute('data-epayco-description', 'Upgrade a Plan Rojo - Likering');
+                    epaycoScript.setAttribute('data-epayco-currency', 'usd');
+                    epaycoScript.setAttribute('data-epayco-country', 'co');
+                    epaycoScript.setAttribute('data-epayco-test', 'false');
+                    epaycoScript.setAttribute('data-epayco-external', 'true');
+                    
+                    // Pasar userId en extra1 para identificarlo en el webhook
+                    epaycoScript.setAttribute('data-epayco-extra1', userId);
+                    epaycoScript.setAttribute('data-epayco-extra2', reference);
+                    
+                    // URLs de respuesta y confirmación
+                    epaycoScript.setAttribute('data-epayco-response', `${baseUrl}/billetera.html?epayco_response=success`);
+                    epaycoScript.setAttribute('data-epayco-confirmation', `${baseUrl}/api/epayco/confirmation`);
+                    
+                    // Botón personalizado
+                    epaycoScript.setAttribute('data-epayco-button', 'https://multimedia.epayco.co/dashboard/btns/btn3.png');
+                    
+                    epaycoContainer.appendChild(epaycoScript);
+                    
+                    console.log('✅ Botón ePayco configurado para usuario:', userId);
+                }
 
                 const addFundsButton = document.getElementById('add-funds-button');
                 if (addFundsButton) {
