@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
 
 // Inicializar SDK de ePayco según documentación: https://github.com/epayco/epayco-node
 const epayco = require('epayco-sdk-node')({
@@ -22,6 +23,24 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Servir archivos estáticos (HTML, CSS, JS, PDFs, imágenes, etc.)
+app.use(express.static('.', {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.pdf')) {
+            res.setHeader('Content-Type', 'application/pdf');
+        }
+    }
+}));
+
+// Ruta específica para servir el PDF de términos y condiciones (maneja espacios en el nombre)
+app.get('/TERMINOS Y CONDICIONES.pdf', (req, res) => {
+    res.sendFile(path.join(__dirname, 'TERMINOS Y CONDICIONES.pdf'), {
+        headers: {
+            'Content-Type': 'application/pdf'
+        }
+    });
+});
 
 // Configuración de PostgreSQL (Aiven)
 const pool = new Pool({
