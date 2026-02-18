@@ -665,7 +665,7 @@
 
             plansGrid.innerHTML = '';
 
-            // Configuración completa de botones de ePayco para TODOS los planes
+            // Configuración de botones de ePayco SOLO para los primeros 3 planes
             const epaycoButtonsConfig = {
                 'azul': {
                     amount: '6.45',
@@ -696,76 +696,6 @@
                     description: 'Plan Naranja',
                     responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=naranja',
                     confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=naranja'
-                },
-                'amarillo': {
-                    amount: '117.9',
-                    tax: '17.10',
-                    taxIco: '9.00',
-                    taxBase: '90',
-                    name: 'Plan Amarillo',
-                    description: 'Plan Amarillo',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=amarillo',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=amarillo'
-                },
-                'rosado': {
-                    amount: '235.8',
-                    tax: '34.20',
-                    taxIco: '18.00',
-                    taxBase: '180',
-                    name: 'Plan Rosado',
-                    description: 'Plan Rosado',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=rosado',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=rosado'
-                },
-                'fucsia': {
-                    amount: '471.6',
-                    tax: '68.40',
-                    taxIco: '36.00',
-                    taxBase: '360',
-                    name: 'Plan Fucsia',
-                    description: 'Plan Fucsia',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=fucsia',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=fucsia'
-                },
-                'verde': {
-                    amount: '707.4',
-                    tax: '102.60',
-                    taxIco: '54.00',
-                    taxBase: '540',
-                    name: 'Plan Verde',
-                    description: 'Plan Verde',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=verde',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=verde'
-                },
-                'marron': {
-                    amount: '943.2',
-                    tax: '136.80',
-                    taxIco: '72.00',
-                    taxBase: '720',
-                    name: 'Plan Marrón',
-                    description: 'Plan Marrón',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=marron',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=marron'
-                },
-                'gris': {
-                    amount: '1179.0',
-                    tax: '171.00',
-                    taxIco: '90.00',
-                    taxBase: '900',
-                    name: 'Plan Gris',
-                    description: 'Plan Gris',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=gris',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=gris'
-                },
-                'morado': {
-                    amount: '1572.0',
-                    tax: '228.00',
-                    taxIco: '120.00',
-                    taxBase: '1200',
-                    name: 'Plan Morado',
-                    description: 'Plan Morado',
-                    responseUrl: 'https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=morado',
-                    confirmationUrl: 'https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=morado'
                 }
             };
 
@@ -781,6 +711,7 @@
                 // Obtener configuración de ePayco para este plan
                 const epaycoConfig = epaycoButtonsConfig[plan.color];
                 const displayTotal = epaycoConfig ? epaycoConfig.amount : total.toFixed(2);
+                const hasEpaycoButton = epaycoConfig !== undefined;
 
                 planCard.innerHTML = `
                     <div class="plan-name">Plan ${plan.name}</div>
@@ -790,16 +721,17 @@
                         <li><strong>Likes para regalar:</strong> ${plan.likes}</li>
                         <li><strong>Total con impuestos:</strong> $${displayTotal} USD</li>
                     </ul>
-                    <div class="plan-button-container" id="epayco-button-${plan.color}"></div>
+                    ${hasEpaycoButton ? `<div class="plan-button-container" id="epayco-button-${plan.color}"></div>` : ''}
                 `;
 
                 plansGrid.appendChild(planCard);
 
-                // Crear botón de ePayco para TODOS los planes
-                const buttonContainer = document.getElementById(`epayco-button-${plan.color}`);
-                if (buttonContainer && epaycoConfig) {
-                    // Crear botón de ePayco con la configuración proporcionada
-                    const config = epaycoConfig;
+                // Crear botón de ePayco SOLO si tiene configuración
+                if (hasEpaycoButton) {
+                    const buttonContainer = document.getElementById(`epayco-button-${plan.color}`);
+                    if (buttonContainer && epaycoConfig) {
+                        // Crear botón de ePayco con la configuración proporcionada
+                        const config = epaycoConfig;
                         const form = document.createElement('form');
                         const epaycoScript = document.createElement('script');
                         
@@ -824,6 +756,7 @@
                         
                         form.appendChild(epaycoScript);
                         buttonContainer.appendChild(form);
+                    }
                 }
             });
         }
