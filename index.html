@@ -624,7 +624,7 @@
             padding: 0;
             max-width: 90%;
             width: 100%;
-            max-width: 900px;
+            max-width: 700px;
             max-height: 90vh;
             overflow: hidden;
             color: var(--text-primary);
@@ -673,28 +673,62 @@
 
         .terms-modal-body {
             flex: 1;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            overflow-y: auto;
+            padding: 32px;
             min-height: 0;
         }
 
-        .terms-modal-pdf-container {
-            flex: 1;
-            width: 100%;
-            min-height: 500px;
-            overflow: hidden;
-            background: #525252;
-            position: relative;
+        .terms-modal-body::-webkit-scrollbar {
+            width: 8px;
         }
 
-        .terms-modal-pdf-container embed,
-        .terms-modal-pdf-container iframe,
-        .terms-modal-pdf-container object {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
+        .terms-modal-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .terms-modal-body::-webkit-scrollbar-thumb {
+            background: var(--primary-blue);
+            border-radius: 4px;
+        }
+
+        .terms-modal-body::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-pink);
+        }
+
+        .terms-modal-body h3 {
+            margin: 24px 0 12px 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .terms-modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .terms-modal-body p {
+            margin: 0 0 16px 0;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .terms-modal-body ul {
+            margin: 0 0 16px 0;
+            padding-left: 24px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .terms-modal-body li {
+            margin-bottom: 8px;
+        }
+
+        .terms-modal-body strong {
+            color: var(--text-primary);
+            font-weight: 600;
         }
 
         .terms-modal-footer {
@@ -947,9 +981,55 @@
                                 <h2>Términos y Condiciones</h2>
                             </div>
                             <div class="terms-modal-body">
-                                <div class="terms-modal-pdf-container">
-                                    <embed src="${encodeURIComponent('TERMINOS Y CONDICIONES.pdf')}#toolbar=0&navpanes=0&scrollbar=1" type="application/pdf" />
-                                </div>
+                                <p><strong>Última actualización:</strong> ${new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                
+                                <h3>1. Aceptación de los Términos</h3>
+                                <p>Al acceder y utilizar Likering, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo con alguna parte de estos términos, no debes utilizar nuestro servicio.</p>
+                                
+                                <h3>2. Uso del Servicio</h3>
+                                <p>Likering es una plataforma que permite a los usuarios interactuar con contenido mediante likes y ganar dinero. Al utilizar nuestro servicio, te comprometes a:</p>
+                                <ul>
+                                    <li>Proporcionar información veraz y precisa durante el registro</li>
+                                    <li>Mantener la seguridad de tu cuenta y contraseña</li>
+                                    <li>No utilizar el servicio para actividades ilegales o fraudulentas</li>
+                                    <li>Respetar los derechos de otros usuarios</li>
+                                    <li>No intentar manipular o explotar el sistema de ganancias</li>
+                                    <li>No crear múltiples cuentas para obtener beneficios adicionales</li>
+                                    <li>No compartir tu cuenta con terceros</li>
+                                </ul>
+                                
+                                <h3>3. Cuentas de Usuario</h3>
+                                <p>Eres responsable de mantener la confidencialidad de tu cuenta y contraseña. Debes notificarnos inmediatamente de cualquier uso no autorizado de tu cuenta. Likering se reserva el derecho de suspender o terminar cuentas que violen estos términos.</p>
+                                
+                                <h3>4. Contenido del Usuario</h3>
+                                <p>Al subir contenido a Likering, garantizas que tienes todos los derechos necesarios sobre dicho contenido y que no infringe los derechos de terceros. Likering se reserva el derecho de eliminar cualquier contenido que considere inapropiado, ofensivo o que viole estos términos.</p>
+                                
+                                <h3>5. Pagos y Ganancias</h3>
+                                <p>Las ganancias están sujetas a verificación y pueden ser modificadas o canceladas si se detecta actividad fraudulenta o violación de estos términos. Los pagos se realizarán según los métodos y plazos establecidos por Likering. Likering se reserva el derecho de retener pagos en caso de sospecha de fraude.</p>
+                                
+                                <h3>6. Modificaciones del Servicio</h3>
+                                <p>Nos reservamos el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio en cualquier momento sin previo aviso. No seremos responsables ante ti ni ante ningún tercero por cualquier modificación, suspensión o discontinuación del servicio.</p>
+                                
+                                <h3>7. Limitación de Responsabilidad</h3>
+                                <p>Likering no será responsable de ningún daño directo, indirecto, incidental o consecuente resultante del uso o la imposibilidad de usar nuestro servicio. Esto incluye, pero no se limita a, pérdida de datos, pérdida de ganancias o interrupción del negocio.</p>
+                                
+                                <h3>8. Privacidad</h3>
+                                <p>Tu privacidad es importante para nosotros. Al utilizar Likering, aceptas nuestra Política de Privacidad. Recopilamos y utilizamos tu información personal de acuerdo con nuestra política de privacidad, que forma parte integral de estos términos.</p>
+                                
+                                <h3>9. Propiedad Intelectual</h3>
+                                <p>Todo el contenido de Likering, incluyendo pero no limitado a textos, gráficos, logos, iconos, imágenes, clips de audio, descargas digitales y compilaciones de datos, es propiedad de Likering o de sus proveedores de contenido y está protegido por las leyes de propiedad intelectual.</p>
+                                
+                                <h3>10. Terminación</h3>
+                                <p>Nos reservamos el derecho de terminar o suspender tu cuenta en cualquier momento, con o sin causa, con o sin previo aviso, por cualquier motivo, incluyendo pero no limitado a la violación de estos términos. En caso de terminación, perderás el acceso a tu cuenta y a cualquier contenido asociado.</p>
+                                
+                                <h3>11. Cambios en los Términos</h3>
+                                <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios entrarán en vigor inmediatamente después de su publicación en la plataforma. Es tu responsabilidad revisar periódicamente estos términos. El uso continuado del servicio después de cualquier modificación constituye tu aceptación de los nuevos términos.</p>
+                                
+                                <h3>12. Ley Aplicable</h3>
+                                <p>Estos términos se regirán e interpretarán de acuerdo con las leyes del país donde Likering opera, sin tener en cuenta sus disposiciones sobre conflictos de leyes.</p>
+                                
+                                <h3>13. Contacto</h3>
+                                <p>Si tienes alguna pregunta sobre estos términos y condiciones, puedes contactarnos a través de los canales de comunicación proporcionados en la plataforma.</p>
                             </div>
                             <div class="terms-modal-footer">
                                 <button class="terms-modal-close" onclick="document.getElementById('terms-modal').classList.remove('show')">Cerrar</button>
