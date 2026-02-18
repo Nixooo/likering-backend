@@ -760,6 +760,24 @@
 
                 plansGrid.appendChild(planCard);
 
+                // Si tiene botón estático, ejecutar los scripts después de insertar
+                if (hasStaticButton) {
+                    // Los scripts dentro de innerHTML no se ejecutan automáticamente
+                    // Necesitamos ejecutarlos manualmente
+                    const forms = planCard.querySelectorAll('form');
+                    forms.forEach(form => {
+                        const scripts = form.querySelectorAll('script');
+                        scripts.forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            Array.from(oldScript.attributes).forEach(attr => {
+                                newScript.setAttribute(attr.name, attr.value);
+                            });
+                            newScript.textContent = oldScript.textContent;
+                            oldScript.parentNode.replaceChild(newScript, oldScript);
+                        });
+                    });
+                }
+
                 // Solo crear botón dinámico si no tiene botón estático
                 if (!hasStaticButton) {
                     const buttonContainer = document.getElementById(`epayco-button-${plan.color}`);
