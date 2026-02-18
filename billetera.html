@@ -181,23 +181,109 @@
 
         .upgrade-plan-container {
             margin-top: 25px;
-            padding: 20px;
-            border-radius: 16px;
-            background: rgba(18, 18, 18, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.08);
             text-align: center;
         }
-        .upgrade-plan-container h2 {
+        .upgrade-plan-button {
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, var(--plan-color-principal), var(--plan-color-principal));
+            color: var(--dark-background);
+            border: none;
             font-size: 1rem;
-            margin-bottom: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
-        .upgrade-plan-container p {
-            font-size: 0.85rem;
+        .upgrade-plan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Modal de Upgrade de Planes */
+        .upgrade-modal {
+            width: 95%;
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: linear-gradient(145deg, #1f2a36, #11161a);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+        }
+        .upgrade-modal-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .upgrade-modal-subtitle {
+            font-size: 0.9rem;
             color: var(--text-secondary);
-            margin-bottom: 12px;
+            text-align: center;
+            margin-bottom: 30px;
         }
-        .upgrade-plan-container form {
-            display: inline-block;
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .plan-card {
+            background: rgba(18, 18, 18, 0.95);
+            border-radius: 16px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .plan-card:hover {
+            border-color: var(--plan-color-principal);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        .plan-card.plan-azul { border-top: 4px solid var(--plan-azul); }
+        .plan-card.plan-rojo { border-top: 4px solid var(--plan-rojo); }
+        .plan-card.plan-naranja { border-top: 4px solid var(--plan-naranja); }
+        .plan-card.plan-amarillo { border-top: 4px solid var(--plan-amarillo); }
+        .plan-card.plan-rosado { border-top: 4px solid #FF69B4; }
+        .plan-card.plan-fucsia { border-top: 4px solid #FF00FF; }
+        .plan-card.plan-verde { border-top: 4px solid var(--plan-verde); }
+        .plan-card.plan-marron { border-top: 4px solid #8B4513; }
+        .plan-card.plan-gris { border-top: 4px solid #808080; }
+        .plan-card.plan-morado { border-top: 4px solid var(--plan-morado); }
+        
+        .plan-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .plan-price {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--plan-color-principal);
+            margin-bottom: 15px;
+        }
+        .plan-benefits {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+        .plan-benefits li {
+            padding: 8px 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .plan-benefits li:last-child {
+            border-bottom: none;
+        }
+        .plan-benefits li strong {
+            color: var(--text-primary);
+        }
+        .plan-button-container {
+            margin-top: 20px;
         }
 
         .wallet-history {
@@ -400,11 +486,9 @@
             </div>
 
             <div class="upgrade-plan-container">
-                <h2>Upgrade Plan Rojo</h2>
-                <p>Mejora tu plan actual al Plan Rojo con pago seguro vía ePayco.</p>
-                <form id="epayco-upgrade-form">
-                    <div id="epayco-button-container"></div>
-                </form>
+                <button class="upgrade-plan-button" id="open-upgrade-modal-btn">
+                    <i class="fas fa-arrow-up"></i> Mejorar Plan
+                </button>
             </div>
 
             <div class="wallet-utilities">
@@ -490,6 +574,22 @@
         </div>
     </div>
 
+    <!-- Modal de Upgrade de Planes -->
+    <div class="modal-overlay" id="upgrade-modal">
+        <div class="upgrade-modal">
+            <div class="upgrade-modal-title">🚀 Mejorar Plan</div>
+            <div class="upgrade-modal-subtitle">Elige el plan que mejor se adapte a tus necesidades</div>
+            
+            <div class="plans-grid" id="plans-grid">
+                <!-- Los planes se generarán dinámicamente con JavaScript -->
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn-cancel" data-close-modal="upgrade-modal" style="padding: 12px 30px;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script de Wompi -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
@@ -544,6 +644,87 @@
             return `$ ${formattedNumber}`;
         }
 
+        // Función para generar los planes de upgrade
+        function generateUpgradePlans(userId) {
+            const plansGrid = document.getElementById('plans-grid');
+            if (!plansGrid) return;
+
+            const baseUrl = window.location.origin;
+            const plans = [
+                { name: 'Azul', price: 5, maxEarnings: 500, likes: 1, color: 'azul' },
+                { name: 'Rojo', price: 10, maxEarnings: 600, likes: 2, color: 'rojo' },
+                { name: 'Naranja', price: 30, maxEarnings: 800, likes: 6, color: 'naranja' },
+                { name: 'Amarillo', price: 90, maxEarnings: 1500, likes: 18, color: 'amarillo' },
+                { name: 'Rosado', price: 180, maxEarnings: 3000, likes: 36, color: 'rosado' },
+                { name: 'Fucsia', price: 360, maxEarnings: 6000, likes: 72, color: 'fucsia' },
+                { name: 'Verde', price: 540, maxEarnings: 9000, likes: 108, color: 'verde' },
+                { name: 'Marrón', price: 720, maxEarnings: 12000, likes: 144, color: 'marron' },
+                { name: 'Gris', price: 900, maxEarnings: 15000, likes: 180, color: 'gris' },
+                { name: 'Morado', price: 1200, maxEarnings: 17000, likes: 240, color: 'morado' }
+            ];
+
+            plansGrid.innerHTML = '';
+
+            plans.forEach(plan => {
+                const planCard = document.createElement('div');
+                planCard.className = `plan-card plan-${plan.color}`;
+                
+                // Calcular impuestos (19% IVA sobre el precio base)
+                const tax = plan.price * 0.19;
+                const taxBase = plan.price;
+                const total = plan.price + tax;
+
+                planCard.innerHTML = `
+                    <div class="plan-name">Plan ${plan.name}</div>
+                    <div class="plan-price">$${plan.price} USD</div>
+                    <ul class="plan-benefits">
+                        <li><strong>Ganancia máxima:</strong> $${plan.maxEarnings.toLocaleString()} USD</li>
+                        <li><strong>Likes para regalar:</strong> ${plan.likes}</li>
+                        <li><strong>Total con IVA:</strong> $${total.toFixed(2)} USD</li>
+                    </ul>
+                    <div class="plan-button-container" id="epayco-button-${plan.color}"></div>
+                `;
+
+                plansGrid.appendChild(planCard);
+
+                // Crear botón de ePayco para este plan
+                const buttonContainer = document.getElementById(`epayco-button-${plan.color}`);
+                if (buttonContainer && userId) {
+                    const reference = `LIKERING_${plan.color}_${userId}_${Date.now()}`;
+                    
+                    const epaycoScript = document.createElement('script');
+                    epaycoScript.src = 'https://checkout.epayco.co/checkout.js';
+                    epaycoScript.className = 'epayco-button';
+                    
+                    // Configurar atributos de ePayco
+                    epaycoScript.setAttribute('data-epayco-key', '3ff3765f414c8fd321b6983d13cde02f');
+                    epaycoScript.setAttribute('data-epayco-amount', total.toFixed(2));
+                    epaycoScript.setAttribute('data-epayco-tax', tax.toFixed(2));
+                    epaycoScript.setAttribute('data-epayco-tax-base', taxBase.toFixed(2));
+                    epaycoScript.setAttribute('data-epayco-name', `Plan ${plan.name}`);
+                    epaycoScript.setAttribute('data-epayco-description', `Upgrade a Plan ${plan.name} - Likering`);
+                    epaycoScript.setAttribute('data-epayco-currency', 'usd');
+                    epaycoScript.setAttribute('data-epayco-country', 'co');
+                    epaycoScript.setAttribute('data-epayco-test', 'false');
+                    epaycoScript.setAttribute('data-epayco-external', 'true');
+                    
+                    // Pasar información del plan
+                    epaycoScript.setAttribute('data-epayco-extra1', userId);
+                    epaycoScript.setAttribute('data-epayco-extra2', plan.color);
+                    epaycoScript.setAttribute('data-epayco-extra3', reference);
+                    
+                    // URLs de respuesta y confirmación específicas para cada plan
+                    epaycoScript.setAttribute('data-epayco-response', `${baseUrl}/billetera.html?epayco_response=success&plan=${plan.color}`);
+                    epaycoScript.setAttribute('data-epayco-confirmation', `${baseUrl}/api/epayco/confirmation?plan=${plan.color}`);
+                    
+                    // Botón personalizado
+                    epaycoScript.setAttribute('data-epayco-button', 'https://multimedia.epayco.co/dashboard/btns/btn3.png');
+                    
+                    buttonContainer.appendChild(epaycoScript);
+                }
+            });
+        }
+
 
         document.addEventListener('DOMContentLoaded', () => {
             // Verificar si hay respuesta de ePayco en la URL
@@ -574,43 +755,14 @@
 
                 const userId = loggedInUser.id || loggedInUser.user_id;
 
-                // Configurar botón de ePayco dinámicamente con el userId
-                const epaycoContainer = document.getElementById('epayco-button-container');
-                if (epaycoContainer && userId) {
-                    const baseUrl = window.location.origin;
-                    const reference = `LIKERING_${userId}_${Date.now()}`;
-                    
-                    // Crear script de ePayco dinámicamente
-                    const epaycoScript = document.createElement('script');
-                    epaycoScript.src = 'https://checkout.epayco.co/checkout.js';
-                    epaycoScript.className = 'epayco-button';
-                    
-                    // Configurar atributos según documentación de ePayco
-                    epaycoScript.setAttribute('data-epayco-key', '3ff3765f414c8fd321b6983d13cde02f');
-                    epaycoScript.setAttribute('data-epayco-amount', '7.74');
-                    epaycoScript.setAttribute('data-epayco-tax', '1.14');
-                    epaycoScript.setAttribute('data-epayco-tax-base', '6');
-                    epaycoScript.setAttribute('data-epayco-name', 'Plan Rojo');
-                    epaycoScript.setAttribute('data-epayco-description', 'Upgrade a Plan Rojo - Likering');
-                    epaycoScript.setAttribute('data-epayco-currency', 'usd');
-                    epaycoScript.setAttribute('data-epayco-country', 'co');
-                    epaycoScript.setAttribute('data-epayco-test', 'false');
-                    epaycoScript.setAttribute('data-epayco-external', 'true');
-                    
-                    // Pasar userId en extra1 para identificarlo en el webhook
-                    epaycoScript.setAttribute('data-epayco-extra1', userId);
-                    epaycoScript.setAttribute('data-epayco-extra2', reference);
-                    
-                    // URLs de respuesta y confirmación
-                    epaycoScript.setAttribute('data-epayco-response', `${baseUrl}/billetera.html?epayco_response=success`);
-                    epaycoScript.setAttribute('data-epayco-confirmation', `${baseUrl}/api/epayco/confirmation`);
-                    
-                    // Botón personalizado
-                    epaycoScript.setAttribute('data-epayco-button', 'https://multimedia.epayco.co/dashboard/btns/btn3.png');
-                    
-                    epaycoContainer.appendChild(epaycoScript);
-                    
-                    console.log('✅ Botón ePayco configurado para usuario:', userId);
+                // Configurar botón para abrir modal de upgrade
+                const openUpgradeModalBtn = document.getElementById('open-upgrade-modal-btn');
+                if (openUpgradeModalBtn) {
+                    openUpgradeModalBtn.addEventListener('click', () => {
+                        // Generar los planes cuando se abre el modal
+                        generateUpgradePlans(userId);
+                        openModal('upgrade-modal');
+                    });
                 }
 
                 const addFundsButton = document.getElementById('add-funds-button');

@@ -1438,31 +1438,58 @@ app.post('/api/epayco/confirmation', async (req, res) => {
         if (x_cod_response === '1' || x_cod_response === 1) {
             // Intentar obtener userId de x_extra1 o de x_ref_payco
             let userId = null;
+            let planName = null;
             
             if (x_extra1) {
-                // Si x_extra1 contiene el userId directamente
+                // x_extra1 contiene el userId
                 userId = x_extra1;
             } else if (x_ref_payco) {
-                // Intentar extraer de la referencia (formato: LIKERING_USERID_TIMESTAMP)
+                // Intentar extraer de la referencia (formato: LIKERING_PLAN_USERID_TIMESTAMP)
                 const parts = x_ref_payco.split('_');
-                if (parts.length > 1) {
+                if (parts.length >= 3) {
+                    planName = parts[1]; // El plan está en la segunda posición
+                    userId = parts[2];  // El userId está en la tercera posición
+                } else if (parts.length === 2) {
                     userId = parts[1];
                 }
             }
 
-            if (userId) {
-                console.log(`✅ Pago ePayco aprobado. Actualizando plan a "rojo" para usuario ${userId}`);
-                
-                // Actualizar plan del usuario a "rojo"
-                await pool.query(
-                    'UPDATE users SET plan = $1 WHERE id = $2',
-                    ['rojo', userId]
-                );
+            // Obtener el plan desde x_extra2 o desde query parameter
+            if (!planName) {
+                planName = x_extra2 || req.query.plan || null;
+            }
 
-                console.log(`✅ Plan actualizado exitosamente para usuario ${userId}`);
+            if (userId) {
+                // Si no se especificó plan, intentar extraerlo de la referencia
+                if (!planName && x_ref_payco) {
+                    const parts = x_ref_payco.split('_');
+                    if (parts.length >= 2) {
+                        planName = parts[1];
+                    }
+                }
+
+                // Validar que el plan sea uno de los permitidos
+                const validPlans = ['azul', 'rojo', 'naranja', 'amarillo', 'rosado', 'fucsia', 'verde', 'marron', 'gris', 'morado'];
+                if (planName && validPlans.includes(planName.toLowerCase())) {
+                    console.log(`✅ Pago ePayco aprobado. Actualizando plan a "${planName}" para usuario ${userId}`);
+                    
+                    // Actualizar plan del usuario
+                    await pool.query(
+                        'UPDATE users SET plan = $1 WHERE id = $2',
+                        [planName.toLowerCase(), userId]
+                    );
+
+                    console.log(`✅ Plan actualizado exitosamente a "${planName}" para usuario ${userId}`);
+                } else {
+                    console.warn(`⚠️ Plan "${planName}" no es válido. Usando plan por defecto "rojo"`);
+                    await pool.query(
+                        'UPDATE users SET plan = $1 WHERE id = $2',
+                        ['rojo', userId]
+                    );
+                }
             } else {
                 console.warn('⚠️ No se pudo extraer el userId de la transacción ePayco');
-                console.warn('Datos recibidos:', { x_ref_payco, x_extra1, x_extra2, x_extra3 });
+                console.warn('Datos recibidos:', { x_ref_payco, x_extra1, x_extra2, x_extra3, query: req.query });
             }
         } else {
             console.log(`⚠️ Pago ePayco no aprobado: ${x_response_reason_text || x_response} (Código: ${x_cod_response})`);
@@ -1501,19 +1528,40 @@ app.get('/api/epayco/confirmation', async (req, res) => {
 
         if (x_cod_response === '1' || x_cod_response === 1) {
             let userId = null;
+            let planName = null;
             
             if (x_extra1) {
                 userId = x_extra1;
             } else if (x_ref_payco) {
                 const parts = x_ref_payco.split('_');
-                if (parts.length > 1) {
+                if (parts.length >= 3) {
+                    planName = parts[1];
+                    userId = parts[2];
+                } else if (parts.length === 2) {
                     userId = parts[1];
                 }
             }
 
+            if (!planName) {
+                planName = x_extra2 || req.query.plan || null;
+            }
+
             if (userId) {
-                console.log(`✅ Pago ePayco aprobado. Actualizando plan a "rojo" para usuario ${userId}`);
-                await pool.query('UPDATE users SET plan = $1 WHERE id = $2', ['rojo', userId]);
+                if (!planName && x_ref_payco) {
+                    const parts = x_ref_payco.split('_');
+                    if (parts.length >= 2) {
+                        planName = parts[1];
+                    }
+                }
+
+                const validPlans = ['azul', 'rojo', 'naranja', 'amarillo', 'rosado', 'fucsia', 'verde', 'marron', 'gris', 'morado'];
+                if (planName && validPlans.includes(planName.toLowerCase())) {
+                    console.log(`✅ Pago ePayco aprobado. Actualizando plan a "${planName}" para usuario ${userId}`);
+                    await pool.query('UPDATE users SET plan = $1 WHERE id = $2', [planName.toLowerCase(), userId]);
+                } else {
+                    console.warn(`⚠️ Plan "${planName}" no es válido. Usando plan por defecto "rojo"`);
+                    await pool.query('UPDATE users SET plan = $1 WHERE id = $2', ['rojo', userId]);
+                }
             }
         }
 
