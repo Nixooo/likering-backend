@@ -665,6 +665,73 @@
 
             plansGrid.innerHTML = '';
 
+            // Botones estáticos de ePayco para los primeros 3 planes
+            const staticButtons = {
+                'azul': `
+                    <form>
+                        <script src='https://checkout.epayco.co/checkout.js'
+                            data-epayco-key='3ff3765f414c8fd321b6983d13cde02f' 
+                            class='epayco-button' 
+                            data-epayco-amount='6.45' 
+                            data-epayco-tax='0.95'  
+                            data-epayco-tax-ico='0.50'               
+                            data-epayco-tax-base='5'
+                            data-epayco-name='Plan Azul' 
+                            data-epayco-description='Plan Azul' 
+                            data-epayco-currency='usd'    
+                            data-epayco-country='CO' 
+                            data-epayco-test='false' 
+                            data-epayco-external='true' 
+                            data-epayco-response='https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=azul'  
+                            data-epayco-confirmation='https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=azul' 
+                            data-epayco-button='https://multimedia.epayco.co/dashboard/btns/btn3.png'> 
+                        </script> 
+                    </form>
+                `,
+                'rojo': `
+                    <form>
+                        <script src='https://checkout.epayco.co/checkout.js'
+                            data-epayco-key='3ff3765f414c8fd321b6983d13cde02f' 
+                            class='epayco-button' 
+                            data-epayco-amount='12.9' 
+                            data-epayco-tax='1.90'  
+                            data-epayco-tax-ico='1.00'               
+                            data-epayco-tax-base='10'
+                            data-epayco-name='Plan Rojo' 
+                            data-epayco-description='Plan Rojo' 
+                            data-epayco-currency='usd'    
+                            data-epayco-country='CO' 
+                            data-epayco-test='false' 
+                            data-epayco-external='true' 
+                            data-epayco-response='https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=rojo'  
+                            data-epayco-confirmation='https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=rojo' 
+                            data-epayco-button='https://multimedia.epayco.co/dashboard/btns/btn3.png'> 
+                        </script> 
+                    </form>
+                `,
+                'naranja': `
+                    <form>
+                        <script src='https://checkout.epayco.co/checkout.js'
+                            data-epayco-key='3ff3765f414c8fd321b6983d13cde02f' 
+                            class='epayco-button' 
+                            data-epayco-amount='38.7' 
+                            data-epayco-tax='5.70'  
+                            data-epayco-tax-ico='3.00'               
+                            data-epayco-tax-base='30'
+                            data-epayco-name='Plan Naranja' 
+                            data-epayco-description='Plan Naranja' 
+                            data-epayco-currency='usd'    
+                            data-epayco-country='CO' 
+                            data-epayco-test='false' 
+                            data-epayco-external='true' 
+                            data-epayco-response='https://likering-n4fm.onrender.com/billetera.html?epayco_response=success&plan=naranja'  
+                            data-epayco-confirmation='https://likering-n4fm.onrender.com/api/epayco/confirmation?plan=naranja' 
+                            data-epayco-button='https://multimedia.epayco.co/dashboard/btns/btn3.png'> 
+                        </script> 
+                    </form>
+                `
+            };
+
             plans.forEach(plan => {
                 const planCard = document.createElement('div');
                 planCard.className = `plan-card plan-${plan.color}`;
@@ -674,6 +741,12 @@
                 const taxBase = plan.price;
                 const total = plan.price + tax;
 
+                // Usar botón estático si existe, sino usar contenedor para botón dinámico
+                const hasStaticButton = staticButtons.hasOwnProperty(plan.color);
+                const buttonHtml = hasStaticButton 
+                    ? staticButtons[plan.color]
+                    : `<div class="plan-button-container" id="epayco-button-${plan.color}"></div>`;
+
                 planCard.innerHTML = `
                     <div class="plan-name">Plan ${plan.name}</div>
                     <div class="plan-price">$${plan.price} USD</div>
@@ -682,45 +755,47 @@
                         <li><strong>Likes para regalar:</strong> ${plan.likes}</li>
                         <li><strong>Total con IVA:</strong> $${total.toFixed(2)} USD</li>
                     </ul>
-                    <div class="plan-button-container" id="epayco-button-${plan.color}"></div>
+                    ${buttonHtml}
                 `;
 
                 plansGrid.appendChild(planCard);
 
-                // Crear botón de ePayco para este plan
-                const buttonContainer = document.getElementById(`epayco-button-${plan.color}`);
-                if (buttonContainer && userId) {
-                    const reference = `LIKERING_${plan.color}_${userId}_${Date.now()}`;
-                    
-                    const epaycoScript = document.createElement('script');
-                    epaycoScript.src = 'https://checkout.epayco.co/checkout.js';
-                    epaycoScript.className = 'epayco-button';
-                    
-                    // Configurar atributos de ePayco
-                    epaycoScript.setAttribute('data-epayco-key', '3ff3765f414c8fd321b6983d13cde02f');
-                    epaycoScript.setAttribute('data-epayco-amount', total.toFixed(2));
-                    epaycoScript.setAttribute('data-epayco-tax', tax.toFixed(2));
-                    epaycoScript.setAttribute('data-epayco-tax-base', taxBase.toFixed(2));
-                    epaycoScript.setAttribute('data-epayco-name', `Plan ${plan.name}`);
-                    epaycoScript.setAttribute('data-epayco-description', `Upgrade a Plan ${plan.name} - Likering`);
-                    epaycoScript.setAttribute('data-epayco-currency', 'usd');
-                    epaycoScript.setAttribute('data-epayco-country', 'co');
-                    epaycoScript.setAttribute('data-epayco-test', 'false');
-                    epaycoScript.setAttribute('data-epayco-external', 'true');
-                    
-                    // Pasar información del plan
-                    epaycoScript.setAttribute('data-epayco-extra1', userId);
-                    epaycoScript.setAttribute('data-epayco-extra2', plan.color);
-                    epaycoScript.setAttribute('data-epayco-extra3', reference);
-                    
-                    // URLs de respuesta y confirmación específicas para cada plan
-                    epaycoScript.setAttribute('data-epayco-response', `${baseUrl}/billetera.html?epayco_response=success&plan=${plan.color}`);
-                    epaycoScript.setAttribute('data-epayco-confirmation', `${baseUrl}/api/epayco/confirmation?plan=${plan.color}`);
-                    
-                    // Botón personalizado
-                    epaycoScript.setAttribute('data-epayco-button', 'https://multimedia.epayco.co/dashboard/btns/btn3.png');
-                    
-                    buttonContainer.appendChild(epaycoScript);
+                // Solo crear botón dinámico si no tiene botón estático
+                if (!hasStaticButton) {
+                    const buttonContainer = document.getElementById(`epayco-button-${plan.color}`);
+                    if (buttonContainer && userId) {
+                        const reference = `LIKERING_${plan.color}_${userId}_${Date.now()}`;
+                        
+                        const epaycoScript = document.createElement('script');
+                        epaycoScript.src = 'https://checkout.epayco.co/checkout.js';
+                        epaycoScript.className = 'epayco-button';
+                        
+                        // Configurar atributos de ePayco
+                        epaycoScript.setAttribute('data-epayco-key', '3ff3765f414c8fd321b6983d13cde02f');
+                        epaycoScript.setAttribute('data-epayco-amount', total.toFixed(2));
+                        epaycoScript.setAttribute('data-epayco-tax', tax.toFixed(2));
+                        epaycoScript.setAttribute('data-epayco-tax-base', taxBase.toFixed(2));
+                        epaycoScript.setAttribute('data-epayco-name', `Plan ${plan.name}`);
+                        epaycoScript.setAttribute('data-epayco-description', `Upgrade a Plan ${plan.name} - Likering`);
+                        epaycoScript.setAttribute('data-epayco-currency', 'usd');
+                        epaycoScript.setAttribute('data-epayco-country', 'co');
+                        epaycoScript.setAttribute('data-epayco-test', 'false');
+                        epaycoScript.setAttribute('data-epayco-external', 'true');
+                        
+                        // Pasar información del plan
+                        epaycoScript.setAttribute('data-epayco-extra1', userId);
+                        epaycoScript.setAttribute('data-epayco-extra2', plan.color);
+                        epaycoScript.setAttribute('data-epayco-extra3', reference);
+                        
+                        // URLs de respuesta y confirmación específicas para cada plan
+                        epaycoScript.setAttribute('data-epayco-response', `${baseUrl}/billetera.html?epayco_response=success&plan=${plan.color}`);
+                        epaycoScript.setAttribute('data-epayco-confirmation', `${baseUrl}/api/epayco/confirmation?plan=${plan.color}`);
+                        
+                        // Botón personalizado
+                        epaycoScript.setAttribute('data-epayco-button', 'https://multimedia.epayco.co/dashboard/btns/btn3.png');
+                        
+                        buttonContainer.appendChild(epaycoScript);
+                    }
                 }
             });
         }
