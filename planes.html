@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planes Premium - Likering</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --dark-background: #0a0a0b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            
+            --plan-azul: #00d2ff;
+            --plan-rojo: #ff2d55;
+            --plan-naranja: #ff9500;
+            --plan-amarillo: #ffcc00; 
+            --plan-rosado: #ff2d55;
+            --plan-fucsia: #ff375f;
+            --plan-verde: #4cd964;
+            --plan-marron: #ac8e68;
+            --plan-gris: #8e8e93;
+            --plan-morado: #af52de;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-background);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: var(--plan-azul);
+            filter: blur(150px);
+            opacity: 0.1;
+            border-radius: 50%;
+            animation: blob-float 25s infinite alternate;
+        }
+
+        .blob-1 { top: -150px; left: -150px; }
+        .blob-2 { bottom: -150px; right: -150px; background: var(--plan-morado); }
+
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 150px) scale(1.3); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .btn-back {
+            width: 50px;
+            height: 50px;
+            border-radius: 18px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-5px);
+        }
+
+        .header-info h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .header-info p {
+            color: var(--text-secondary);
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .plan-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 35px;
+            padding: 35px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-15px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--accent);
+            opacity: 0.8;
+        }
+
+        .plan-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .plan-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .plan-info h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .plan-price {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .plan-benefits {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-grow: 1;
+        }
+
+        .plan-benefits li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .plan-benefits li i {
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        .plan-benefits li b {
+            color: white;
+        }
+
+        /* Wompi Button Override */
+        .plan-card form {
+            width: 100%;
+        }
+
+        .wompi-button-caption { display: none !important; }
+
+        /* Colores dinámicos */
+        .azul { --accent: var(--plan-azul); }
+        .rojo { --accent: var(--plan-rojo); }
+        .naranja { --accent: var(--plan-naranja); }
+        .amarillo { --accent: var(--plan-amarillo); }
+        .rosado { --accent: var(--plan-rosado); }
+        .fucsia { --accent: var(--plan-fucsia); }
+        .verde { --accent: var(--plan-verde); }
+        .marron { --accent: var(--plan-marron); }
+        .gris { --accent: var(--plan-gris); }
+        .morado { --accent: var(--plan-morado); }
+
+        @media (max-width: 768px) {
+            .plans-grid { grid-template-columns: 1fr; }
+            .header-info h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <a href="billetera.html" class="btn-back">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <div class="header-info">
+                <h1>Elige tu Plan Premium</h1>
+                <p>Aumenta tus ganancias y límites en Likering</p>
+            </div>
+        </header>
+
+        <div class="plans-grid" id="plans-container">
+            <!-- Los 10 planes se cargarán aquí -->
+        </div>
+    </div>
+
+    <script>
+        const plans = [
+            { id: 'AZUL', name: 'Plan Azul', price: '$15.000', cents: 1500000, icon: 'fa-gem', class: 'azul', earnings: '$1.5M', likes: 1, limit: 300 },
+            { id: 'ROJO', name: 'Plan Rojo', price: '$60.000', cents: 6000000, icon: 'fa-fire', class: 'rojo', earnings: '$2M', likes: 4, limit: 400 },
+            { id: 'NARANJA', name: 'Plan Naranja', price: '$90.000', cents: 9000000, icon: 'fa-bolt', class: 'naranja', earnings: '$2.5M', likes: 18, limit: 500 },
+            { id: 'AMARILLO', name: 'Plan Amarillo', price: '$300.000', cents: 30000000, icon: 'fa-star', class: 'amarillo', earnings: '$5M', likes: 60, limit: '1.000' },
+            { id: 'ROSADO', name: 'Plan Rosado', price: '$600.000', cents: 60000000, icon: 'fa-heart', class: 'rosado', earnings: '$10M', likes: 120, limit: '2.000' },
+            { id: 'FUCSIA', name: 'Plan Fucsia', price: '$900.000', cents: 90000000, icon: 'fa-crown', class: 'fucsia', earnings: '$20M', likes: 180, limit: '4.000' },
+            { id: 'VERDE', name: 'Plan Verde', price: '$1.200.000', cents: 120000000, icon: 'fa-leaf', class: 'verde', earnings: '$40M', likes: 240, limit: '8.000' },
+            { id: 'MARRON', name: 'Plan Marrón', price: '$1.500.000', cents: 150000000, icon: 'fa-coffee', class: 'marron', earnings: '$60M', likes: 300, limit: '12.000' },
+            { id: 'GRIS', name: 'Plan Gris', price: '$1.800.000', cents: 180000000, icon: 'fa-shield-alt', class: 'gris', earnings: '$80M', likes: 360, limit: '16.000' },
+            { id: 'MORADO', name: 'Plan Morado', price: '$2.100.000', cents: 210000000, icon: 'fa-magic', class: 'morado', earnings: '$100M', likes: 420, limit: '20.000' }
+        ];
+
+        function renderPlans() {
+            const container = document.getElementById('plans-container');
+            container.innerHTML = plans.map(plan => `
+                <div class="plan-card ${plan.class}">
+                    <div class="plan-header">
+                        <div class="plan-icon"><i class="fas ${plan.icon}"></i></div>
+                        <div class="plan-info">
+                            <h3>${plan.name}</h3>
+                            <div class="plan-price">${plan.price}</div>
+                        </div>
+                    </div>
+                    <ul class="plan-benefits">
+                        <li><i class="fas fa-check-circle"></i> Gana hasta <b>${plan.earnings}</b></li>
+                        <li><i class="fas fa-heart"></i> <b>${plan.likes} Like${plan.likes > 1 ? 's' : ''}</b> iniciales</li>
+                        <li><i class="fas fa-users"></i> Límite de <b>${plan.limit} Likes</b></li>
+                    </ul>
+                    <form>
+                        <script 
+                            src="https://checkout.wompi.co/widget.js" 
+                            data-render="button" 
+                            data-public-key="pub_prod_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV" 
+                            data-currency="COP" 
+                            data-amount-in-cents="${plan.cents}" 
+                            data-name="${plan.name}"
+                            data-reference="PLAN_${plan.id}_REPLACE_ME" 
+                            data-redirect-url="https://likering.onrender.com/billetera.html?status=success&plan=${plan.class}"
+                        ><\/script>
+                    </form>
+                </div>
+            `).join('');
+            
+            finalizeWompiButtons();
+        }
+
+        async function finalizeWompiButtons() {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (!loggedInUser) return;
+            
+            const userId = loggedInUser.id || loggedInUser.user_id;
+            const scripts = document.querySelectorAll('form script');
+
+            for (const script of scripts) {
+                const amountInCents = script.getAttribute('data-amount-in-cents');
+                const refAttr = script.getAttribute('data-reference');
+                if (!refAttr) continue;
+                
+                const planMatch = refAttr.match(/PLAN_([A-Z]+)_REPLACE_ME/);
+                if (!planMatch) continue;
+
+                const planId = planMatch[1];
+                const reference = `PLAN_${planId}_${userId}_${Date.now()}`;
+                const currency = 'COP';
+
+                try {
+                    const response = await fetch('/api/wompi/generate-signature', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference, amountInCents, currency })
+                    });
+                    const { signature } = await response.json();
+
+                    script.setAttribute('data-reference', reference);
+                    script.setAttribute('data-signature:integrity', signature);
+                } catch (error) {
+                    console.error(`Error firma ${planId}:`, error);
+                }
+            }
+
+            const wompiScript = document.createElement('script');
+            wompiScript.src = "https://checkout.wompi.co/widget.js";
+            wompiScript.type = "text/javascript";
+            document.body.appendChild(wompiScript);
+        }
+
+        document.addEventListener('DOMContentLoaded', renderPlans);
+    </script>
+</body>
+</html>

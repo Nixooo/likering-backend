@@ -344,6 +344,21 @@
             border-color: var(--plan-accent);
         }
 
+        .modern-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--plan-accent);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
         .plan-card-header {
             display: flex;
             align-items: center;
@@ -729,12 +744,11 @@
             <!-- Planes Premium -->
             <div class="premium-plans-container">
                 <div class="section-header">
-                    <h2>Planes Premium</h2>
-                    <a href="planes.html" class="btn-view-all">Ver todos <i class="fas fa-arrow-right"></i></a>
+                    <h2>Planes Recomendados</h2>
+                    <a href="planes.html" class="btn-view-all">Ver los 10 planes <i class="fas fa-arrow-right"></i></a>
                 </div>
                 
                 <div class="plans-horizontal-scroll">
-                    <!-- Los planes se pueden mostrar aquí de forma compacta o solo los principales -->
                     <!-- PLAN AZUL -->
                     <div class="modern-plan-card plan-azul-modern">
                         <div class="plan-card-header">
@@ -746,7 +760,8 @@
                         </div>
                         <ul class="plan-card-benefits">
                             <li><i class="fas fa-check"></i> Gana hasta $1.5M</li>
-                            <li><i class="fas fa-check"></i> 1 Like inicial</li>
+                            <li><i class="fas fa-heart"></i> 1 Like inicial</li>
+                            <li><i class="fas fa-users"></i> Límite 300 Likes</li>
                         </ul>
                         <form>
                             <script 
@@ -764,6 +779,7 @@
 
                     <!-- PLAN ROJO -->
                     <div class="modern-plan-card plan-rojo-modern">
+                        <div class="modern-badge">Popular</div>
                         <div class="plan-card-header">
                             <div class="plan-card-icon"><i class="fas fa-fire"></i></div>
                             <div class="plan-card-info">
@@ -773,7 +789,8 @@
                         </div>
                         <ul class="plan-card-benefits">
                             <li><i class="fas fa-check"></i> Gana hasta $2M</li>
-                            <li><i class="fas fa-check"></i> 4 Likes iniciales</li>
+                            <li><i class="fas fa-heart"></i> 4 Likes iniciales</li>
+                            <li><i class="fas fa-users"></i> Límite 400 Likes</li>
                         </ul>
                         <form>
                             <script 
@@ -785,6 +802,34 @@
                                 data-name="Plan Rojo"
                                 data-reference="PLAN_ROJO_REPLACE_ME" 
                                 data-redirect-url="https://likering.onrender.com/billetera.html?status=success&plan=rojo"
+                            ></script>
+                        </form>
+                    </div>
+
+                    <!-- PLAN NARANJA -->
+                    <div class="modern-plan-card plan-naranja-modern">
+                        <div class="plan-card-header">
+                            <div class="plan-card-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="plan-card-info">
+                                <h3>Plan Naranja</h3>
+                                <span class="price">$90.000</span>
+                            </div>
+                        </div>
+                        <ul class="plan-card-benefits">
+                            <li><i class="fas fa-check"></i> Gana hasta $2.5M</li>
+                            <li><i class="fas fa-heart"></i> 18 Likes iniciales</li>
+                            <li><i class="fas fa-users"></i> Límite 500 Likes</li>
+                        </ul>
+                        <form>
+                            <script 
+                                src="https://checkout.wompi.co/widget.js" 
+                                data-render="button" 
+                                data-public-key="pub_prod_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV" 
+                                data-currency="COP" 
+                                data-amount-in-cents="9000000" 
+                                data-name="Plan Naranja"
+                                data-reference="PLAN_NARANJA_REPLACE_ME" 
+                                data-redirect-url="https://likering.onrender.com/billetera.html?status=success&plan=naranja"
                             ></script>
                         </form>
                     </div>
