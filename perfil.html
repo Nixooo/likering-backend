@@ -5,23 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil - Likering</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-   <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
         :root {
-            --dark-background: #121212;
-            --dark-grey: #1a1a1a;
-            --light-grey: #2e2e2e;
+            --dark-background: #0a0a0b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
             --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --plan-azul: #00A4E6;
-            --plan-rojo: #F92B75;
-            --plan-naranja: #FFA500;
-            --plan-verde: #28a745;
-            --plan-morado: #8A2BE2;
-            --plan-negro: #E0E0E0;
-            --plan-amarillo: #FFD700;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            
+            /* Colores de planes mejorados */
+            --plan-azul: #00d2ff;
+            --plan-rojo: #ff2d55;
+            --plan-naranja: #ff9500;
+            --plan-verde: #4cd964;
+            --plan-morado: #af52de;
+            --plan-amarillo: #ffcc00; 
+            --plan-rosado: #ff2d55;
+            --plan-fucsia: #ff375f;
+            --plan-marron: #ac8e68;
+            --plan-gris: #8e8e93;
+
             --plan-color-principal: var(--plan-azul);
+            --accent-gradient: linear-gradient(135deg, var(--plan-color-principal), #000);
         }
 
         .plan-azul { --plan-color-principal: var(--plan-azul); }
@@ -29,89 +36,146 @@
         .plan-naranja { --plan-color-principal: var(--plan-naranja); }
         .plan-verde { --plan-color-principal: var(--plan-verde); }
         .plan-morado { --plan-color-principal: var(--plan-morado); }
-        .plan-negro { --plan-color-principal: var(--plan-negro); }
         .plan-amarillo { --plan-color-principal: var(--plan-amarillo); }
+        .plan-rosado { --plan-color-principal: var(--plan-rosado); }
+        .plan-fucsia { --plan-color-principal: var(--plan-fucsia); }
+        .plan-marron { --plan-color-principal: var(--plan-marron); }
+        .plan-gris { --plan-color-principal: var(--plan-gris); }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; display: flex; justify-content: center; background: var(--dark-background); color: var(--text-primary); }
-        .app-screen { width: 100%; min-height: 100vh; position: relative; overflow-x: hidden; display: flex; flex-direction: column; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        .profile-header {
-            width: 100%;
-            padding: 60px 25px 25px;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-background);
             color: var(--text-primary);
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            position: relative;
-            z-index: 2;
-            background: var(--dark-grey);
-            border-bottom: 1px solid var(--light-grey);
+            overflow-x: hidden;
+            min-height: 100vh;
         }
 
-        .header-icon {
-            background: var(--light-grey);
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            color: var(--text-primary);
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
+        /* Fondo Animado Mejorado */
+        .app-screen {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            padding: 40px 20px 100px;
             display: flex;
-            align-items: center;
             justify-content: center;
         }
 
-        .header-icon:hover { 
-            background: var(--plan-color-principal); 
-            transform: scale(1.1); 
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
 
-        .header-top-row {
+        .blob {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
+            width: 500px;
+            height: 500px;
+            background: var(--plan-color-principal);
+            filter: blur(120px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: blob-float 20s infinite alternate;
         }
 
-        .plan-name-badge { 
-            display: none;
+        .blob-1 { top: -100px; right: -100px; animation-delay: 0s; }
+        .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; opacity: 0.1; }
+
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 100px) scale(1.2); }
         }
 
-        .profile-top-section {
-            display: flex;
-            flex-direction: column; 
-            align-items: center;   
-            gap: 25px; 
+        .profile-content {
+            position: relative;
+            z-index: 1;
             width: 100%;
-        }
-
-        .profile-user-details {
-            width: 100%;
+            max-width: 500px;
             display: flex;
             flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Header Moderno */
+        .profile-header-nav {
+            display: flex;
             align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .btn-back {
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-3px);
+        }
+
+        .brand-logo {
+            width: 35px;
+            height: 35px;
+            opacity: 0.9;
+        }
+
+        /* Tarjeta de Perfil Principal */
+        .main-profile-card {
+            background: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
-            gap: 15px; 
+        }
+
+        .main-profile-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, var(--plan-color-principal), transparent 70%);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .profile-picture-container {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 20px;
         }
 
         .profile-picture {
-            width: 90px;
-            height: 90px;
-            border-radius: 15px;
+            width: 100%;
+            height: 100%;
+            border-radius: 30px;
             background-size: cover;
             background-position: center;
-            flex-shrink: 0;
             border: 3px solid var(--plan-color-principal);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            position: relative;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
             cursor: pointer;
             transition: transform 0.3s ease;
         }
@@ -120,583 +184,464 @@
             transform: scale(1.05);
         }
 
-        .edit-profile-icon {
+        .edit-badge {
             position: absolute;
             bottom: -5px;
             right: -5px;
+            width: 32px;
+            height: 32px;
             background: var(--plan-color-principal);
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            border: 2px solid var(--dark-grey);
+            color: #000;
+            font-size: 0.8rem;
+            border: 3px solid #1a1a1a;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.8rem;
         }
 
-        .edit-profile-icon:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .profile-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            gap: 8px;
-        }
-
-        .profile-username {
+        .profile-info h2 {
             font-size: 1.6rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 5px;
+        }
+
+        .plan-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--plan-color-principal);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-bottom: 25px;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+            padding: 10px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--plan-color-principal);
+            font-size: 1.1rem;
+        }
+
+        .stat-info .value {
+            display: block;
+            font-size: 1.1rem;
             font-weight: 700;
         }
 
-        .profile-bio {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--plan-color-principal);
-            background: rgba(255,255,255,0.05);
-            padding: 6px 12px;
-            border-radius: 8px;
-            display: inline-block;
-            width: fit-content;
-        }
-        
-        .profile-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px; 
-            width: 100%; 
+        .stat-info .label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .stat-item {
-            background: transparent;
-            border: 1px solid var(--light-grey);
-            padding: 20px;
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
+        /* Acciones Rápidas */
+        .profile-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
         }
 
-        .stat-item:hover {
-            border-color: var(--plan-color-principal);
-            transform: translateY(-3px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-item i {
-            font-size: 1.8rem;
-            color: var(--plan-color-principal);
-            flex-shrink: 0;
-        }
-
-        .stat-number {
-            font-size: 1.5rem; 
-            font-weight: 700;
-            display: block;
-            color: var(--text-primary);
-            line-height: 1.2;
-        }
-
-        .stat-label {
-            font-size: 0.8rem; 
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-top: 2px;
-        }
-
-        .profile-actions {
+        .action-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 20px 10px;
             display: flex;
+            flex-direction: column;
+            align-items: center;
             gap: 12px;
-            width: 100%;
-        }
-
-        .profile-actions button {
-            flex: 1;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .studio-btn {
-            background: var(--plan-color-principal);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
             color: white;
+            text-decoration: none;
         }
 
-        .share-btn {
-            background: var(--light-grey);
-            color: var(--text-primary);
-            border: 1px solid rgba(255,255,255,0.1);
+        .action-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-5px);
+            border-color: var(--plan-color-principal);
         }
 
-        .studio-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--plan-color-principal);
         }
 
-        .share-btn:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
+        .action-item:hover .action-icon {
+            background: var(--plan-color-principal);
+            color: #000;
+            box-shadow: 0 0 20px rgba(var(--plan-color-principal), 0.3);
+        }
+
+        .action-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        /* Video Grid Moderno */
+        .content-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
         }
 
         .video-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 3px;
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px 0;
+            gap: 10px;
         }
 
         .video-thumbnail {
+            aspect-ratio: 9/16;
+            border-radius: 15px;
+            overflow: hidden;
             position: relative;
             cursor: pointer;
-            overflow: hidden;
-            aspect-ratio: 9/16;
-            background-color: var(--light-grey);
-            border-radius: 8px;
-            transition: transform 0.3s ease;
+            background: rgba(255,255,255,0.05);
         }
 
         .video-thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .video-thumbnail:hover {
-            transform: scale(1.02);
+            transition: transform 0.5s ease;
         }
 
         .video-thumbnail:hover img {
-            transform: scale(1.05);
+            transform: scale(1.1);
         }
 
-        .video-stats-overlay {
+        .video-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             padding: 8px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-            color: #fff;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
             display: flex;
             align-items: center;
-            font-size: 0.75rem;
-            font-weight: 500;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 600;
         }
-        
-        .upload-modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+
+        /* Modales Modernos */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
             z-index: 1000;
             display: none;
-            justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s;
-        }
-
-        .upload-modal-overlay.visible { display: flex; opacity: 1; }
-
-        .upload-modal-content {
-            background: var(--dark-grey);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 420px;
-            border: 1px solid var(--light-grey);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        }
-
-        .modal-header {
-            display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        .modal-title {
-            font-size: 1.4rem;
-            font-weight: 600;
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modern-modal {
+            width: 100%;
+            max-width: 400px;
+            background: #151517;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 32px;
+            padding: 30px;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modern-modal {
+            transform: scale(1);
+        }
+
+        .modal-header-modern {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
         }
 
         .modal-close {
-            background: var(--light-grey);
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            cursor: pointer;
             width: 35px;
             height: 35px;
-            border-radius: 50%;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .modal-close:hover {
-            background: var(--plan-color-principal);
-            color: white;
-        }
-
-        .modal-subtitle {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 16px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--light-grey);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-subtitle i {
-            color: var(--plan-color-principal);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
         }
 
         .modal-button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 600;
+            width: 100%;
+            padding: 14px;
+            border-radius: 18px;
+            border: none;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: none;
-        }
-
-        .cancel-button {
-            background: var(--light-grey);
-            color: var(--text-primary);
-        }
-
-        .submit-button {
-            background: var(--plan-color-principal);
-            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .modal-button:hover {
+            background: rgba(255,255,255,0.1);
             transform: translateY(-2px);
         }
 
-        .edit-profile-view {
-            display: none;
-        }
-
-        .edit-profile-view.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .edit-profile-picture-preview {
-            width: 100px;
-            height: 100px;
-            border-radius: 15px;
-            margin: 0 auto 20px;
-            background-size: cover;
-            background-position: center;
-            border: 3px solid var(--plan-color-principal);
-        }
-
-        #camera-view video {
-            width: 100%;
-            border-radius: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .form-label {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-input {
-            background: var(--light-grey);
-            border: 1px solid transparent;
-            border-radius: 10px;
-            padding: 12px;
-            color: var(--text-primary);
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--plan-color-principal);
-        }
-
-        .back-btn {
-            background: var(--light-grey);
-            border: none;
-            color: var(--text-primary);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .back-btn:hover {
+        .modal-button.primary {
             background: var(--plan-color-principal);
+            color: #000;
         }
-        
-        /* --- ESTILOS PARA LA NUEVA MODAL DE COMPARTIR --- */
-        .share-modal-body {
-            padding: 10px 0;
-            text-align: center;
-        }
-        .share-modal-text {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            margin-bottom: 25px;
-        }
-        .social-links-grid {
+
+        .social-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
         }
-        .social-link {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: var(--text-primary);
-            font-size: 0.75rem;
-            font-weight: 500;
-            transition: transform 0.2s ease;
-        }
-        .social-link:hover {
-            transform: scale(1.1);
-        }
-        .social-link i {
-            font-size: 2.5rem; /* Iconos más grandes */
-            width: 60px;
-            height: 60px;
+
+        .social-icon {
+            width: 100%;
+            aspect-ratio: 1;
             border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            font-size: 1.4rem;
+            color: white;
+            text-decoration: none;
         }
-        /* Colores de redes sociales */
-        .social-link .fa-whatsapp { background-color: #25D366; }
-        .social-link .fa-facebook-f { background-color: #1877F2; }
-        .social-link .fa-twitter { background-color: #1DA1F2; }
-        .social-link .fa-telegram { background-color: #0088cc; }
-        .social-link .fa-envelope { background-color: #7f7f7f; }
 
-        .copy-link-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 20px;
-        }
-        #profile-link-input {
-            flex-grow: 1;
-            font-size: 0.9rem;
-            text-overflow: ellipsis;
-            background-color: var(--dark-background); /* Input más oscuro */
-        }
-        #copy-link-btn {
-            flex-shrink: 0;
-            padding: 12px 15px;
-        }
-        /* ----------------------------------------------- */
-
-        @media (max-width: 480px) {
-            .profile-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-                width: 100%;
-            }
-            
-            .profile-picture {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .profile-username {
-                font-size: 1.4rem;
-            }
+        @media (max-width: 400px) {
+            .profile-actions { gap: 10px; }
+            .action-item { padding: 15px 5px; }
+            .action-icon { width: 40px; height: 40px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="app-screen">
-        <div class="profile-header">
-            <div class="header-top-row">
-                <a href="videos.html" class="header-icon"><i class="fas fa-arrow-left"></i></a>
-            </div>
-            <div class="profile-top-section">
-                <div class="profile-user-details">
-                    <div id="profile-picture" class="profile-picture">
-                        <div class="edit-profile-icon" id="edit-profile-btn" title="Editar Perfil">
-                            <i class="fas fa-pencil-alt"></i>
-                        </div>
-                    </div>
-                    <div class="profile-info">
-                        <h2 id="profile-username" class="profile-username"></h2>
-                        <p id="profile-bio" class="profile-bio"></p>
-                    </div>
-                </div>
-                <div class="profile-stats" id="profile-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-pen-to-square"></i>
-                        <div>
-                            <span id="posts-count" class="stat-number">0</span>
-                            <span class="stat-label">Contenido</span>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-users"></i>
-                        <div>
-                            <span id="followers-count" class="stat-number">0</span>
-                            <span class="stat-label">Seguidores</span>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-user-plus"></i>
-                        <div>
-                            <span id="following-count" class="stat-number">0</span>
-                            <span class="stat-label">Siguiendo</span>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-heart"></i>
-                        <div>
-                            <span id="likes-count" class="stat-number">0</span>
-                            <span class="stat-label">Likes</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="profile-actions">
-                <button class="studio-btn" id="open-studio-btn">
-                    <i class="fas fa-video"></i> Estudio
-                </button>
-                <button class="share-btn" id="share-profile-btn">
-                    <i class="fas fa-share-alt"></i> Compartir Perfil
-                </button>
-                <button class="share-btn" id="wallet-btn">
-                    <i class="fas fa-wallet"></i> Billetera
-                </button>
-            </div>
-        </div>
-        <div class="video-grid" id="video-grid-container"></div>
-        <input type="file" id="profile-picture-input" style="display: none;" accept="image/*">
-        
-        <div class="upload-modal-overlay" id="edit-profile-modal">
-            <div class="upload-modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="edit-modal-title">Editar Perfil</h3>
-                    <button class="modal-close" id="modal-close-btn-edit"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="edit-profile-view active" id="main-edit-view">
-                    <h4 class="modal-subtitle"><i class="fas fa-user-circle"></i>Foto de Perfil</h4>
-                    <div class="edit-profile-picture-preview" id="edit-profile-picture-preview"></div>
-                    <div class="modal-actions">
-                        <button type="button" class="modal-button cancel-button" id="upload-from-gallery-btn">
-                            <i class="fas fa-images"></i> Subir Foto
-                        </button>
-                        <button type="button" class="modal-button cancel-button" id="take-photo-btn">
-                            <i class="fas fa-camera"></i> Tomar Foto
-                        </button>
-                    </div>
-                    <hr style="border-color: rgba(255,255,255,0.1); margin: 25px 0;">
-                    <h4 class="modal-subtitle"><i class="fas fa-shield-alt"></i>Cuenta</h4>
-                    <div class="modal-actions" style="margin-top: 16px;">
-                        <button type="button" class="modal-button submit-button" id="edit-account-btn">
-                            <i class="fas fa-key"></i> Cambiar Contraseña
-                        </button>
-                    </div>
-                </div>
-                <div class="edit-profile-view" id="camera-view">
-                    <h4 class="modal-subtitle">Tomar Foto</h4>
-                    <video id="camera-video" autoplay playsinline></video>
-                    <canvas id="camera-canvas" style="display:none;"></canvas>
-                    <div class="modal-actions">
-                           <button type="button" class="modal-button cancel-button" id="cancel-camera-btn">Cancelar</button>
-                           <button type="button" class="modal-button submit-button" id="capture-photo-btn">
-                                <i class="fas fa-camera"></i> Capturar
-                           </button>
-                    </div>
-                </div>
-                <div class="edit-profile-view" id="password-edit-view">
-                       <button type="button" class="back-btn" id="back-to-main-edit-btn" style="margin-bottom: 20px;">
-                            <i class="fas fa-arrow-left"></i> Volver
-                       </button>
-                    <form id="password-form">
-                        <div class="form-group">
-                            <label class="form-label">Nueva Contraseña</label>
-                            <input type="password" id="new-password" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Confirmar Contraseña</label>
-                            <input type="password" id="confirm-password" class="form-input" required>
-                        </div>
-                        <div id="password-status" style="text-align:center; min-height: 20px; font-weight: 500;"></div>
-                        <div class="modal-actions">
-                            <button type="submit" class="modal-button submit-button" id="save-password-btn">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
 
-        <div class="upload-modal-overlay" id="share-modal">
-            <div class="upload-modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Compartir Perfil</h3>
-                    <button class="modal-close" id="share-modal-close-btn"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="share-modal-body">
-                    <p class="share-modal-text">Comparte el perfil de @<span id="share-username"></span> a través de tus redes sociales.</p>
-                    <div class="social-links-grid" id="social-links-container">
-                        </div>
-                    <div class="copy-link-container">
-                        <input type="text" id="profile-link-input" readonly class="form-input">
-                        <button id="copy-link-btn" class="modal-button submit-button">
-                            <i class="fas fa-copy"></i> Copiar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
     </div>
+
+    <div class="app-screen">
+        <div class="profile-content">
+            <!-- Header Nav -->
+            <header class="profile-header-nav">
+                <a href="videos.html" class="btn-back">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Likering" class="brand-logo">
+            </header>
+
+            <!-- Tarjeta de Perfil Principal -->
+            <div class="main-profile-card">
+                <div class="profile-picture-container">
+                    <div id="profile-picture" class="profile-picture"></div>
+                    <div class="edit-badge" id="edit-profile-btn">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                </div>
+                
+                <div class="profile-info">
+                    <h2 id="profile-username">@usuario</h2>
+                    <div class="plan-badge" id="profile-bio">PLAN AZUL</div>
+                </div>
+
+                <div class="profile-stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-icon"><i class="fas fa-pen-nib"></i></div>
+                        <div class="stat-info">
+                            <span class="value" id="posts-count">0</span>
+                            <span class="label">Posts</span>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <span class="value" id="followers-count">0</span>
+                            <span class="label">Seguidores</span>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+                        <div class="stat-info">
+                            <span class="value" id="following-count">0</span>
+                            <span class="label">Siguiendo</span>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon"><i class="fas fa-heart"></i></div>
+                        <div class="stat-info">
+                            <span class="value" id="likes-count">0</span>
+                            <span class="label">Likes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="profile-actions">
+                <div class="action-item" id="open-studio-btn">
+                    <div class="action-icon"><i class="fas fa-video"></i></div>
+                    <span class="action-label">Estudio</span>
+                </div>
+                <div class="action-item" id="share-profile-btn">
+                    <div class="action-icon"><i class="fas fa-share-alt"></i></div>
+                    <span class="action-label">Compartir</span>
+                </div>
+                <a href="billetera.html" class="action-item">
+                    <div class="action-icon"><i class="fas fa-wallet"></i></div>
+                    <span class="action-label">Billetera</span>
+                </a>
+            </div>
+
+            <!-- Sección de Contenido -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>Mi Contenido</h3>
+                    <i class="fas fa-th-large" style="opacity: 0.3;"></i>
+                </div>
+                <div class="video-grid" id="video-grid-container">
+                    <!-- Los videos se cargan dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Perfil Moderno -->
+    <div class="modal-overlay" id="edit-profile-modal">
+        <div class="modern-modal">
+            <div class="modal-header-modern">
+                <h3>Editar Perfil</h3>
+                <div class="modal-close" id="modal-close-btn-edit"><i class="fas fa-times"></i></div>
+            </div>
+            
+            <div class="edit-profile-view active" id="main-edit-view">
+                <div class="edit-profile-picture-preview" id="edit-profile-picture-preview"></div>
+                <button class="modal-button primary" id="upload-from-gallery-btn">
+                    <i class="fas fa-image"></i> Subir de Galería
+                </button>
+                <button class="modal-button" id="take-photo-btn">
+                    <i class="fas fa-camera"></i> Tomar Foto
+                </button>
+                <button class="modal-button" id="edit-account-btn">
+                    <i class="fas fa-lock"></i> Cambiar Contraseña
+                </button>
+            </div>
+
+            <div class="edit-profile-view" id="camera-view">
+                <video id="camera-video" autoplay playsinline style="width: 100%; border-radius: 20px; margin-bottom: 20px;"></video>
+                <canvas id="camera-canvas" style="display:none;"></canvas>
+                <button class="modal-button primary" id="capture-photo-btn">Capturar</button>
+                <button class="modal-button" id="cancel-camera-btn">Cancelar</button>
+            </div>
+
+            <div class="edit-profile-view" id="password-edit-view">
+                <form id="password-form">
+                    <input type="password" id="new-password" class="modal-button" placeholder="Nueva Contraseña" style="background: rgba(255,255,255,0.05); text-align: left; padding-left: 20px;">
+                    <input type="password" id="confirm-password" class="modal-button" placeholder="Confirmar Contraseña" style="background: rgba(255,255,255,0.05); text-align: left; padding-left: 20px;">
+                    <div id="password-status" style="font-size: 0.8rem; color: #ff4d4d; margin-bottom: 15px; text-align: center;"></div>
+                    <button type="submit" class="modal-button primary" id="save-password-btn">Guardar</button>
+                    <button type="button" class="modal-button" id="back-to-main-edit-btn">Volver</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Compartir Moderno -->
+    <div class="modal-overlay" id="share-modal">
+        <div class="modern-modal">
+            <div class="modal-header-modern">
+                <h3>Compartir Perfil</h3>
+                <div class="modal-close" id="share-modal-close-btn"><i class="fas fa-times"></i></div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 20px;">Comparte el perfil de @<span id="share-username"></span></p>
+            
+            <div class="social-grid" id="social-links-container">
+                <!-- Se carga dinámicamente -->
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 10px; display: flex; align-items: center; gap: 10px;">
+                <input type="text" id="profile-link-input" readonly style="background: transparent; border: none; color: white; font-size: 0.8rem; flex: 1; outline: none;">
+                <button id="copy-link-btn" style="background: var(--plan-color-principal); border: none; border-radius: 10px; padding: 8px 15px; color: #000; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Copiar</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="profile-picture-input" style="display: none;" accept="image/*">
+
 
     <script src="config.js"></script>
     <script>
@@ -801,56 +746,71 @@
         });
     }
     
-    function setupEventListeners() {
-        document.getElementById('open-studio-btn').addEventListener('click', () => window.location.href = 'editor.html');
-        // MODIFICADO: El botón de compartir ahora llama a la función para abrir la modal
-        document.getElementById('share-profile-btn').addEventListener('click', handleShareProfileClick);
-        document.getElementById('wallet-btn').addEventListener('click', () => window.location.href = 'billetera.html');
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        }
 
-        // --- Listeners para la Modal de Editar Perfil ---
-        const editModal = document.getElementById('edit-profile-modal');
-        const mainEditView = document.getElementById('main-edit-view');
-        const cameraView = document.getElementById('camera-view');
-        const passwordView = document.getElementById('password-edit-view');
-        
-        const showView = (viewToShow) => {
-            [mainEditView, cameraView, passwordView].forEach(v => v.classList.remove('active'));
-            viewToShow.classList.add('active');
-        };
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
 
-        document.getElementById('edit-profile-btn').addEventListener('click', () => {
-            document.getElementById('edit-profile-picture-preview').style.backgroundImage = `url('${loggedInUser.imageUrl}')`;
-            showView(mainEditView);
-            editModal.classList.add('visible');
-        });
-        document.getElementById('modal-close-btn-edit').addEventListener('click', () => {
-            editModal.classList.remove('visible');
-            stopCamera();
-        });
-        
-        document.getElementById('profile-picture').addEventListener('click', (e) => {
-             if (e.target.id !== 'edit-profile-btn' && !e.target.closest('#edit-profile-btn')) {
-                 document.getElementById('profile-picture-input').click();
-             }
-        });
-        document.getElementById('upload-from-gallery-btn').addEventListener('click', () => document.getElementById('profile-picture-input').click());
-        document.getElementById('profile-picture-input').addEventListener('change', (e) => {
-            if (e.target.files[0]) handleNewProfilePicture(e.target.files[0]);
-        });
+        function setupEventListeners() {
+            // MODIFICADO: Adaptado a la nueva estructura de botones/acciones
+            document.getElementById('open-studio-btn').addEventListener('click', () => window.location.href = 'editor.html');
+            document.getElementById('share-profile-btn').addEventListener('click', handleShareProfileClick);
 
-        document.getElementById('take-photo-btn').addEventListener('click', () => { showView(cameraView); startCamera(); });
-        document.getElementById('cancel-camera-btn').addEventListener('click', () => { stopCamera(); showView(mainEditView); });
-        document.getElementById('edit-account-btn').addEventListener('click', () => showView(passwordView));
-        document.getElementById('back-to-main-edit-btn').addEventListener('click', () => showView(mainEditView));
-        
-        document.getElementById('capture-photo-btn').addEventListener('click', capturePhoto);
-        document.getElementById('password-form').addEventListener('submit', handlePasswordChange);
+            // --- Listeners para la Modal de Editar Perfil ---
+            const mainEditView = document.getElementById('main-edit-view');
+            const cameraView = document.getElementById('camera-view');
+            const passwordView = document.getElementById('password-edit-view');
+            
+            const showView = (viewToShow) => {
+                [mainEditView, cameraView, passwordView].forEach(v => v.classList.remove('active'));
+                viewToShow.classList.add('active');
+            };
 
-        // --- NUEVO: Listeners para la Modal de Compartir ---
-        const shareModal = document.getElementById('share-modal');
-        document.getElementById('share-modal-close-btn').addEventListener('click', () => shareModal.classList.remove('visible'));
-        document.getElementById('copy-link-btn').addEventListener('click', copyProfileLink);
-    }
+            document.getElementById('edit-profile-btn').addEventListener('click', () => {
+                document.getElementById('edit-profile-picture-preview').style.backgroundImage = `url('${loggedInUser.imageUrl}')`;
+                showView(mainEditView);
+                openModal('edit-profile-modal');
+            });
+
+            document.getElementById('modal-close-btn-edit').addEventListener('click', () => {
+                closeModal('edit-profile-modal');
+                stopCamera();
+            });
+            
+            document.getElementById('profile-picture').addEventListener('click', (e) => {
+                 if (e.target.id !== 'edit-profile-btn' && !e.target.closest('#edit-profile-btn')) {
+                     document.getElementById('profile-picture-input').click();
+                 }
+            });
+
+            document.getElementById('upload-from-gallery-btn').addEventListener('click', () => document.getElementById('profile-picture-input').click());
+            document.getElementById('profile-picture-input').addEventListener('change', (e) => {
+                if (e.target.files[0]) handleNewProfilePicture(e.target.files[0]);
+            });
+
+            document.getElementById('take-photo-btn').addEventListener('click', () => { showView(cameraView); startCamera(); });
+            document.getElementById('cancel-camera-btn').addEventListener('click', () => { stopCamera(); showView(mainEditView); });
+            document.getElementById('edit-account-btn').addEventListener('click', () => showView(passwordView));
+            document.getElementById('back-to-main-edit-btn').addEventListener('click', () => showView(mainEditView));
+            
+            document.getElementById('capture-photo-btn').addEventListener('click', capturePhoto);
+            document.getElementById('password-form').addEventListener('submit', handlePasswordChange);
+
+            // --- NUEVO: Listeners para la Modal de Compartir ---
+            document.getElementById('share-modal-close-btn').addEventListener('click', () => closeModal('share-modal'));
+            document.getElementById('copy-link-btn').addEventListener('click', copyProfileLink);
+        }
     
     // ***** NUEVA FUNCIÓN PARA ABRIR LA MODAL DE COMPARTIR *****
     function handleShareProfileClick() {
@@ -866,24 +826,13 @@
 
         const socialContainer = document.getElementById('social-links-container');
         socialContainer.innerHTML = `
-            <a href="https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}" target="_blank" class="social-link">
-                <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
-            </a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" class="social-link">
-                <i class="fab fa-facebook-f"></i><span>Facebook</span>
-            </a>
-            <a href="https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}" target="_blank" class="social-link">
-                <i class="fab fa-twitter"></i><span>Twitter</span>
-            </a>
-            <a href="https://t.me/share/url?url=${encodedUrl}&text=${encodedText}" target="_blank" class="social-link">
-                <i class="fab fa-telegram"></i><span>Telegram</span>
-            </a>
-            <a href="mailto:?subject=${encodedText}&body=${encodedText}%20${encodedUrl}" class="social-link">
-                <i class="fas fa-envelope"></i><span>Email</span>
-            </a>
+            <a href="https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}" target="_blank" class="social-icon" style="background:#25D366"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" class="social-icon" style="background:#1877F2"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}" target="_blank" class="social-icon" style="background:#1DA1F2"><i class="fab fa-twitter"></i></a>
+            <a href="mailto:?subject=${encodedText}&body=${encodedText}%20${encodedUrl}" class="social-icon" style="background:#7f7f7f"><i class="fas fa-envelope"></i></a>
         `;
 
-        document.getElementById('share-modal').classList.add('visible');
+        openModal('share-modal');
     }
 
     // ***** NUEVA FUNCIÓN PARA COPIAR EL ENLACE *****
