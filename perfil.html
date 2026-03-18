@@ -316,7 +316,7 @@
             font-weight: 600;
         }
 
-        /* Video Grid Moderno */
+        /* Video List Moderno (Reemplaza Grid) */
         .content-section {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -329,7 +329,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .section-header h3 {
@@ -337,44 +337,93 @@
             font-weight: 700;
         }
 
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .video-thumbnail {
-            aspect-ratio: 9/16;
-            border-radius: 15px;
-            overflow: hidden;
-            position: relative;
+        .video-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 12px;
             cursor: pointer;
-            background: rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .video-thumbnail img {
+        .video-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+            border-color: var(--plan-color-principal);
+        }
+
+        .video-card-thumb {
+            width: 100px;
+            height: 140px;
+            border-radius: 18px;
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .video-card-thumb img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.5s ease;
         }
 
-        .video-thumbnail:hover img {
-            transform: scale(1.1);
+        .video-card-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .video-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 8px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+        .video-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.3;
+        }
+
+        .video-card-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .video-card-stats span {
             display: flex;
             align-items: center;
             gap: 5px;
-            font-size: 0.7rem;
-            font-weight: 600;
+        }
+
+        .video-card-stats i {
+            color: var(--plan-color-principal);
+        }
+
+        .video-play-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--plan-color-principal);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         /* Modales Modernos */
@@ -571,9 +620,9 @@
             <div class="content-section">
                 <div class="section-header">
                     <h3>Mi Contenido</h3>
-                    <i class="fas fa-th-large" style="opacity: 0.3;"></i>
+                    <i class="fas fa-play-circle" style="opacity: 0.3;"></i>
                 </div>
-                <div class="video-grid" id="video-grid-container">
+                <div class="video-list" id="video-grid-container">
                     <!-- Los videos se cargan dinámicamente -->
                 </div>
             </div>
@@ -735,11 +784,26 @@
             gridHTML = '<p style="color:var(--text-secondary); text-align:center; padding:20px;">Aún no tienes videos. ¡Sube el primero!</p>';
         } else {
             loadedUserVideos.forEach(video => {
-                gridHTML += `<div class="video-thumbnail" data-video-id="${video.videoId}" data-user="${video.user}"><img src="${video.thumbnailUrl}" alt="${video.titulo || 'Miniatura'}"><div class="video-stats-overlay"><i class="fas fa-play"></i>&nbsp;<span>${video.visualizaciones || 0}</span></div></div>`;
+                gridHTML += `
+                <div class="video-card" data-video-id="${video.videoId}" data-user="${video.user}">
+                    <div class="video-card-thumb">
+                        <img src="${video.thumbnailUrl}" alt="${video.titulo || 'Video'}">
+                    </div>
+                    <div class="video-card-info">
+                        <div class="video-card-title">${video.titulo || 'Sin título'}</div>
+                        <div class="video-card-stats">
+                            <span><i class="fas fa-play"></i> ${video.visualizaciones || 0}</span>
+                            <span><i class="fas fa-heart"></i> ${video.likes || 0}</span>
+                        </div>
+                    </div>
+                    <div class="video-play-btn">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>`;
             });
         }
         videoGridContainer.innerHTML = gridHTML;
-        videoGridContainer.querySelectorAll('.video-thumbnail').forEach(thumb => {
+        videoGridContainer.querySelectorAll('.video-card').forEach(thumb => {
             thumb.addEventListener('click', () => {
                 window.location.href = `videos.html?user=${thumb.dataset.user}&videoId=${thumb.dataset.videoId}`;
             });
