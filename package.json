@@ -1,4 +1,3 @@
-
 {
   "name": "likering-backend",
   "version": "1.0.0",
@@ -15,7 +14,8 @@
     "cors": "^2.8.5",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.3.1",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "epayco-sdk-node": "^1.4.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
