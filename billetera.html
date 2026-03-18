@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billetera - Likering</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --dark-background: #0a0a0b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            
+            /* Colores de planes mejorados */
+            --plan-azul: #00d2ff;
+            --plan-rojo: #ff2d55;
+            --plan-naranja: #ff9500;
+            --plan-verde: #4cd964;
+            --plan-morado: #af52de;
+            --plan-amarillo: #ffcc00; 
+            --plan-rosado: #ff2d55;
+            --plan-fucsia: #ff375f;
+            --plan-marron: #ac8e68;
+            --plan-gris: #8e8e93;
+
+            --plan-color-principal: var(--plan-azul);
+            --accent-gradient: linear-gradient(135deg, var(--plan-color-principal), #000);
+        }
+
+        .plan-azul { --plan-color-principal: var(--plan-azul); }
+        .plan-rojo { --plan-color-principal: var(--plan-rojo); }
+        .plan-naranja { --plan-color-principal: var(--plan-naranja); }
+        .plan-verde { --plan-color-principal: var(--plan-verde); }
+        .plan-morado { --plan-color-principal: var(--plan-morado); }
+        .plan-amarillo { --plan-color-principal: var(--plan-amarillo); }
+        .plan-rosado { --plan-color-principal: var(--plan-rosado); }
+        .plan-fucsia { --plan-color-principal: var(--plan-fucsia); }
+        .plan-marron { --plan-color-principal: var(--plan-marron); }
+        .plan-gris { --plan-color-principal: var(--plan-gris); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-background);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Fondo Animado Mejorado */
+        .app-screen {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            padding: 40px 20px 100px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: var(--plan-color-principal);
+            filter: blur(120px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: blob-float 20s infinite alternate;
+        }
+
+        .blob-1 { top: -100px; right: -100px; animation-delay: 0s; }
+        .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; opacity: 0.1; }
+
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 100px) scale(1.2); }
+        }
+
+        .wallet-content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* Header Moderno */
+        .wallet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-back {
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(-3px);
+        }
+
+        .header-titles h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-titles p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tarjeta de Balance Principal (Ultra Moderna) */
+        .main-balance-card {
+            background: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .main-balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at top right, var(--plan-color-principal), transparent 70%);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .brand-logo {
+            width: 35px;
+            height: 35px;
+            opacity: 0.9;
+        }
+
+        .plan-badge {
+            padding: 6px 14px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--plan-color-principal);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .balance-container {
+            margin-bottom: 30px;
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .balance-value {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .balance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .stat-group .label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .stat-group .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Grid de Acciones Rápidas */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .action-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 20px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .action-item:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-5px);
+            border-color: var(--plan-color-principal);
+        }
+
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--plan-color-principal);
+            transition: all 0.3s ease;
+        }
+
+        .action-item:hover .action-icon {
+            background: var(--plan-color-principal);
+            color: #000;
+            box-shadow: 0 0 20px rgba(var(--plan-color-principal), 0.3);
+        }
+
+        .action-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sección de Planes Premium */
+        .premium-plans-container {
+            margin-top: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .section-header h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .btn-view-all {
+            font-size: 0.8rem;
+            color: var(--plan-color-principal);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .plans-horizontal-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            padding: 10px 5px 30px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE and Edge */
+        }
+
+        .plans-horizontal-scroll::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .modern-plan-card {
+            min-width: 280px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+        }
+
+        .modern-plan-card:hover {
+            transform: scale(1.02) translateY(-5px);
+            background: rgba(255,255,255,0.05);
+            border-color: var(--plan-accent);
+        }
+
+        .plan-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .plan-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--plan-accent);
+        }
+
+        .plan-card-info h3 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .plan-card-info .price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--plan-accent);
+        }
+
+        .plan-card-benefits {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .plan-card-benefits li {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-card-benefits li i {
+            font-size: 0.8rem;
+            color: var(--plan-accent);
+        }
+
+        .btn-buy-plan {
+            width: 100%;
+            padding: 14px;
+            border-radius: 16px;
+            border: none;
+            background: var(--plan-accent);
+            color: #000;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-buy-plan:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Colores dinámicos para las tarjetas de planes */
+        .plan-azul-modern { --plan-accent: var(--plan-azul); }
+        .plan-rojo-modern { --plan-accent: var(--plan-rojo); }
+        .plan-naranja-modern { --plan-accent: var(--plan-naranja); }
+        .plan-amarillo-modern { --plan-accent: var(--plan-amarillo); }
+        .plan-rosado-modern { --plan-accent: var(--plan-rosado); }
+        .plan-fucsia-modern { --plan-accent: var(--plan-fucsia); }
+        .plan-verde-modern { --plan-accent: var(--plan-verde); }
+        .plan-marron-modern { --plan-accent: var(--plan-marron); }
+        .plan-gris-modern { --plan-accent: var(--plan-gris); }
+        .plan-morado-modern { --plan-accent: var(--plan-morado); }
+
+        /* Historial Moderno */
+        .history-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(255,255,255,0.05);
+        }
+
+        .history-item-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .history-item-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .icon-in { background: rgba(76, 217, 100, 0.1); color: #4cd964; }
+        .icon-out { background: rgba(255, 45, 85, 0.1); color: #ff2d55; }
+
+        .history-item-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .history-item-info p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .history-item-right {
+            text-align: right;
+        }
+
+        .history-item-amount {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .amount-in { color: #4cd964; }
+        .amount-out { color: #ff2d55; }
+
+        /* Modales Modernos */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modern-modal {
+            width: 100%;
+            max-width: 400px;
+            background: #151517;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 32px;
+            padding: 30px;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-overlay.active .modern-modal {
+            transform: scale(1);
+        }
+
+        .modal-header-modern {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .modal-header-modern h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .modal-header-modern p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .form-field {
+            margin-bottom: 20px;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            margin-left: 5px;
+        }
+
+        .modern-input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 15px 20px;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .modern-input:focus {
+            outline: none;
+            border-color: var(--plan-color-principal);
+            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 20px rgba(var(--plan-color-principal), 0.1);
+        }
+
+        .modal-footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-modal {
+            padding: 14px;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-cancel {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .btn-confirm {
+            background: var(--plan-color-principal);
+            color: #000;
+        }
+
+        .btn-modal:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.1);
+        }
+
+        /* Utilitarios */
+        .utility-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn-utility {
+            flex: 1;
+            padding: 12px;
+            border-radius: 18px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-utility:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        /* Ocultar elementos de Wompi nativos */
+        .wompi-button-caption { display: none !important; }
+        
+        @media (max-width: 400px) {
+            .balance-value { font-size: 2.2rem; }
+            .quick-actions { gap: 10px; }
+            .action-item { padding: 15px 5px; }
+            .action-icon { width: 40px; height: 40px; font-size: 1rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="app-screen">
+        <div class="wallet-content">
+            <!-- Header -->
+            <header class="wallet-header">
+                <div class="header-left">
+                    <a href="videos.html" class="btn-back">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <div class="header-titles">
+                        <h1>Mi Billetera</h1>
+                        <p>Gestión de fondos y planes</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Likering" class="brand-logo">
+                </div>
+            </header>
+
+            <!-- Tarjeta de Balance -->
+            <div class="main-balance-card">
+                <div class="card-top">
+                    <div class="plan-badge" id="plan-name">Cargando...</div>
+                    <i class="fas fa-wifi" style="opacity: 0.3;"></i>
+                </div>
+                <div class="balance-container">
+                    <span class="balance-label">Balance Total</span>
+                    <h2 class="balance-value" id="balance-amount">$0</h2>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> Dinero disponible para retirar
+                    </p>
+                </div>
+                <div class="balance-stats">
+                    <div class="stat-group">
+                        <span class="label">Likes Disponibles</span>
+                        <span class="value" id="likes-disponibles">0</span>
+                    </div>
+                    <div class="stat-group">
+                        <span class="label">Dinero Generado</span>
+                        <span class="value" id="dinero-ganado">$0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="quick-actions">
+                <div class="action-item" id="withdraw-button">
+                    <div class="action-icon"><i class="fas fa-arrow-up"></i></div>
+                    <span class="action-label">Retirar</span>
+                </div>
+                <div class="action-item" id="add-funds-button">
+                    <div class="action-icon"><i class="fas fa-plus"></i></div>
+                    <span class="action-label">Recargar</span>
+                </div>
+                <div class="action-item" id="transfer-button">
+                    <div class="action-icon"><i class="fas fa-exchange-alt"></i></div>
+                    <span class="action-label">Enviar</span>
+                </div>
+            </div>
+
+            <!-- Planes Premium -->
+            <div class="premium-plans-container">
+                <div class="section-header">
+                    <h2>Planes Premium</h2>
+                    <a href="planes.html" class="btn-view-all">Ver todos <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="plans-horizontal-scroll">
+                    <!-- Los planes se pueden mostrar aquí de forma compacta o solo los principales -->
+                    <!-- PLAN AZUL -->
+                    <div class="modern-plan-card plan-azul-modern">
+                        <div class="plan-card-header">
+                            <div class="plan-card-icon"><i class="fas fa-gem"></i></div>
+                            <div class="plan-card-info">
+                                <h3>Plan Azul</h3>
+                                <span class="price">$15.000</span>
+                            </div>
+                        </div>
+                        <ul class="plan-card-benefits">
+                            <li><i class="fas fa-check"></i> Gana hasta $1.5M</li>
+                            <li><i class="fas fa-check"></i> 1 Like inicial</li>
+                        </ul>
+                        <form>
+                            <script 
+                                src="https://checkout.wompi.co/widget.js" 
+                                data-render="button" 
+                                data-public-key="pub_prod_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV" 
+                                data-currency="COP" 
+                                data-amount-in-cents="1500000" 
+                                data-name="Plan Azul"
+                                data-reference="PLAN_AZUL_REPLACE_ME" 
+                                data-redirect-url="https://likering.onrender.com/billetera.html?status=success&plan=azul"
+                            ></script>
+                        </form>
+                    </div>
+
+                    <!-- PLAN ROJO -->
+                    <div class="modern-plan-card plan-rojo-modern">
+                        <div class="plan-card-header">
+                            <div class="plan-card-icon"><i class="fas fa-fire"></i></div>
+                            <div class="plan-card-info">
+                                <h3>Plan Rojo</h3>
+                                <span class="price">$60.000</span>
+                            </div>
+                        </div>
+                        <ul class="plan-card-benefits">
+                            <li><i class="fas fa-check"></i> Gana hasta $2M</li>
+                            <li><i class="fas fa-check"></i> 4 Likes iniciales</li>
+                        </ul>
+                        <form>
+                            <script 
+                                src="https://checkout.wompi.co/widget.js" 
+                                data-render="button" 
+                                data-public-key="pub_prod_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV" 
+                                data-currency="COP" 
+                                data-amount-in-cents="6000000" 
+                                data-name="Plan Rojo"
+                                data-reference="PLAN_ROJO_REPLACE_ME" 
+                                data-redirect-url="https://likering.onrender.com/billetera.html?status=success&plan=rojo"
+                            ></script>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historial y Utilidades -->
+            <div class="history-section">
+                <div class="section-header" style="margin-bottom: 0;">
+                    <h2>Actividad Reciente</h2>
+                    <i class="fas fa-history" style="opacity: 0.3;"></i>
+                </div>
+                
+                <div class="history-list" id="wallet-history-list">
+                    <!-- Items de historial dinámicos -->
+                    <div class="history-empty" id="history-empty" style="text-align: center; padding: 20px; color: var(--text-secondary); font-size: 0.85rem;">
+                        No hay movimientos registrados.
+                    </div>
+                </div>
+
+                <div class="utility-row">
+                    <button class="btn-utility" id="history-button">
+                        <i class="fas fa-list-ul"></i> Detalle
+                    </button>
+                    <button class="btn-utility" id="export-history-button">
+                        <i class="fas fa-download"></i> Exportar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Likes Ganados (Info Adicional) -->
+            <div style="background: var(--glass-bg); border-radius: 24px; padding: 20px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">Total Likes Ganados</span>
+                    <span style="font-size: 1.1rem; font-weight: 700;" id="likes-ganados">0</span>
+                </div>
+                <div class="action-icon" style="background: rgba(255,255,255,0.05); width: 40px; height: 40px;">
+                    <i class="fas fa-heart" style="font-size: 0.9rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales Modernos -->
+    <div class="modal-overlay" id="withdraw-modal">
+        <div class="modern-modal">
+            <div class="modal-header-modern">
+                <h3>Retirar Fondos</h3>
+                <p>Procesado en menos de 24 horas</p>
+            </div>
+            <div class="form-field">
+                <label>Monto a retirar (COP)</label>
+                <input type="number" id="withdraw-amount" class="modern-input" placeholder="Min. $10.000">
+            </div>
+            <div class="form-field">
+                <label>Método de retiro</label>
+                <select id="withdraw-method" class="modern-input">
+                    <option value="nequi">Nequi</option>
+                    <option value="bancolombia">Ahorros Bancolombia</option>
+                    <option value="daviplata">Daviplata</option>
+                </select>
+            </div>
+            <div class="form-field">
+                <label>Número de cuenta / Celular</label>
+                <input type="text" id="withdraw-destination" class="modern-input" placeholder="Ej: 3101234567">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-cancel" data-close-modal="withdraw-modal">Cancelar</button>
+                <button class="btn-modal btn-confirm" id="confirm-withdraw">Solicitar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modern-modal">
+            <div class="modal-header-modern">
+                <h3>Enviar Likes</h3>
+                <p>Transfiere likes a otros usuarios</p>
+            </div>
+            <div class="form-field">
+                <label>Usuario Destino</label>
+                <input type="text" id="transfer-username" class="modern-input" placeholder="@usuario">
+            </div>
+            <div class="form-field">
+                <label>Cantidad de Likes</label>
+                <input type="number" id="transfer-amount" class="modern-input" placeholder="Ej: 50">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal btn-cancel" data-close-modal="transfer-modal">Cancelar</button>
+                <button class="btn-modal btn-confirm" id="confirm-transfer">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor para el widget de Wompi (Formulario dinámico) -->
+    <div id="wompi-form-container" style="display: none;"></div>
+
+    <!-- Mantenemos la tabla original oculta para que la lógica de exportación CSV siga funcionando sin cambios -->
+    <table id="history-table" style="display: none;"><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Monto</th></tr></thead><tbody></tbody></table>
+    
+    <!-- El widget.js de Wompi se cargará dinámicamente después de las firmas -->
+
+    <script>
+        // Función para inyectar las referencias únicas y firmas en los scripts estáticos
+        async function finalizeWompiButtons() {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (!loggedInUser) return;
+            
+            const userId = loggedInUser.id || loggedInUser.user_id;
+            // Selector actualizado para el nuevo contenedor de planes
+            const scripts = document.querySelectorAll('.plans-horizontal-scroll form script');
+
+            for (const script of scripts) {
+                const amountInCents = script.getAttribute('data-amount-in-cents');
+                const planMatch = script.getAttribute('data-reference').match(/PLAN_([A-Z]+)_REPLACE_ME/);
+                if (!planMatch) continue;
+
+                const planName = planMatch[1];
+                const reference = `PLAN_${planName}_${userId}_${Date.now()}`;
+                const currency = 'COP';
+
+                try {
+                    // Obtener firma de integridad del backend
+                    const response = await fetch('/api/wompi/generate-signature', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference, amountInCents, currency })
+                    });
+                    const { signature } = await response.json();
+
+                    // Actualizar los atributos del script antes de que Wompi lo vea
+                    script.setAttribute('data-reference', reference);
+                    script.setAttribute('data-signature:integrity', signature);
+                } catch (error) {
+                    console.error(`Error finalizando botón para ${planName}:`, error);
+                }
+            }
+
+            // Una vez puestas todas las firmas reales, cargamos el script de Wompi
+            const wompiScript = document.createElement('script');
+            wompiScript.src = "https://checkout.wompi.co/widget.js";
+            wompiScript.type = "text/javascript";
+            document.body.appendChild(wompiScript);
+        }
+
+        async function openWompiCheckout(userId) {
+            const reference = `RECARGA_${userId}_${Date.now()}`;
+            const amountInCents = 2500000; // Monto por defecto o dinámico
+            const currency = 'COP';
+
+            try {
+                const response = await fetch('/api/wompi/generate-signature', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reference, amountInCents, currency })
+                });
+                const { signature } = await response.json();
+
+                const checkout = new WompiCheckout({
+                    currency: currency,
+                    amountInCents: amountInCents,
+                    publicKey: 'pub_prod_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV',
+                    signature: signature,
+                    reference: reference,
+                    redirectUrl: 'https://likering.onrender.com/billetera.html'
+                });
+
+                checkout.open(function (result) {
+                    if (result.transaction && result.transaction.status === 'APPROVED') {
+                        location.reload();
+                    }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo iniciar el pago. Intenta de nuevo.');
+            }
+        }
+
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.style.display = 'flex';
+                setTimeout(() => modal.classList.add('active'), 10);
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.style.display = 'none', 300);
+            }
+        }
+
+        function formatCurrency(value) {
+            if (value === undefined || value === null || isNaN(value)) return '$ 0';
+            const numberString = String(value).replace(/\D/g, '');
+            const formattedNumber = numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            return `$ ${formattedNumber}`;
+        }
+
+        // Función para renderizar el historial en formato moderno
+        function renderModernHistory(historyData) {
+            const container = document.getElementById('wallet-history-list');
+            const emptyMsg = document.getElementById('history-empty');
+            
+            if (!historyData || historyData.length === 0) {
+                container.innerHTML = '';
+                container.appendChild(emptyMsg);
+                return;
+            }
+
+            emptyMsg.style.display = 'none';
+            container.innerHTML = historyData.map(item => `
+                <div class="history-item">
+                    <div class="history-item-left">
+                        <div class="history-item-icon ${item.type === 'in' ? 'icon-in' : 'icon-out'}">
+                            <i class="fas ${item.type === 'in' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                        </div>
+                        <div class="history-item-info">
+                            <h4>${item.detail}</h4>
+                            <p>${item.date}</p>
+                        </div>
+                    </div>
+                    <div class="history-item-right">
+                        <span class="history-item-amount ${item.type === 'in' ? 'amount-in' : 'amount-out'}">
+                            ${item.type === 'in' ? '+' : '-'}${formatCurrency(item.amount)}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // También actualizar la tabla oculta para exportación
+            const tableBody = document.querySelector('#history-table tbody');
+            tableBody.innerHTML = historyData.map(item => `
+                <tr>
+                    <td>${item.date}</td>
+                    <td>${item.type === 'in' ? 'Entrada' : 'Salida'}</td>
+                    <td>${item.detail}</td>
+                    <td>${formatCurrency(item.amount)}</td>
+                </tr>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+
+            // Verificar redirección de Wompi
+            const urlParams = new URLSearchParams(window.location.search);
+            const status = urlParams.get('status');
+            const planActivado = urlParams.get('plan');
+
+            if (status === 'success' && planActivado) {
+                alert(`¡Felicidades! Se activó el Plan ${planActivado.charAt(0).toUpperCase() + planActivado.slice(1)} correctamente.`);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            if (loggedInUser && loggedInUser.plan) {
+                const plan = loggedInUser.plan;
+                
+                document.body.className = `plan-${plan}`;
+                const planNameElement = document.getElementById('plan-name');
+                planNameElement.textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
+                
+                document.getElementById('likes-disponibles').textContent = loggedInUser.likesDisponibles || '0';
+                document.getElementById('likes-ganados').textContent = loggedInUser.likesGanados || '0';
+                
+                const dineroValue = loggedInUser.dineroGanado || 0;
+                const balanceElement = document.getElementById('balance-amount');
+                const dineroGanadoElement = document.getElementById('dinero-ganado');
+                
+                if (balanceElement) balanceElement.textContent = formatCurrency(dineroValue);
+                if (dineroGanadoElement) dineroGanadoElement.textContent = formatCurrency(dineroValue);
+
+                const userId = loggedInUser.id || loggedInUser.user_id;
+
+                // Event Listeners para Acciones
+                document.getElementById('add-funds-button').addEventListener('click', () => openWompiCheckout(userId));
+                
+                document.getElementById('withdraw-button').addEventListener('click', () => {
+                    document.getElementById('withdraw-amount').value = '';
+                    openModal('withdraw-modal');
+                });
+
+                document.getElementById('transfer-button').addEventListener('click', () => {
+                    document.getElementById('transfer-username').value = '';
+                    document.getElementById('transfer-amount').value = '';
+                    openModal('transfer-modal');
+                });
+
+                // Cerrar Modales
+                document.querySelectorAll('[data-close-modal]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        closeModal(button.getAttribute('data-close-modal'));
+                    });
+                });
+
+                // Confirmar Acciones
+                document.getElementById('confirm-withdraw').addEventListener('click', () => {
+                    const amount = document.getElementById('withdraw-amount').value;
+                    if (!amount || amount < 10000) {
+                        alert('El monto mínimo de retiro es $10.000 COP');
+                        return;
+                    }
+                    alert('Solicitud de retiro recibida. Se procesará en breve.');
+                    closeModal('withdraw-modal');
+                });
+
+                document.getElementById('confirm-transfer').addEventListener('click', () => {
+                    const user = document.getElementById('transfer-username').value;
+                    const amount = document.getElementById('transfer-amount').value;
+                    if (!user || !amount) {
+                        alert('Completa todos los campos para transferir.');
+                        return;
+                    }
+                    alert(`Transferencia de ${amount} likes a ${user} preparada.`);
+                    closeModal('transfer-modal');
+                });
+
+                // Historial y Exportación
+                document.getElementById('history-button').addEventListener('click', () => {
+                    alert('Mostrando detalle completo del historial...');
+                });
+
+                document.getElementById('export-history-button').addEventListener('click', () => {
+                    const tableBody = document.querySelector('#history-table tbody');
+                    const rows = tableBody.querySelectorAll('tr');
+                    if (rows.length === 0) {
+                        alert('No hay movimientos para exportar.');
+                        return;
+                    }
+
+                    let csv = 'Fecha,Tipo,Detalle,Monto\n';
+                    rows.forEach(row => {
+                        const cols = row.querySelectorAll('td');
+                        csv += Array.from(cols).map(c => `"${c.textContent.trim()}"`).join(',') + '\n';
+                    });
+
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'Historial_Likering.csv';
+                    link.click();
+                });
+
+                // Cargar botones de Wompi
+                finalizeWompiButtons();
+
+                // Datos de prueba para el historial (esto vendría del backend)
+                const mockHistory = [
+                    { date: 'Hoy, 10:30 AM', type: 'in', detail: 'Pago de video aprobado', amount: 5000 },
+                    { date: 'Ayer, 4:15 PM', type: 'out', detail: 'Retiro a Nequi', amount: 20000 },
+                    { date: '15 Mar, 9:00 AM', type: 'in', detail: 'Bono de bienvenida', amount: 1000 }
+                ];
+                renderModernHistory(mockHistory);
+
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+
+</body>
+</html>
