@@ -6,845 +6,380 @@
     <title>Perfil de Usuario - Likering</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-    
-    :root {
-        --dark-background: #0a0a0b;
-        --glass-bg: rgba(255, 255, 255, 0.03);
-        --glass-border: rgba(255, 255, 255, 0.08);
-        --text-primary: #ffffff;
-        --text-secondary: rgba(255, 255, 255, 0.6);
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --dark-background: #0a0a0b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            
+            --plan-azul: #00d2ff;
+            --plan-rojo: #ff2d55;
+            --plan-naranja: #ff9500;
+            --plan-verde: #4cd964;
+            --plan-morado: #af52de;
+            --plan-amarillo: #ffcc00; 
+            --plan-rosado: #ff2d55;
+            --plan-fucsia: #ff375f;
+            --plan-marron: #ac8e68;
+            --plan-gris: #8e8e93;
+
+            --plan-color-principal: var(--plan-azul);
+        }
+
+        .plan-azul { --plan-color-principal: var(--plan-azul); }
+        .plan-rojo { --plan-color-principal: var(--plan-rojo); }
+        .plan-naranja { --plan-color-principal: var(--plan-naranja); }
+        .plan-verde { --plan-color-principal: var(--plan-verde); }
+        .plan-morado { --plan-color-principal: var(--plan-morado); }
+        .plan-amarillo { --plan-color-principal: var(--plan-amarillo); }
+        .plan-rosado { --plan-color-principal: var(--plan-rosado); }
+        .plan-fucsia { --plan-color-principal: var(--plan-fucsia); }
+        .plan-marron { --plan-color-principal: var(--plan-marron); }
+        .plan-gris { --plan-color-principal: var(--plan-gris); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        --plan-azul: #00d2ff;
-        --plan-rojo: #ff2d55;
-        --plan-naranja: #ff9500;
-        --plan-verde: #4cd964;
-        --plan-morado: #af52de;
-        --plan-amarillo: #ffcc00; 
-        --plan-rosado: #ff2d55;
-        --plan-fucsia: #ff375f;
-        --plan-marron: #ac8e68;
-        --plan-gris: #8e8e93;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-background);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
 
-        --plan-color-principal: var(--plan-azul);
-    }
+        /* Fondo Animado */
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
 
-    .plan-azul { --plan-color-principal: var(--plan-azul); }
-    .plan-rojo { --plan-color-principal: var(--plan-rojo); }
-    .plan-naranja { --plan-color-principal: var(--plan-naranja); }
-    .plan-verde { --plan-color-principal: var(--plan-verde); }
-    .plan-morado { --plan-color-principal: var(--plan-morado); }
-    .plan-amarillo { --plan-color-principal: var(--plan-amarillo); }
-    .plan-rosado { --plan-color-principal: var(--plan-rosado); }
-    .plan-fucsia { --plan-color-principal: var(--plan-fucsia); }
-    .plan-marron { --plan-color-principal: var(--plan-marron); }
-    .plan-gris { --plan-color-principal: var(--plan-gris); }
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: var(--plan-color-principal);
+            filter: blur(120px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: blob-float 20s infinite alternate;
+        }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        .blob-1 { top: -100px; right: -100px; animation-delay: 0s; }
+        .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; opacity: 0.1; }
 
-    body {
-        background-color: var(--dark-background);
-        margin: 0;
-        font-family: 'Poppins', sans-serif;
-        color: var(--text-primary);
-        min-height: 100vh;
-    }
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 100px) scale(1.2); }
+        }
 
-    .background-blobs {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
-    }
+        .profile-app {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
 
-    .blob {
-        position: absolute;
-        width: 500px;
-        height: 500px;
-        background: var(--plan-color-principal);
-        filter: blur(120px);
-        opacity: 0.1;
-        border-radius: 50%;
-        animation: blob-float 20s infinite alternate;
-    }
+        /* Header */
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .blob-1 { top: -100px; right: -100px; animation-delay: 0s; }
-    .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; }
+        .btn-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
 
-    @keyframes blob-float {
-        0% { transform: translate(0, 0) scale(1); }
-        100% { transform: translate(50px, 100px) scale(1.2); }
-    }
+        /* Profile Card */
+        .profile-card {
+            background: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
 
-    .app-screen {
-        width: 100%;
-        min-height: 100vh;
-        position: relative;
-        z-index: 1;
-        display: flex;
-        flex-direction: column;
-    }
+        .avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 35px;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid var(--plan-color-principal);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            margin: 0 auto 20px;
+        }
 
-    .profile-header {
-        width: 100%;
-        padding: 60px 25px 30px;
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(20px);
-        border-bottom: 1px solid var(--glass-border);
-    }
+        .username { font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
+        
+        .plan-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--plan-color-principal);
+            text-transform: uppercase;
+            margin-bottom: 25px;
+        }
 
-    .header-top-row { margin-bottom: 25px; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
 
-    .header-icon {
-        width: 45px;
-        height: 45px;
-        border-radius: 15px;
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
+        .stat-item { display: flex; flex-direction: column; gap: 4px; }
+        .stat-value { font-size: 1.1rem; font-weight: 800; }
+        .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
 
-    .profile-top-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
+        /* Actions */
+        .actions-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+        }
 
-    .profile-picture {
-        width: 100px;
-        height: 100px;
-        border-radius: 30px;
-        border: 3px solid var(--plan-color-principal);
-        background-size: cover;
-        background-position: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
+        .btn-follow {
+            background: var(--plan-color-principal);
+            color: #000;
+            border: none;
+            padding: 14px;
+            border-radius: 18px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
 
-    .profile-username { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
-    .profile-bio { 
-        font-size: 0.8rem; 
-        font-weight: 700; 
-        color: #000;
-        background: var(--plan-color-principal);
-        padding: 5px 15px;
-        border-radius: 10px;
-    }
+        .btn-follow.following {
+            background: var(--glass-bg);
+            color: white;
+            border: 1px solid var(--glass-border);
+        }
 
-    .profile-stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        width: 100%;
-        margin-top: 25px;
-    }
+        .btn-message {
+            width: 55px;
+            height: 55px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+        }
 
-    .stat-item {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        padding: 15px 10px;
-        border-radius: 20px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
+        /* Video List */
+        .content-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
 
-    .stat-number { font-size: 1.2rem; font-weight: 800; }
-    .stat-label { font-size: 0.65rem; color: var(--text-secondary); font-weight: 600; text-transform: uppercase; }
+        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
-    .profile-actions {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        margin-top: 20px;
-    }
+        .video-list { display: flex; flex-direction: column; gap: 15px; }
 
-    .profile-actions button {
-        flex: 1;
-        padding: 12px;
-        border-radius: 15px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
+        .video-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    .follow-btn { background: var(--plan-color-principal); color: #000; }
-    .message-btn, .share-btn, .report-btn { 
-        background: var(--glass-bg); 
-        color: white; 
-        border: 1px solid var(--glass-border) !important;
-    }
+        .video-card:hover {
+            background: rgba(255,255,255,0.05);
+            transform: scale(1.02);
+            border-color: var(--plan-color-principal);
+        }
 
-    .video-list {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        padding: 20px;
-    }
+        .video-thumb {
+            width: 80px;
+            height: 110px;
+            border-radius: 15px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
 
-    .video-card {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 10px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
+        .video-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-    .video-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateY(-2px);
-        border-color: var(--plan-color-principal);
-    }
+        .video-info { flex: 1; min-width: 0; }
+        .video-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-stats { font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 12px; }
+        .video-stats i { color: var(--plan-color-principal); margin-right: 4px; }
 
-    .video-card-thumb {
-        width: 80px;
-        height: 110px;
-        border-radius: 15px;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-
-    .video-card-thumb img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .video-card-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .video-card-title {
-        font-size: 0.9rem;
-        font-weight: 700;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .video-card-stats {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 0.7rem;
-        color: var(--text-secondary);
-    }
-
-    .video-card-stats span {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .video-card-stats i {
-        color: var(--plan-color-principal);
-    }
-
-    .video-play-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        background: var(--plan-color-principal);
-        color: #000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-    }
-
-    /* Modal Share/Report */
-    .upload-modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8);
-        backdrop-filter: blur(15px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        padding: 20px;
-    }
-    .upload-modal-overlay.visible { display: flex; }
-
-    .upload-modal-content {
-        background: #151517;
-        width: 100%;
-        max-width: 400px;
-        border-radius: 30px;
-        border: 1px solid var(--glass-border);
-        padding: 30px;
-    }
-
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-close { background: var(--glass-bg); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; }
-
-    .social-links-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-    .social-link { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: white; font-size: 0.65rem; }
-    .social-link i { font-size: 1.5rem; width: 50px; height: 50px; border-radius: 15px; display: flex; align-items: center; justify-content: center; }
-
-    .copy-link-container { display: flex; gap: 10px; background: var(--glass-bg); padding: 5px; border-radius: 15px; border: 1px solid var(--glass-border); }
-    #profile-link-input { background: transparent; border: none; color: white; flex: 1; padding: 10px; outline: none; font-size: 0.8rem; }
-    #copy-link-btn { background: var(--plan-color-principal); color: #000; padding: 10px 20px; border-radius: 12px; font-weight: 700; border: none; cursor: pointer; }
+        @media (max-width: 480px) {
+            .profile-app { padding-bottom: 40px; }
+        }
     </style>
 </head>
 <body>
+
     <div class="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
     </div>
 
-    <div class="app-screen">
-        <div class="profile-header">
-            <div class="header-top-row">
-                <a href="javascript:history.back()" class="header-icon"><i class="fas fa-arrow-left"></i></a>
+    <div class="profile-app">
+        <header class="header-nav">
+            <a href="videos.html" class="btn-icon">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Likering" style="height: 35px;">
+            <div class="btn-icon" id="share-btn" style="cursor: pointer;">
+                <i class="fas fa-share-alt"></i>
             </div>
+        </header>
 
-            <div class="profile-top-section">
-                <div class="profile-user-details">
-                    <div id="profile-picture" class="profile-picture"></div>
-                    <div class="profile-info">
-                        <h2 id="profile-username" class="profile-username"></h2>
-                        <center><p id="profile-bio" class="profile-bio"></p></center>
-                    </div>
+        <div class="profile-card">
+            <div id="profile-picture" class="avatar"></div>
+            <h2 class="username" id="profile-username">@usuario</h2>
+            <div class="plan-badge" id="profile-bio">PLAN AZUL</div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="posts-count">0</span>
+                    <span class="stat-label">Posts</span>
                 </div>
-                
-                <div class="profile-stats" id="profile-stats">
-                    <div class="stat-item">
-                        <span id="posts-count" class="stat-number">0</span>
-                        <span class="stat-label">Videos</span>
-                    </div>
-                    <div class="stat-item">
-                        <span id="followers-count" class="stat-number">0</span>
-                        <span class="stat-label">Fans</span>
-                    </div>
-                    <div class="stat-item">
-                        <span id="following-count" class="stat-number">0</span>
-                        <span class="stat-label">Siguiendo</span>
-                    </div>
-                    <div class="stat-item">
-                        <span id="likes-count" class="stat-number">0</span>
-                        <span class="stat-label">Likes</span>
-                    </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="followers-count">0</span>
+                    <span class="stat-label">Fans</span>
                 </div>
-            </div>
-
-            <div class="profile-actions">
-                <button class="follow-btn" id="follow-btn">Seguir</button>
-                <button class="message-btn" id="message-btn"><i class="fas fa-comment"></i></button>
-                <button class="share-btn" id="share-btn"><i class="fas fa-share"></i></button>
-                <button class="report-btn" id="report-user-btn"><i class="fas fa-flag"></i></button>
+                <div class="stat-item">
+                    <span class="stat-value" id="likes-count">0</span>
+                    <span class="stat-label">Likes</span>
+                </div>
             </div>
         </div>
 
-        <div class="video-list" id="video-grid-container"></div>
-        
-        <div class="upload-modal-overlay" id="share-modal">
-            <div class="upload-modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Compartir Perfil</h3>
-                    <button class="modal-close" id="share-modal-close-btn"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="share-modal-body">
-                    <p class="share-modal-text">Comparte el perfil de @<span id="share-username"></span> a través de tus redes sociales.</p>
-                    <div class="social-links-grid" id="social-links-container">
-                        </div>
-                    <div class="copy-link-container">
-                        <input type="text" id="profile-link-input" readonly>
-                        <button id="copy-link-btn" class="modal-button submit-button">
-                            <i class="fas fa-copy"></i> Copiar
-                        </button>
-                    </div>
-                </div>
+        <div class="actions-row">
+            <button class="btn-follow" id="follow-btn">Seguir</button>
+            <div class="btn-message" id="message-btn">
+                <i class="fas fa-comment-dots"></i>
             </div>
         </div>
-        
-        <!-- Modal de Reportar Usuario -->
-        <div class="upload-modal-overlay" id="report-user-modal">
-            <div class="upload-modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Reportar Usuario</h3>
-                    <button class="modal-close" id="report-user-modal-close-btn"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="share-modal-body">
-                    <p class="share-modal-text">Estás reportando a <strong>@<span id="report-username"></span></strong></p>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">Motivo del reporte *</label>
-                        <select id="report-reason" style="width: 100%; padding: 12px; background: var(--dark-background); border: 1px solid var(--light-grey); border-radius: 10px; color: var(--text-primary); font-size: 0.9rem;">
-                            <option value="">Selecciona un motivo</option>
-                            <option value="Contenido inapropiado">Contenido inapropiado</option>
-                            <option value="Spam o engañoso">Spam o engañoso</option>
-                            <option value="Acoso o bullying">Acoso o bullying</option>
-                            <option value="Suplantación de identidad">Suplantación de identidad</option>
-                            <option value="Violencia">Violencia</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 8px; color: var(--text-primary); font-weight: 600;">Descripción (opcional)</label>
-                        <textarea id="report-description" placeholder="Proporciona más detalles sobre el problema..." style="width: 100%; min-height: 100px; padding: 12px; background: var(--dark-background); border: 1px solid var(--light-grey); border-radius: 10px; color: var(--text-primary); font-size: 0.9rem; font-family: 'Poppins', sans-serif; resize: vertical;"></textarea>
-                    </div>
-                    <button id="submit-report-btn" class="modal-button submit-button" style="width: 100%;">
-                        <i class="fas fa-flag"></i> Enviar Reporte
-                    </button>
-                </div>
+
+        <div class="content-section">
+            <h3 class="section-title"><i class="fas fa-play-circle"></i> Contenido</h3>
+            <div class="video-list" id="video-grid-container">
+                <!-- Videos dinámicos -->
             </div>
         </div>
     </div>
-    
+
     <script src="config.js"></script>
     <script>
-        let currentUser = null;
         let loggedInUser = null;
-        
+        let streamerUser = null;
+
         document.addEventListener('DOMContentLoaded', () => {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
             
             const urlParams = new URLSearchParams(window.location.search);
-            const username = urlParams.get('user');
+            streamerUser = urlParams.get('user');
+            if (!streamerUser) return window.location.href = 'videos.html';
 
-            if (username) {
-                fetchUserProfile(username);
-                fetchUserVideos(username);
-                setupEventListeners();
-            } else {
-                document.getElementById('profile-username').textContent = 'Usuario no encontrado';
-            }
+            loadProfile();
+            loadVideos();
+            setupEventListeners();
         });
 
-        async function fetchUserProfile(username) {
+        async function loadProfile() {
             try {
-                const result = await API.getUserProfile(username);
-                
-                if (result.success) {
-                    currentUser = result.data;
-                    displayProfileData(result.data);
-                } else {
-                    throw new Error(result.message || 'Error al obtener datos del perfil.');
+                const res = await API.getUserProfile(streamerUser);
+                if (res.success) {
+                    document.body.className = `plan-${res.data.plan.toLowerCase()}`;
+                    document.getElementById('profile-username').textContent = `@${res.data.username}`;
+                    document.getElementById('profile-picture').style.backgroundImage = `url('${res.data.imageUrl}')`;
+                    document.getElementById('profile-bio').textContent = `PLAN ${res.data.plan.toUpperCase()}`;
+                    document.getElementById('followers-count').textContent = res.data.followers || '0';
+                    document.getElementById('likes-count').textContent = res.data.likes || '0';
                 }
-            } catch (error) {
-                console.error("Error fetching profile:", error);
-                document.getElementById('profile-username').textContent = 'Error al cargar';
-            }
+            } catch (e) {}
         }
 
-        async function fetchUserVideos(username) {
-            const videoGridContainer = document.getElementById('video-grid-container');
+        async function loadVideos() {
+            const container = document.getElementById('video-grid-container');
             try {
-                const result = await API.getVideosForUser(username);
-
-                if (result.success) {
-                    const userVideos = result.data;
-                    document.getElementById('posts-count').textContent = userVideos.length;
-                    
-                    let gridHTML = '';
-                    if (userVideos.length === 0) {
-                        gridHTML = '<p style="color:var(--text-secondary); text-align:center; padding:20px; grid-column: 1 / -1;">Este usuario no tiene videos.</p>';
-                    } else {
-                        userVideos.forEach(video => {
-                            gridHTML += `
-                                <div class="video-card" data-video-id="${video.videoId}" data-user="${video.user}">
-                                    <div class="video-card-thumb">
-                                        <img src="${video.thumbnailUrl}" alt="${video.titulo || 'Video'}" loading="lazy">
-                                    </div>
-                                    <div class="video-card-info">
-                                        <div class="video-card-title">${video.titulo || 'Sin título'}</div>
-                                        <div class="video-card-stats">
-                                            <span><i class="fas fa-play"></i> ${video.visualizaciones || 0}</span>
-                                            <span><i class="fas fa-heart"></i> ${video.likes || 0}</span>
-                                        </div>
-                                    </div>
-                                    <div class="video-play-btn">
-                                        <i class="fas fa-play"></i>
-                                    </div>
-                                </div>`;
-                        });
+                const res = await API.getVideosForUser(streamerUser);
+                if (res.success) {
+                    document.getElementById('posts-count').textContent = res.data.length;
+                    if (res.data.length === 0) {
+                        container.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:20px;">No hay videos aún.</p>`;
+                        return;
                     }
-                    videoGridContainer.innerHTML = gridHTML;
-                    
-                    videoGridContainer.querySelectorAll('.video-card').forEach(thumb => {
-                        thumb.addEventListener('click', () => {
-                            window.location.href = `videos.html?user=${thumb.dataset.user}&videoId=${thumb.dataset.videoId}`;
-                        });
-                    });
-
-                } else {
-                    throw new Error(result.message || 'Error al obtener videos.');
+                    container.innerHTML = res.data.map(video => `
+                        <div class="video-card" onclick="window.location.href='videos.html?user=${video.user}&videoId=${video.videoId}'">
+                            <div class="video-thumb">
+                                <img src="${video.thumbnailUrl}">
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">${video.titulo || 'Sin título'}</div>
+                                <div class="video-stats">
+                                    <span><i class="fas fa-play"></i> ${video.visualizaciones || 0}</span>
+                                    <span><i class="fas fa-heart"></i> ${video.likes || 0}</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right" style="opacity: 0.3;"></i>
+                        </div>
+                    `).join('');
                 }
-            } catch (error) {
-                console.error('Error fetching videos:', error);
-                videoGridContainer.innerHTML = `<p style="color:var(--text-secondary); text-align:center; padding:20px; grid-column: 1 / -1;">Error al cargar videos.</p>`;
-            }
-        }
-        
-        async function displayProfileData(userData) {
-            document.body.className = `plan-${userData.plan.toLowerCase()}`;
-            document.getElementById('profile-username').textContent = `@${userData.username}`;
-            document.getElementById('profile-picture').style.backgroundImage = `url('${userData.imageUrl}')`;
-            document.getElementById('followers-count').textContent = userData.followers || '0';
-            document.getElementById('following-count').textContent = userData.following || '0'; 
-            document.getElementById('likes-count').textContent = userData.likes || '0';
-            document.getElementById('profile-bio').textContent = `PLAN ${userData.plan.toUpperCase()}`;
-            
-            // Verificar si el usuario logueado ya sigue a este perfil
-            if (loggedInUser && loggedInUser.username !== userData.username) {
-                try {
-                    // Verificar localStorage PRIMERO
-                    const isFollowingInStorage = isUserFollowed(userData.username);
-                    
-                    // Luego verificar backend
-                    const followCheck = await API.checkFollow(loggedInUser.username, userData.username);
-                    const isFollowingFromBackend = followCheck.success && followCheck.isFollowing;
-                    
-                    // Priorizar backend sobre localStorage (backend es fuente de verdad)
-                    const isFollowing = isFollowingFromBackend || isFollowingInStorage;
-                    
-                    // Sincronizar localStorage con backend
-                    if (isFollowingFromBackend && !isFollowingInStorage) {
-                        saveFollowedUser(userData.username);
-                    } else if (!isFollowingFromBackend && isFollowingInStorage) {
-                        // Si el backend dice que no se sigue pero localStorage dice que sí, usar backend
-                        removeFollowedUser(userData.username);
-                    }
-                    
-                    updateFollowButton(isFollowing);
-                } catch (error) {
-                    console.error('Error al verificar seguimiento:', error);
-                    // En caso de error, usar localStorage como respaldo
-                    const isFollowingInStorage = isUserFollowed(userData.username);
-                    updateFollowButton(isFollowingInStorage);
-                }
-            } else if (loggedInUser && loggedInUser.username === userData.username) {
-                // Es tu propio perfil, ocultar botón de seguir
-                document.getElementById('follow-btn').style.display = 'none';
-            } else {
-                updateFollowButton(false);
-            }
-        }
-        
-        // Funciones para manejar el estado de seguimiento en localStorage
-        function getFollowedUsers() {
-            if (!loggedInUser) return new Set();
-            const key = `followedUsers_${loggedInUser.username}`;
-            const stored = localStorage.getItem(key);
-            return stored ? new Set(JSON.parse(stored)) : new Set();
-        }
-
-        function saveFollowedUser(username) {
-            if (!loggedInUser) return;
-            const key = `followedUsers_${loggedInUser.username}`;
-            const followed = getFollowedUsers();
-            followed.add(username);
-            localStorage.setItem(key, JSON.stringify([...followed]));
-        }
-
-        function removeFollowedUser(username) {
-            if (!loggedInUser) return;
-            const key = `followedUsers_${loggedInUser.username}`;
-            const followed = getFollowedUsers();
-            followed.delete(username);
-            localStorage.setItem(key, JSON.stringify([...followed]));
-        }
-
-        function isUserFollowed(username) {
-            if (!loggedInUser) return false;
-            const followed = getFollowedUsers();
-            return followed.has(username);
-        }
-
-        function updateFollowButton(isFollowing) {
-            const followBtn = document.getElementById('follow-btn');
-            if (isFollowing) {
-                followBtn.innerHTML = '<i class="fas fa-check"></i> Siguiendo';
-                followBtn.classList.add('following');
-            } else {
-                followBtn.innerHTML = '<i class="fas fa-user-plus"></i> Seguir';
-                followBtn.classList.remove('following');
-            }
+            } catch (e) {}
         }
 
         function setupEventListeners() {
-            document.getElementById('follow-btn').addEventListener('click', async () => {
-                if (!loggedInUser) {
-                    alert('Debes iniciar sesión para seguir a otros usuarios.');
-                    window.location.href = 'index.html';
-                    return;
-                }
-                if (loggedInUser.username === currentUser.username) {
-                    alert('No puedes seguirte a ti mismo.');
-                    return;
-                }
-                
-                const followBtn = document.getElementById('follow-btn');
-                const isFollowing = followBtn.classList.contains('following');
-                
-                if (isFollowing) {
-                    // Ya lo sigues, dejar de seguir
-                    if (!confirm(`¿Dejar de seguir a @${currentUser.username}?`)) {
-                        return;
-                    }
-                    
-                    followBtn.disabled = true;
-                    followBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Dejando de seguir...';
-                    
-                    try {
-                        const result = await API.unfollowUser(loggedInUser.username, currentUser.username);
-                        
-                        if (result.success) {
-                            // Eliminar de localStorage INMEDIATAMENTE
-                            removeFollowedUser(currentUser.username);
-                            updateFollowButton(false);
-                            // Actualizar contador de seguidores
-                            const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
-                            document.getElementById('followers-count').textContent = Math.max(0, followersCount - 1);
-                        } else {
-                            alert(result.message || 'Error al dejar de seguir usuario');
-                        }
-                    } catch (error) {
-                        console.error('Error al dejar de seguir:', error);
-                        alert('Error al dejar de seguir usuario. Inténtalo de nuevo.');
-                    } finally {
-                        followBtn.disabled = false;
-                    }
-                } else {
-                    // Seguir al usuario
-                    followBtn.disabled = true;
-                    followBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siguiendo...';
-                    
-                    try {
-                        const result = await API.followUser(loggedInUser.username, currentUser.username);
-                        
-                        if (result.success) {
-                            // Guardar en localStorage INMEDIATAMENTE
-                            saveFollowedUser(currentUser.username);
-                            updateFollowButton(true);
-                            // Actualizar contador de seguidores
-                            const followersCount = parseInt(document.getElementById('followers-count').textContent) || 0;
-                            document.getElementById('followers-count').textContent = followersCount + 1;
-                        } else {
-                            alert(result.message || 'Error al seguir usuario');
-                        }
-                    } catch (error) {
-                        console.error('Error al seguir:', error);
-                        alert('Error al seguir usuario. Inténtalo de nuevo.');
-                    } finally {
-                        followBtn.disabled = false;
-                    }
-                }
-            });
-
-            document.getElementById('message-btn').addEventListener('click', () => {
-                if (!loggedInUser) {
-                    alert('Debes iniciar sesión para enviar mensajes.');
-                    window.location.href = 'index.html';
-                    return;
-                }
-                if (loggedInUser.username === currentUser.username) {
-                    alert('No puedes enviarte mensajes a ti mismo.');
-                    return;
-                }
-                window.location.href = `chat.html?user=${currentUser.username}`;
-            });
-
-            // MODIFICADO: El botón de compartir ahora abre la modal
-            document.getElementById('share-btn').addEventListener('click', handleShareProfileClick);
+            document.getElementById('message-btn').onclick = () => {
+                window.location.href = `chat.html?user=${streamerUser}`;
+            };
             
-            // NUEVO: Listeners para la modal de compartir
-            document.getElementById('share-modal-close-btn').addEventListener('click', () => {
-                document.getElementById('share-modal').classList.remove('visible');
-            });
-            document.getElementById('copy-link-btn').addEventListener('click', copyProfileLink);
-            
-            // NUEVO: Listeners para la modal de reportar
-            document.getElementById('report-user-btn').addEventListener('click', () => {
-                if (!loggedInUser) {
-                    alert('Debes iniciar sesión para reportar usuarios.');
-                    window.location.href = 'index.html';
-                    return;
-                }
-                if (loggedInUser.username === currentUser.username) {
-                    alert('No puedes reportarte a ti mismo.');
-                    return;
-                }
-                document.getElementById('report-username').textContent = currentUser.username;
-                document.getElementById('report-user-modal').classList.add('visible');
-            });
-            
-            document.getElementById('report-user-modal-close-btn').addEventListener('click', () => {
-                document.getElementById('report-user-modal').classList.remove('visible');
-                document.getElementById('report-reason').value = '';
-                document.getElementById('report-description').value = '';
-            });
-            
-            document.getElementById('submit-report-btn').addEventListener('click', async () => {
-                const reason = document.getElementById('report-reason').value;
-                const description = document.getElementById('report-description').value.trim();
-                
-                if (!reason) {
-                    alert('Por favor, selecciona un motivo para el reporte.');
-                    return;
-                }
-                
-                const submitBtn = document.getElementById('submit-report-btn');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-                
-                try {
-                    // Validar que tenemos la información necesaria
-                    if (!currentUser || !currentUser.username) {
-                        throw new Error('No se pudo obtener la información del usuario reportado.');
-                    }
-                    
-                    if (!loggedInUser || !loggedInUser.username) {
-                        throw new Error('No se pudo obtener tu información de usuario. Por favor, inicia sesión nuevamente.');
-                    }
-                    
-                    const reportData = {
-                        tipo_reporte: 'usuario',
-                        username_reportado: currentUser.username,
-                        username_reporter: loggedInUser.username,
-                        motivo: reason,
-                        descripcion: description || null
-                    };
-                    
-                    // Usar la URL base de config.js
-                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                    const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com';
-                    const LOCAL_BACKEND_URL = 'http://localhost:3000';
-                    const BASE_URL = isLocalhost ? LOCAL_BACKEND_URL : RENDER_BACKEND_URL;
-                    const reportUrl = `${BASE_URL}/api/public/reports`;
-                    
-                    const response = await fetch(reportUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(reportData)
-                    });
-                    
-                    // Validar que la respuesta sea OK antes de parsear JSON
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        throw new Error(`Error del servidor (${response.status}): ${errorText || 'Error desconocido'}`);
-                    }
-                    
-                    // Validar que la respuesta tenga contenido antes de parsear
-                    const text = await response.text();
-                    if (!text) {
-                        throw new Error('El servidor no devolvió ninguna respuesta');
-                    }
-                    
-                    let result;
-                    try {
-                        result = JSON.parse(text);
-                    } catch (parseError) {
-                        console.error('Error al parsear respuesta:', parseError);
-                        console.error('Respuesta recibida:', text);
-                        throw new Error('El servidor devolvió una respuesta inválida');
-                    }
-                    
-                    if (result.success) {
-                        alert('¡Reporte enviado correctamente! Los administradores lo revisarán pronto.');
-                        document.getElementById('report-user-modal').classList.remove('visible');
-                        document.getElementById('report-reason').value = '';
-                        document.getElementById('report-description').value = '';
-                    } else {
-                        throw new Error(result.error || 'Error al enviar el reporte');
-                    }
-                } catch (error) {
-                    console.error('Error al enviar reporte:', error);
-                    alert('Error al enviar el reporte: ' + error.message);
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-flag"></i> Enviar Reporte';
-                }
-            });
-            
-            // Cerrar modal al hacer clic fuera
-            document.getElementById('report-user-modal').addEventListener('click', (e) => {
-                if (e.target.id === 'report-user-modal') {
-                    document.getElementById('report-user-modal').classList.remove('visible');
-                }
-            });
-        }
-
-        // ***** NUEVA FUNCIÓN PARA ABRIR LA MODAL DE COMPARTIR *****
-        function handleShareProfileClick() {
-            if (!currentUser) return;
-
-            const profileUrl = window.location.href; // La URL actual ya es la del perfil
-            const shareText = `¡Mira el perfil de ${currentUser.username} en Likering!`;
-            const encodedUrl = encodeURIComponent(profileUrl);
-            const encodedText = encodeURIComponent(shareText);
-
-            document.getElementById('share-username').textContent = currentUser.username;
-            document.getElementById('profile-link-input').value = profileUrl;
-
-            const socialContainer = document.getElementById('social-links-container');
-            socialContainer.innerHTML = `
-                <a href="https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}" target="_blank" class="social-link">
-                    <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
-                </a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" class="social-link">
-                    <i class="fab fa-facebook-f"></i><span>Facebook</span>
-                </a>
-                <a href="https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}" target="_blank" class="social-link">
-                    <i class="fab fa-twitter"></i><span>Twitter</span>
-                </a>
-                <a href="https://t.me/share/url?url=${encodedUrl}&text=${encodedText}" target="_blank" class="social-link">
-                    <i class="fab fa-telegram"></i><span>Telegram</span>
-                </a>
-                <a href="mailto:?subject=${encodedText}&body=${encodedText}%20${encodedUrl}" class="social-link">
-                    <i class="fas fa-envelope"></i><span>Email</span>
-                </a>
-            `;
-
-            document.getElementById('share-modal').classList.add('visible');
-        }
-
-        // ***** NUEVA FUNCIÓN PARA COPIAR EL ENLACE *****
-        async function copyProfileLink() {
-            const linkInput = document.getElementById('profile-link-input');
-            const copyBtn = document.getElementById('copy-link-btn');
-            const originalBtnHTML = copyBtn.innerHTML;
-
-            try {
-                await navigator.clipboard.writeText(linkInput.value);
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
-                copyBtn.style.background = 'var(--plan-verde)'; // Color de éxito
-
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalBtnHTML;
-                    copyBtn.style.background = ''; // Revertir al color original
-                }, 2500);
-            } catch (err) {
-                console.error('Error al copiar el enlace:', err);
-                linkInput.select();
-                document.execCommand('copy');
-                alert('¡Enlace del perfil copiado al portapapeles!');
-            }
+            const followBtn = document.getElementById('follow-btn');
+            followBtn.onclick = () => {
+                followBtn.classList.toggle('following');
+                followBtn.textContent = followBtn.classList.contains('following') ? 'Siguiendo' : 'Seguir';
+            };
         }
     </script>
-<link rel="prefetch" href="chat.html">
 </body>
 </html>

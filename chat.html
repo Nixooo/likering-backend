@@ -6,328 +6,356 @@
     <title>Chat - Likering</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-    
-    :root {
-        --dark-background: #0a0a0b;
-        --glass-bg: rgba(255, 255, 255, 0.03);
-        --glass-border: rgba(255, 255, 255, 0.08);
-        --text-primary: #ffffff;
-        --text-secondary: rgba(255, 255, 255, 0.6);
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --dark-background: #0a0a0b;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.6);
+            
+            --plan-azul: #00d2ff;
+            --plan-rojo: #ff2d55;
+            --plan-naranja: #ff9500;
+            --plan-verde: #4cd964;
+            --plan-morado: #af52de;
+            --plan-amarillo: #ffcc00; 
+            --plan-rosado: #ff2d55;
+            --plan-fucsia: #ff375f;
+            --plan-marron: #ac8e68;
+            --plan-gris: #8e8e93;
+
+            --plan-color-principal: var(--plan-azul);
+        }
+
+        .plan-azul { --plan-color-principal: var(--plan-azul); }
+        .plan-rojo { --plan-color-principal: var(--plan-rojo); }
+        .plan-naranja { --plan-color-principal: var(--plan-naranja); }
+        .plan-verde { --plan-color-principal: var(--plan-verde); }
+        .plan-morado { --plan-color-principal: var(--plan-morado); }
+        .plan-amarillo { --plan-color-principal: var(--plan-amarillo); }
+        .plan-rosado { --plan-color-principal: var(--plan-rosado); }
+        .plan-fucsia { --plan-color-principal: var(--plan-fucsia); }
+        .plan-marron { --plan-color-principal: var(--plan-marron); }
+        .plan-gris { --plan-color-principal: var(--plan-gris); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        --plan-azul: #00d2ff;
-        --plan-rojo: #ff2d55;
-        --plan-naranja: #ff9500;
-        --plan-verde: #4cd964;
-        --plan-morado: #af52de;
-        --plan-amarillo: #ffcc00; 
-        --plan-rosado: #ff2d55;
-        --plan-fucsia: #ff375f;
-        --plan-marron: #ac8e68;
-        --plan-gris: #8e8e93;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-background);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
 
-        --plan-color-principal: var(--plan-azul);
-    }
+        /* Fondo Animado */
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
 
-    .plan-azul { --plan-color-principal: var(--plan-azul); }
-    .plan-rojo { --plan-color-principal: var(--plan-rojo); }
-    .plan-naranja { --plan-color-principal: var(--plan-naranja); }
-    .plan-verde { --plan-color-principal: var(--plan-verde); }
-    .plan-morado { --plan-color-principal: var(--plan-morado); }
-    .plan-amarillo { --plan-color-principal: var(--plan-amarillo); }
-    .plan-rosado { --plan-color-principal: var(--plan-rosado); }
-    .plan-fucsia { --plan-color-principal: var(--plan-fucsia); }
-    .plan-marron { --plan-color-principal: var(--plan-marron); }
-    .plan-gris { --plan-color-principal: var(--plan-gris); }
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: var(--plan-color-principal);
+            filter: blur(120px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: blob-float 20s infinite alternate;
+        }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        .blob-1 { top: -100px; right: -100px; animation-delay: 0s; }
+        .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; opacity: 0.1; }
 
-    body {
-        background-color: var(--dark-background);
-        margin: 0;
-        font-family: 'Poppins', sans-serif;
-        color: var(--text-primary);
-        height: 100vh;
-        overflow: hidden;
-    }
+        @keyframes blob-float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, 100px) scale(1.2); }
+        }
 
-    .background-blobs {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-        overflow: hidden;
-        pointer-events: none;
-    }
+        .chat-app {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(10,10,11,0.4);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
+        }
 
-    .blob {
-        position: absolute;
-        width: 500px;
-        height: 500px;
-        background: var(--plan-color-principal);
-        filter: blur(120px);
-        opacity: 0.1;
-        border-radius: 50%;
-        animation: blob-float 20s infinite alternate;
-    }
+        /* Header */
+        .chat-header {
+            padding: 50px 20px 20px;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-    .blob-1 { top: -100px; right: -100px; animation-delay: 0s; }
-    .blob-2 { bottom: -100px; left: -100px; animation-delay: -5s; }
+        .btn-back {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
 
-    @keyframes blob-float {
-        0% { transform: translate(0, 0) scale(1); }
-        100% { transform: translate(50px, 100px) scale(1.2); }
-    }
+        .chat-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
 
-    .chat-container {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        z-index: 1;
-    }
+        .chat-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            border: 2px solid var(--plan-color-principal);
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
 
-    .chat-header {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(20px);
-        padding: 50px 20px 15px;
-        border-bottom: 1px solid var(--glass-border);
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
+        .chat-user-details h2 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
 
-    .header-top-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        .chat-user-status {
+            font-size: 0.75rem;
+            color: var(--plan-verde);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-    .header-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        transition: all 0.3s ease;
-    }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--plan-verde);
+            box-shadow: 0 0 10px var(--plan-verde);
+        }
 
-    .chat-user-info {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
+        /* Mensajes */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scrollbar-width: none;
+        }
 
-    .chat-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 15px;
-        border: 2px solid var(--plan-color-principal);
-        background-size: cover;
-        background-position: center;
-        cursor: pointer;
-    }
+        .messages-container::-webkit-scrollbar { display: none; }
 
-    .chat-user-details h2 { font-size: 1.1rem; font-weight: 700; }
-    .chat-user-status { font-size: 0.75rem; color: #4cd964; display: flex; align-items: center; gap: 5px; }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #4cd964; }
+        .message-wrapper {
+            max-width: 80%;
+            display: flex;
+            flex-direction: column;
+            animation: message-in 0.3s ease-out;
+        }
 
-    .messages-container {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
+        @keyframes message-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    .message-wrapper {
-        max-width: 80%;
-        display: flex;
-        flex-direction: column;
-    }
+        .message-wrapper.sent { align-self: flex-end; align-items: flex-end; }
+        .message-wrapper.received { align-self: flex-start; align-items: flex-start; }
 
-    .message-wrapper.sent { align-self: flex-end; align-items: flex-end; }
-    .message-wrapper.received { align-self: flex-start; align-items: flex-start; }
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            position: relative;
+        }
 
-    .message {
-        padding: 12px 18px;
-        border-radius: 20px;
-        font-size: 0.95rem;
-        line-height: 1.4;
-        position: relative;
-    }
+        .sent .message-bubble {
+            background: var(--plan-color-principal);
+            color: #000;
+            font-weight: 500;
+            border-bottom-right-radius: 4px;
+        }
 
-    .message.sent {
-        background: var(--plan-color-principal);
-        color: #000;
-        font-weight: 500;
-        border-bottom-right-radius: 5px;
-    }
+        .received .message-bubble {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            border-bottom-left-radius: 4px;
+        }
 
-    .message.received {
-        background: var(--glass-bg);
-        backdrop-filter: blur(10px);
-        border: 1px solid var(--glass-border);
-        color: white;
-        border-bottom-left-radius: 5px;
-    }
+        .message-info {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
 
-    .message-info {
-        font-size: 0.65rem;
-        color: var(--text-secondary);
-        margin-top: 5px;
-    }
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: rgba(255,255,255,0.02);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    .message-input-container {
-        padding: 20px;
-        background: rgba(10, 10, 11, 0.8);
-        backdrop-filter: blur(20px);
-        border-top: 1px solid var(--glass-border);
-        display: flex;
-        gap: 12px;
-        align-items: center;
-    }
+        .message-input {
+            flex: 1;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 12px 20px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
 
-    .message-input {
-        flex: 1;
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        border-radius: 15px;
-        padding: 12px 20px;
-        color: white;
-        outline: none;
-        font-family: inherit;
-    }
+        .message-input:focus {
+            border-color: var(--plan-color-principal);
+            background: rgba(255,255,255,0.05);
+        }
 
-    .send-button {
-        width: 45px;
-        height: 45px;
-        border-radius: 15px;
-        background: var(--plan-color-principal);
-        color: #000;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
+        .btn-send {
+            width: 48px;
+            height: 48px;
+            border-radius: 18px;
+            background: var(--plan-color-principal);
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
 
-    .send-button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn-send:hover {
+            transform: scale(1.05) rotate(-10deg);
+        }
 
-    /* Modal Delete */
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.8);
-        backdrop-filter: blur(10px);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        padding: 20px;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal-container {
-        background: #151517;
-        width: 100%;
-        max-width: 350px;
-        border-radius: 25px;
-        border: 1px solid var(--glass-border);
-        padding: 25px;
-        text-align: center;
-    }
-    .modal-btn {
-        width: 100%;
-        padding: 12px;
-        border-radius: 15px;
-        margin-top: 10px;
-        font-weight: 700;
-        cursor: pointer;
-        border: none;
-    }
-    .modal-btn.danger { background: #ff2d55; color: white; }
-    .modal-btn.cancel { background: var(--glass-bg); color: white; }
+        /* Modal Eliminar */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modern-modal {
+            background: #151517;
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 30px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            border-radius: 15px;
+            border: none;
+            font-weight: 700;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .btn-danger { background: var(--plan-rojo); color: white; }
+        .btn-cancel { background: var(--glass-bg); color: white; border: 1px solid var(--glass-border); }
+
+        @media (max-width: 480px) {
+            .chat-app { border: none; }
+        }
     </style>
 </head>
 <body>
+
     <div class="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
     </div>
 
-    <div class="chat-container">
-        <div class="chat-header">
-            <div class="header-top-row">
-                <a href="mensajes.html" class="header-icon"><i class="fas fa-arrow-left"></i></a>
-                <div class="header-icon" id="info-btn"><i class="fas fa-info-circle"></i></div>
-            </div>
-            
+    <div class="chat-app">
+        <header class="chat-header">
+            <a href="mensajes.html" class="btn-back">
+                <i class="fas fa-chevron-left"></i>
+            </a>
             <div class="chat-user-info">
                 <div id="chat-avatar" class="chat-avatar"></div>
                 <div class="chat-user-details">
-                    <h2 id="chat-username"></h2>
+                    <h2 id="chat-username">@usuario</h2>
                     <div class="chat-user-status">
                         <div class="status-dot"></div>
                         <span>En línea</span>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="modal-overlay" id="delete-message-modal">
-            <div class="modal-container">
-                <div class="modal-header">
-                    <i class="fas fa-exclamation-triangle modal-warning-icon"></i>
-                    <h3>Eliminar mensaje</h3>
-                </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro de que quieres eliminar este mensaje?</p>
-                    <div class="warning-note">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Solo se pueden eliminar mensajes que no han sido vistos</span>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="modal-btn cancel" id="cancel-delete-btn">Cancelar</button>
-                    <button class="modal-btn danger" id="confirm-delete-btn">
-                        <i class="fas fa-trash"></i>
-                        Eliminar
-                    </button>
-                </div>
+            <div class="btn-back" id="info-btn" style="cursor: pointer;">
+                <i class="fas fa-info-circle"></i>
             </div>
-        </div>
-
+        </header>
 
         <div class="messages-container" id="messages-container">
-            <div class="empty-chat">
-                <i class="fas fa-comments"></i>
-                <h3>¡Inicia la conversación!</h3>
-                <p>Envía un mensaje para comenzar a chatear</p>
-            </div>
+            <!-- Mensajes dinámicos -->
         </div>
 
-        <div class="typing-indicator" id="typing-indicator">
-            <div class="typing-dots">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            </div>
-        </div>
-
-        <div class="message-input-container">
+        <div class="input-area">
             <input type="text" class="message-input" id="message-input" placeholder="Escribe un mensaje...">
-            <button class="send-button" id="send-button">
+            <button class="btn-send" id="send-button">
                 <i class="fas fa-paper-plane"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar -->
+    <div class="modal-overlay" id="delete-message-modal">
+        <div class="modern-modal">
+            <i class="fas fa-trash-alt" style="font-size: 2.5rem; color: var(--plan-rojo); margin-bottom: 15px;"></i>
+            <h3>¿Eliminar mensaje?</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 10px 0 20px;">Esta acción no se puede deshacer.</p>
+            <button class="modal-btn btn-danger" id="confirm-delete-btn">Eliminar</button>
+            <button class="modal-btn btn-cancel" id="cancel-delete-btn">Cancelar</button>
         </div>
     </div>
 
@@ -336,394 +364,80 @@
         let loggedInUser = null;
         let chatUser = null;
         let messagesInterval = null;
-        let lastMessagesHash = '';
-        let isTyping = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            if (!loggedInUser) {
-                window.location.href = 'index.html';
-                return;
-            }
+            if (!loggedInUser) return window.location.href = 'index.html';
 
-            // Aplicar tema
-            document.body.className = `plan-${loggedInUser.plan.toLowerCase()}`;
-
-            // Obtener usuario del chat desde URL
             const urlParams = new URLSearchParams(window.location.search);
             chatUser = urlParams.get('user');
-            
-            if (!chatUser) {
-                window.location.href = 'mensajes.html';
-                return;
-            }
+            if (!chatUser) return window.location.href = 'mensajes.html';
 
-            initializeChat();
-            setupEventListeners();
-        });
-
-        function initializeChat() {
+            document.body.className = `plan-${loggedInUser.plan.toLowerCase()}`;
             document.getElementById('chat-username').textContent = `@${chatUser}`;
+
             loadUserProfile();
             loadMessages();
-            markAsRead();
-            
-            // Actualizar mensajes cada 3 segundos sin parpadeo
-            messagesInterval = setInterval(() => {
-                loadMessages(true); // true = silencioso
-            }, 3000);
-        }
+            setupEventListeners();
+
+            messagesInterval = setInterval(() => loadMessages(true), 3000);
+        });
 
         async function loadUserProfile() {
             try {
-                const result = await API.getUserProfile(chatUser);
-                
-                if (result.success) {
+                const res = await API.getUserProfile(chatUser);
+                if (res.success) {
                     const avatar = document.getElementById('chat-avatar');
-                    avatar.style.backgroundImage = `url('${result.data.imageUrl}')`;
-                    avatar.addEventListener('click', () => {
-                        window.location.href = `streamer.html?user=${chatUser}`;
-                    });
+                    avatar.style.backgroundImage = `url('${res.data.imageUrl}')`;
+                    avatar.onclick = () => window.location.href = `streamer.html?user=${chatUser}`;
                 }
-            } catch (error) {
-                console.error('Error loading user profile:', error);
-            }
-        }
-
-        // Modificar la función setupEventListeners() para incluir la inicialización del modal:
-        function setupEventListeners() {
-            const messageInput = document.getElementById('message-input');
-            const sendButton = document.getElementById('send-button');
-
-            sendButton.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-
-            // Simular indicador de escritura
-            let typingTimeout;
-            messageInput.addEventListener('input', () => {
-                if (!isTyping && messageInput.value.trim()) {
-                    isTyping = true;
-                    // Aquí podrías enviar señal de "está escribiendo" al servidor
-                }
-                
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    isTyping = false;
-                    // Aquí podrías enviar señal de "dejó de escribir" al servidor
-                }, 1000);
-            });
-
-            // Click en botón de info
-            document.getElementById('info-btn').addEventListener('click', () => {
-                window.location.href = `streamer.html?user=${chatUser}`;
-            });
-            
-            // Inicializar modal de eliminación
-            initDeleteModal();
+            } catch (e) {}
         }
 
         async function loadMessages(silent = false) {
-            try {
-                const result = await API.getMessages(loggedInUser.username, chatUser);
-                
-                if (result.success) {
-                    const messagesHash = JSON.stringify(result.data);
-                    
-                    // Solo actualizar si hay cambios (evita parpadeo)
-                    if (messagesHash !== lastMessagesHash || !silent) {
-                        displayMessages(result.data);
-                        lastMessagesHash = messagesHash;
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading messages:', error);
-            }
-        }
-
-        function displayMessages(messages) {
             const container = document.getElementById('messages-container');
-            const wasAtBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 1;
-            
-            // Limpiar contenedor
-            container.innerHTML = '';
-            
-            if (messages.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-chat">
-                        <i class="fas fa-comments"></i>
-                        <h3>¡Inicia la conversación!</h3>
-                        <p>Envía un mensaje para comenzar a chatear con @${chatUser}</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            messages.forEach((message, index) => {
-                const messageWrapper = document.createElement('div');
-                messageWrapper.className = `message-wrapper ${message.from === loggedInUser.username ? 'sent' : 'received'}`;
-                
-                const messageEl = document.createElement('div');
-                messageEl.className = `message ${message.from === loggedInUser.username ? 'sent' : 'received'}`;
-                
-                const time = new Date(message.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                // Contenido del mensaje
-                messageEl.innerHTML = `
-                    <div>${message.message}</div>
-                    ${message.from === loggedInUser.username && !message.read ? 
-                        `<div class="message-options">
-                            <button class="delete-btn" onclick="deleteMessage('${message.messageId}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>` : ''
+            try {
+                const res = await API.getMessages(loggedInUser.username, chatUser);
+                if (res.success) {
+                    const messagesHTML = res.data.map(msg => {
+                        const isSent = msg.emisor === loggedInUser.username;
+                        return `
+                            <div class="message-wrapper ${isSent ? 'sent' : 'received'}">
+                                <div class="message-bubble">${msg.contenido}</div>
+                                <div class="message-info">
+                                    ${new Date(msg.fecha).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                    ${isSent ? `<i class="fas fa-check-double" style="color: ${msg.leido ? 'var(--plan-azul)' : 'inherit'}"></i>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    if (container.innerHTML !== messagesHTML) {
+                        container.innerHTML = messagesHTML;
+                        container.scrollTop = container.scrollHeight;
                     }
-                `;
-                
-                // Información del mensaje
-                const messageInfo = document.createElement('div');
-                messageInfo.className = 'message-info';
-                
-                if (message.from === loggedInUser.username) {
-                    // Mensaje enviado por mí
-                    const statusIcon = message.read ? 
-                        '<i class="fas fa-check-double"></i>' : 
-                        '<i class="fas fa-check"></i>';
-                    
-                    const statusText = message.read ? 'Visto' : 'Enviado';
-                    const readTime = message.read && message.readAt ? 
-                        ` • ${new Date(message.readAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : '';
-                    
-                    messageInfo.innerHTML = `
-                        <span class="message-time">${time}</span>
-                        <span class="message-status ${message.read ? 'read' : ''}">
-                            ${statusIcon} ${statusText}${readTime}
-                        </span>
-                    `;
-                } else {
-                    // Mensaje recibido
-                    messageInfo.innerHTML = `
-                        <span class="message-time">${time}</span>
-                    `;
                 }
-                
-                messageWrapper.appendChild(messageEl);
-                messageWrapper.appendChild(messageInfo);
-                container.appendChild(messageWrapper);
-            });
-            
-            // Mantener scroll en la parte inferior si ya estaba ahí
-            if (wasAtBottom) {
-                setTimeout(() => {
-                    container.scrollTop = container.scrollHeight;
-                }, 100);
-            }
+            } catch (e) {}
         }
 
         async function sendMessage() {
             const input = document.getElementById('message-input');
-            const sendButton = document.getElementById('send-button');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            // Deshabilitar input mientras se envía
-            input.disabled = true;
-            sendButton.disabled = true;
-            
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
             try {
-                const result = await API.sendMessage(loggedInUser.username, chatUser, message);
-                
-                if (result.success) {
-                    input.value = '';
-                    loadMessages(); // Recargar mensajes inmediatamente
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Error al enviar el mensaje. Inténtalo de nuevo.');
-            } finally {
-                input.disabled = false;
-                sendButton.disabled = false;
-                input.focus();
-            }
+                const res = await API.sendMessage(loggedInUser.username, chatUser, text);
+                if (res.success) loadMessages();
+            } catch (e) {}
         }
 
-        // Reemplazar la función deleteMessage() con esta versión:
-        let currentMessageId = null;
-
-        async function deleteMessage(messageId) {
-            currentMessageId = messageId;
-            const modal = document.getElementById('delete-message-modal');
-            modal.classList.add('show');
+        function setupEventListeners() {
+            document.getElementById('send-button').onclick = sendMessage;
+            document.getElementById('message-input').onkeypress = (e) => {
+                if (e.key === 'Enter') sendMessage();
+            };
         }
-
-        // Agregar estas funciones después de la función deleteMessage():
-        function initDeleteModal() {
-            const modal = document.getElementById('delete-message-modal');
-            const cancelBtn = document.getElementById('cancel-delete-btn');
-            const confirmBtn = document.getElementById('confirm-delete-btn');
-            
-            // Cerrar modal
-            function closeDeleteModal() {
-                modal.classList.remove('show');
-                currentMessageId = null;
-                // Reset button state
-                confirmBtn.classList.remove('loading');
-                confirmBtn.disabled = false;
-            }
-            
-            // Event listeners
-            cancelBtn.addEventListener('click', closeDeleteModal);
-            
-            // Cerrar modal al hacer clic en el overlay
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeDeleteModal();
-                }
-            });
-            
-            // Cerrar modal con Escape
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modal.classList.contains('show')) {
-                    closeDeleteModal();
-                }
-            });
-            
-            // Confirmar eliminación
-            confirmBtn.addEventListener('click', async () => {
-                if (!currentMessageId) return;
-                
-                // Loading state
-                confirmBtn.classList.add('loading');
-                confirmBtn.disabled = true;
-                cancelBtn.disabled = true;
-                
-                try {
-                    const result = await API.deleteMessage(currentMessageId, loggedInUser.username);
-                    
-                    if (result.success) {
-                        // Mostrar mensaje de éxito
-                        showSuccessMessage('Mensaje eliminado correctamente');
-                        loadMessages(); // Recargar mensajes
-                        closeDeleteModal();
-                    } else {
-                        throw new Error(result.message || 'No se pudo eliminar el mensaje');
-                    }
-                } catch (error) {
-                    console.error('Error deleting message:', error);
-                    showErrorMessage(error.message || 'Error al eliminar el mensaje');
-                } finally {
-                    // Reset button states
-                    confirmBtn.classList.remove('loading');
-                    confirmBtn.disabled = false;
-                    cancelBtn.disabled = false;
-                }
-            });
-        }
-
-        // Funciones para mostrar mensajes de éxito/error
-        function showSuccessMessage(message) {
-            showToast(message, 'success');
-        }
-
-        function showErrorMessage(message) {
-            showToast(message, 'error');
-        }
-
-        function showToast(message, type = 'info') {
-            // Crear toast
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            // Estilos del toast
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? 'var(--plan-verde)' : '#ff4757'};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                font-size: 0.9rem;
-                font-weight: 500;
-                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-                z-index: 1001;
-                transform: translateX(400px);
-                transition: transform 0.3s ease;
-                max-width: 350px;
-            `;
-            
-            document.body.appendChild(toast);
-            
-            // Animar entrada
-            setTimeout(() => {
-                toast.style.transform = 'translateX(0)';
-            }, 100);
-            
-            // Auto-remove después de 4 segundos
-            setTimeout(() => {
-                toast.style.transform = 'translateX(400px)';
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 4000);
-            
-            // Click para cerrar
-            toast.addEventListener('click', () => {
-                toast.style.transform = 'translateX(400px)';
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            });
-        }
-
-        async function markAsRead() {
-            try {
-                await API.markAsRead(chatUser, loggedInUser.username);
-            } catch (error) {
-                console.error('Error marking as read:', error);
-            }
-        }
-
-        // Limpiar interval al cerrar
-        window.addEventListener('beforeunload', () => {
-            if (messagesInterval) {
-                clearInterval(messagesInterval);
-            }
-        });
-
-        // Marcar como leído cuando la ventana vuelve a tener foco
-        window.addEventListener('focus', () => {
-            markAsRead();
-            loadMessages();
-        });
-
-        // Pausar actualizaciones cuando la página no está visible
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                if (messagesInterval) {
-                    clearInterval(messagesInterval);
-                }
-            } else {
-                markAsRead();
-                loadMessages();
-                messagesInterval = setInterval(() => {
-                    loadMessages(true);
-                }, 3000);
-            }
-        });
     </script>
 </body>
 </html>

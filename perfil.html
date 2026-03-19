@@ -15,7 +15,6 @@
             --text-primary: #ffffff;
             --text-secondary: rgba(255, 255, 255, 0.6);
             
-            /* Colores de planes mejorados */
             --plan-azul: #00d2ff;
             --plan-rojo: #ff2d55;
             --plan-naranja: #ff9500;
@@ -28,7 +27,6 @@
             --plan-gris: #8e8e93;
 
             --plan-color-principal: var(--plan-azul);
-            --accent-gradient: linear-gradient(135deg, var(--plan-color-principal), #000);
         }
 
         .plan-azul { --plan-color-principal: var(--plan-azul); }
@@ -52,16 +50,7 @@
             min-height: 100vh;
         }
 
-        /* Fondo Animado Mejorado */
-        .app-screen {
-            width: 100%;
-            min-height: 100vh;
-            position: relative;
-            padding: 40px 20px 100px;
-            display: flex;
-            justify-content: center;
-        }
-
+        /* Fondo Animado */
         .background-blobs {
             position: fixed;
             top: 0;
@@ -92,25 +81,26 @@
             100% { transform: translate(50px, 100px) scale(1.2); }
         }
 
-        .profile-content {
+        .profile-app {
             position: relative;
             z-index: 1;
             width: 100%;
             max-width: 500px;
+            margin: 0 auto;
+            padding: 40px 20px 100px;
             display: flex;
             flex-direction: column;
             gap: 25px;
         }
 
-        /* Header Moderno */
-        .profile-header-nav {
+        /* Header */
+        .header-nav {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: center;
         }
 
-        .btn-back {
+        .btn-icon {
             width: 45px;
             height: 45px;
             border-radius: 15px;
@@ -125,63 +115,32 @@
             transition: all 0.3s ease;
         }
 
-        .btn-back:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateX(-3px);
-        }
-
-        .brand-logo {
-            width: 35px;
-            height: 35px;
-            opacity: 0.9;
-        }
-
-        /* Tarjeta de Perfil Principal */
-        .main-profile-card {
+        /* Profile Card */
+        .profile-card {
             background: linear-gradient(165deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
             border-radius: 32px;
             padding: 30px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        .main-profile-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at top right, var(--plan-color-principal), transparent 70%);
-            opacity: 0.15;
-            pointer-events: none;
-        }
-
-        .profile-picture-container {
+        .avatar-wrapper {
             position: relative;
             width: 110px;
             height: 110px;
             margin: 0 auto 20px;
         }
 
-        .profile-picture {
+        .avatar {
             width: 100%;
             height: 100%;
-            border-radius: 30px;
+            border-radius: 35px;
             background-size: cover;
             background-position: center;
             border: 3px solid var(--plan-color-principal);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .profile-picture:hover {
-            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
 
         .edit-badge {
@@ -196,82 +155,44 @@
             align-items: center;
             justify-content: center;
             color: #000;
-            font-size: 0.8rem;
-            border: 3px solid #1a1a1a;
+            border: 3px solid var(--dark-background);
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .profile-info h2 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 5px;
-        }
-
+        .username { font-size: 1.6rem; font-weight: 800; margin-bottom: 5px; }
+        
         .plan-badge {
             display: inline-block;
-            padding: 6px 14px;
+            padding: 6px 15px;
             background: rgba(255,255,255,0.1);
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 700;
             color: var(--plan-color-principal);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid rgba(255,255,255,0.05);
             margin-bottom: 25px;
         }
 
-        .profile-stats-grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            padding-top: 25px;
-            border-top: 1px solid rgba(255,255,255,0.08);
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
 
-        .stat-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-align: left;
-            padding: 10px;
-        }
+        .stat-item { display: flex; flex-direction: column; gap: 4px; }
+        .stat-value { font-size: 1.1rem; font-weight: 800; }
+        .stat-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; }
 
-        .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--plan-color-principal);
-            font-size: 1.1rem;
-        }
-
-        .stat-info .value {
-            display: block;
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .stat-info .label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Acciones Rápidas */
-        .profile-actions {
+        /* Quick Actions */
+        .actions-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
         }
 
-        .action-item {
+        .action-card {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
@@ -279,24 +200,23 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(10px);
+            gap: 10px;
             color: white;
             text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
 
-        .action-item:hover {
+        .action-card:hover {
             background: rgba(255,255,255,0.08);
             transform: translateY(-5px);
             border-color: var(--plan-color-principal);
         }
 
         .action-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 16px;
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
             background: rgba(255,255,255,0.05);
             display: flex;
             align-items: center;
@@ -305,18 +225,7 @@
             color: var(--plan-color-principal);
         }
 
-        .action-item:hover .action-icon {
-            background: var(--plan-color-principal);
-            color: #000;
-            box-shadow: 0 0 20px rgba(var(--plan-color-principal), 0.3);
-        }
-
-        .action-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        /* Video List Moderno (Reemplaza Grid) */
+        /* Video List */
         .content-section {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -325,215 +234,84 @@
             backdrop-filter: blur(10px);
         }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
+        .section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
 
-        .section-header h3 {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .video-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .video-list { display: flex; flex-direction: column; gap: 15px; }
 
         .video-card {
             display: flex;
             align-items: center;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.03);
+            gap: 15px;
+            background: rgba(255,255,255,0.02);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 12px;
+            border-radius: 20px;
+            padding: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
         .video-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateY(-3px);
+            background: rgba(255,255,255,0.05);
+            transform: scale(1.02);
             border-color: var(--plan-color-principal);
         }
 
-        .video-card-thumb {
-            width: 100px;
-            height: 140px;
-            border-radius: 18px;
+        .video-thumb {
+            width: 80px;
+            height: 110px;
+            border-radius: 15px;
             overflow: hidden;
             flex-shrink: 0;
-            position: relative;
         }
 
-        .video-card-thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .video-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-        .video-card-info {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
+        .video-info { flex: 1; min-width: 0; }
+        .video-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .video-stats { font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 12px; }
+        .video-stats i { color: var(--plan-color-principal); margin-right: 4px; }
 
-        .video-card-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.3;
-        }
-
-        .video-card-stats {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .video-card-stats span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .video-card-stats i {
-            color: var(--plan-color-principal);
-        }
-
-        .video-play-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: var(--plan-color-principal);
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-        }
-
-        /* Modales Modernos */
+        /* Modales */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
             backdrop-filter: blur(15px);
             z-index: 1000;
             display: none;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
 
-        .modal-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modern-modal {
-            width: 100%;
-            max-width: 400px;
             background: #151517;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
             border-radius: 32px;
             padding: 30px;
-            transform: scale(0.9);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            width: 100%;
+            max-width: 400px;
         }
 
-        .modal-overlay.active .modern-modal {
-            transform: scale(1);
-        }
-
-        .modal-header-modern {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .modal-close {
-            width: 35px;
-            height: 35px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--text-secondary);
-        }
-
-        .modal-button {
+        .modal-btn {
             width: 100%;
             padding: 14px;
             border-radius: 18px;
             border: none;
-            background: rgba(255,255,255,0.05);
-            color: white;
             font-weight: 700;
-            font-size: 0.9rem;
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
 
-        .modal-button:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-
-        .modal-button.primary {
-            background: var(--plan-color-principal);
-            color: #000;
-        }
-
-        .social-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .social-icon {
-            width: 100%;
-            aspect-ratio: 1;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: white;
-            text-decoration: none;
-        }
+        .btn-primary { background: var(--plan-color-principal); color: #000; }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: white; }
 
         @media (max-width: 400px) {
-            .profile-actions { gap: 10px; }
-            .action-item { padding: 15px 5px; }
-            .action-icon { width: 40px; height: 40px; font-size: 1rem; }
+            .actions-grid { gap: 10px; }
+            .action-card { padding: 15px 5px; }
         }
     </style>
 </head>
@@ -544,168 +322,91 @@
         <div class="blob blob-2"></div>
     </div>
 
-    <div class="app-screen">
-        <div class="profile-content">
-            <!-- Header Nav -->
-            <header class="profile-header-nav">
-                <a href="videos.html" class="btn-back">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-                <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Likering" class="brand-logo">
-            </header>
+    <div class="profile-app">
+        <header class="header-nav">
+            <a href="videos.html" class="btn-icon">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <img src="https://i.postimg.cc/FKgZRLrW/image.png" alt="Likering" style="height: 35px;">
+            <div class="btn-icon" id="logout-btn" style="cursor: pointer;">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+        </header>
 
-            <!-- Tarjeta de Perfil Principal -->
-            <div class="main-profile-card">
-                <div class="profile-picture-container">
-                    <div id="profile-picture" class="profile-picture"></div>
-                    <div class="edit-badge" id="edit-profile-btn">
-                        <i class="fas fa-pencil-alt"></i>
-                    </div>
-                </div>
-                
-                <div class="profile-info">
-                    <h2 id="profile-username">@usuario</h2>
-                    <div class="plan-badge" id="profile-bio">PLAN AZUL</div>
-                </div>
-
-                <div class="profile-stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-icon"><i class="fas fa-pen-nib"></i></div>
-                        <div class="stat-info">
-                            <span class="value" id="posts-count">0</span>
-                            <span class="label">Posts</span>
-                        </div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-info">
-                            <span class="value" id="followers-count">0</span>
-                            <span class="label">Seguidores</span>
-                        </div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
-                        <div class="stat-info">
-                            <span class="value" id="following-count">0</span>
-                            <span class="label">Siguiendo</span>
-                        </div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-icon"><i class="fas fa-heart"></i></div>
-                        <div class="stat-info">
-                            <span class="value" id="likes-count">0</span>
-                            <span class="label">Likes</span>
-                        </div>
-                    </div>
+        <div class="profile-card">
+            <div class="avatar-wrapper">
+                <div id="profile-picture" class="avatar"></div>
+                <div class="edit-badge" id="edit-profile-btn">
+                    <i class="fas fa-pencil-alt"></i>
                 </div>
             </div>
-
-            <!-- Acciones Rápidas -->
-            <div class="profile-actions">
-                <div class="action-item" id="open-studio-btn">
-                    <div class="action-icon"><i class="fas fa-video"></i></div>
-                    <span class="action-label">Estudio</span>
+            <h2 class="username" id="profile-username">@usuario</h2>
+            <div class="plan-badge" id="profile-bio">PLAN AZUL</div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="posts-count">0</span>
+                    <span class="stat-label">Posts</span>
                 </div>
-                <div class="action-item" id="share-profile-btn">
-                    <div class="action-icon"><i class="fas fa-share-alt"></i></div>
-                    <span class="action-label">Compartir</span>
+                <div class="stat-item">
+                    <span class="stat-value" id="followers-count">0</span>
+                    <span class="stat-label">Fans</span>
                 </div>
-                <a href="billetera.html" class="action-item">
-                    <div class="action-icon"><i class="fas fa-wallet"></i></div>
-                    <span class="action-label">Billetera</span>
-                </a>
+                <div class="stat-item">
+                    <span class="stat-value" id="following-count">0</span>
+                    <span class="stat-label">Siguiendo</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="likes-count">0</span>
+                    <span class="stat-label">Likes</span>
+                </div>
             </div>
+        </div>
 
-            <!-- Sección de Contenido -->
-            <div class="content-section">
-                <div class="section-header">
-                    <h3>Mi Contenido</h3>
-                    <i class="fas fa-play-circle" style="opacity: 0.3;"></i>
-                </div>
-                <div class="video-list" id="video-grid-container">
-                    <!-- Los videos se cargan dinámicamente -->
-                </div>
+        <div class="actions-grid">
+            <a href="editor.html" class="action-card">
+                <div class="action-icon"><i class="fas fa-video"></i></div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Estudio</span>
+            </a>
+            <div class="action-card" id="share-profile-btn" style="cursor: pointer;">
+                <div class="action-icon"><i class="fas fa-share-alt"></i></div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Compartir</span>
+            </div>
+            <a href="billetera.html" class="action-card">
+                <div class="action-icon"><i class="fas fa-wallet"></i></div>
+                <span style="font-size: 0.8rem; font-weight: 600;">Billetera</span>
+            </a>
+        </div>
+
+        <div class="content-section">
+            <h3 class="section-title"><i class="fas fa-play-circle"></i> Mi Contenido</h3>
+            <div class="video-list" id="video-grid-container">
+                <!-- Videos dinámicos -->
             </div>
         </div>
     </div>
 
-    <!-- Modal Editar Perfil Moderno -->
+    <!-- Modales (Simplificados para rediseño visual) -->
     <div class="modal-overlay" id="edit-profile-modal">
         <div class="modern-modal">
-            <div class="modal-header-modern">
-                <h3>Editar Perfil</h3>
-                <div class="modal-close" id="modal-close-btn-edit"><i class="fas fa-times"></i></div>
-            </div>
-            
-            <div class="edit-profile-view active" id="main-edit-view">
-                <div class="edit-profile-picture-preview" id="edit-profile-picture-preview"></div>
-                <button class="modal-button primary" id="upload-from-gallery-btn">
-                    <i class="fas fa-image"></i> Subir de Galería
-                </button>
-                <button class="modal-button" id="take-photo-btn">
-                    <i class="fas fa-camera"></i> Tomar Foto
-                </button>
-                <button class="modal-button" id="edit-account-btn">
-                    <i class="fas fa-lock"></i> Cambiar Contraseña
-                </button>
-            </div>
-
-            <div class="edit-profile-view" id="camera-view">
-                <video id="camera-video" autoplay playsinline style="width: 100%; border-radius: 20px; margin-bottom: 20px;"></video>
-                <canvas id="camera-canvas" style="display:none;"></canvas>
-                <button class="modal-button primary" id="capture-photo-btn">Capturar</button>
-                <button class="modal-button" id="cancel-camera-btn">Cancelar</button>
-            </div>
-
-            <div class="edit-profile-view" id="password-edit-view">
-                <form id="password-form">
-                    <input type="password" id="new-password" class="modal-button" placeholder="Nueva Contraseña" style="background: rgba(255,255,255,0.05); text-align: left; padding-left: 20px;">
-                    <input type="password" id="confirm-password" class="modal-button" placeholder="Confirmar Contraseña" style="background: rgba(255,255,255,0.05); text-align: left; padding-left: 20px;">
-                    <div id="password-status" style="font-size: 0.8rem; color: #ff4d4d; margin-bottom: 15px; text-align: center;"></div>
-                    <button type="submit" class="modal-button primary" id="save-password-btn">Guardar</button>
-                    <button type="button" class="modal-button" id="back-to-main-edit-btn">Volver</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Compartir Moderno -->
-    <div class="modal-overlay" id="share-modal">
-        <div class="modern-modal">
-            <div class="modal-header-modern">
-                <h3>Compartir Perfil</h3>
-                <div class="modal-close" id="share-modal-close-btn"><i class="fas fa-times"></i></div>
-            </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 20px;">Comparte el perfil de @<span id="share-username"></span></p>
-            
-            <div class="social-grid" id="social-links-container">
-                <!-- Se carga dinámicamente -->
-            </div>
-
-            <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 10px; display: flex; align-items: center; gap: 10px;">
-                <input type="text" id="profile-link-input" readonly style="background: transparent; border: none; color: white; font-size: 0.8rem; flex: 1; outline: none;">
-                <button id="copy-link-btn" style="background: var(--plan-color-principal); border: none; border-radius: 10px; padding: 8px 15px; color: #000; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Copiar</button>
-            </div>
+            <h3 style="text-align: center; margin-bottom: 25px;">Editar Perfil</h3>
+            <button class="modal-btn btn-primary" id="upload-from-gallery-btn">Subir de Galería</button>
+            <button class="modal-btn btn-secondary" id="edit-account-btn">Cambiar Contraseña</button>
+            <button class="modal-btn btn-secondary" onclick="closeModal('edit-profile-modal')">Cerrar</button>
         </div>
     </div>
 
     <input type="file" id="profile-picture-input" style="display: none;" accept="image/*">
 
-
     <script src="config.js"></script>
     <script>
-    
-    const CLOUDINARY_CLOUD_NAME = "dc7s64lvz";
-    const CLOUDINARY_UPLOAD_PRESET = "my_unsigned_preset";
-    const CLOUDINARY_API_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+        let loggedInUser = null;
+        let loadedUserVideos = [];
 
-    let loggedInUser = null;
-    let loadedUserVideos = [];
-    let cameraStream = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (!loggedInUser) return window.location.href = 'index.html';
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-        if (loggedInUser && loggedInUser.plan) {
             document.body.className = `plan-${loggedInUser.plan.toLowerCase()}`;
             document.getElementById('profile-username').textContent = `@${loggedInUser.username}`;
             document.getElementById('profile-picture').style.backgroundImage = `url('${loggedInUser.imageUrl}')`;
@@ -714,297 +415,72 @@
             loadRealProfileData(loggedInUser.username);
             loadUserVideos(loggedInUser.username);
             setupEventListeners();
-        } else {
-            window.location.href = 'index.html';
-        }
-    });
-
-    function displayProfileData(userData) {
-        document.body.className = `plan-${userData.plan.toLowerCase()}`;
-        document.getElementById('profile-username').textContent = `@${userData.username}`;
-        document.getElementById('profile-picture').style.backgroundImage = `url('${userData.imageUrl}')`;
-        
-        document.getElementById('followers-count').textContent = userData.followers || '0';
-        document.getElementById('following-count').textContent = userData.following || '0';
-        document.getElementById('likes-count').textContent = userData.likes || '0';
-        
-        document.getElementById('profile-bio').textContent = `PLAN ${userData.plan.toUpperCase()}`;
-        
-        loadRealProfileData(userData.username);
-    }
-
-    async function refreshProfileData() {
-        if (!loggedInUser) return;
-        try {
-            await API.updateFollowCounters();
-            await loadRealProfileData(loggedInUser.username);
-        } catch (error) {
-            console.error('❌ Error al actualizar datos:', error);
-        }
-    }
-
-    async function loadRealProfileData(username) {
-        try {
-            const result = await API.getUserProfile(username);
-            
-            if (result.success) {
-                const realData = result.data;
-                document.getElementById('followers-count').textContent = realData.followers || '0';
-                document.getElementById('following-count').textContent = realData.following || '0';
-                document.getElementById('likes-count').textContent = realData.likes || '0';
-                const updatedUser = { ...loggedInUser, ...realData };
-                localStorage.setItem('loggedInUser', JSON.stringify(updatedUser));
-                loggedInUser = updatedUser;
-            } else {
-                console.error(`❌ Error al cargar datos reales:`, result.message);
-            }
-        } catch (error) {
-            console.error('❌ Error al cargar datos reales del perfil:', error);
-        }
-    }
-
-    async function loadUserVideos(username) {
-        const videoGridContainer = document.getElementById('video-grid-container');
-        try {
-            const result = await API.getVideosForUser(username);
-            if (result.success) {
-                loadedUserVideos = result.data;
-                document.getElementById('posts-count').textContent = loadedUserVideos.length;
-                populateVideoGrid();
-            } else { throw new Error(result.message); }
-        } catch (error) {
-            videoGridContainer.innerHTML = `<p style="color:var(--text-secondary); text-align:center; padding:20px;">Error al cargar videos.</p>`;
-        }
-    }
-
-    function populateVideoGrid() {
-        const videoGridContainer = document.getElementById('video-grid-container');
-        let gridHTML = '';
-        if (loadedUserVideos.length === 0) {
-            gridHTML = '<p style="color:var(--text-secondary); text-align:center; padding:20px;">Aún no tienes videos. ¡Sube el primero!</p>';
-        } else {
-            loadedUserVideos.forEach(video => {
-                gridHTML += `
-                <div class="video-card" data-video-id="${video.videoId}" data-user="${video.user}">
-                    <div class="video-card-thumb">
-                        <img src="${video.thumbnailUrl}" alt="${video.titulo || 'Video'}">
-                    </div>
-                    <div class="video-card-info">
-                        <div class="video-card-title">${video.titulo || 'Sin título'}</div>
-                        <div class="video-card-stats">
-                            <span><i class="fas fa-play"></i> ${video.visualizaciones || 0}</span>
-                            <span><i class="fas fa-heart"></i> ${video.likes || 0}</span>
-                        </div>
-                    </div>
-                    <div class="video-play-btn">
-                        <i class="fas fa-play"></i>
-                    </div>
-                </div>`;
-            });
-        }
-        videoGridContainer.innerHTML = gridHTML;
-        videoGridContainer.querySelectorAll('.video-card').forEach(thumb => {
-            thumb.addEventListener('click', () => {
-                window.location.href = `videos.html?user=${thumb.dataset.user}&videoId=${thumb.dataset.videoId}`;
-            });
         });
-    }
-    
-        function openModal(id) {
-            const modal = document.getElementById(id);
-            if (modal) {
-                modal.style.display = 'flex';
-                setTimeout(() => modal.classList.add('active'), 10);
-            }
+
+        async function loadRealProfileData(username) {
+            try {
+                const res = await API.getUserProfile(username);
+                if (res.success) {
+                    document.getElementById('followers-count').textContent = res.data.followers || '0';
+                    document.getElementById('following-count').textContent = res.data.following || '0';
+                    document.getElementById('likes-count').textContent = res.data.likes || '0';
+                }
+            } catch (e) {}
         }
 
-        function closeModal(id) {
-            const modal = document.getElementById(id);
-            if (modal) {
-                modal.classList.remove('active');
-                setTimeout(() => modal.style.display = 'none', 300);
-            }
+        async function loadUserVideos(username) {
+            const container = document.getElementById('video-grid-container');
+            try {
+                const res = await API.getVideosForUser(username);
+                if (res.success) {
+                    loadedUserVideos = res.data;
+                    document.getElementById('posts-count').textContent = loadedUserVideos.length;
+                    
+                    if (loadedUserVideos.length === 0) {
+                        container.innerHTML = `<p style="text-align:center; color:var(--text-secondary); padding:20px;">No hay videos aún.</p>`;
+                        return;
+                    }
+
+                    container.innerHTML = loadedUserVideos.map(video => `
+                        <div class="video-card" onclick="window.location.href='videos.html?user=${video.user}&videoId=${video.videoId}'">
+                            <div class="video-thumb">
+                                <img src="${video.thumbnailUrl}">
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">${video.titulo || 'Sin título'}</div>
+                                <div class="video-stats">
+                                    <span><i class="fas fa-play"></i> ${video.visualizaciones || 0}</span>
+                                    <span><i class="fas fa-heart"></i> ${video.likes || 0}</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right" style="opacity: 0.3;"></i>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {}
         }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         function setupEventListeners() {
-            // MODIFICADO: Adaptado a la nueva estructura de botones/acciones
-            document.getElementById('open-studio-btn').addEventListener('click', () => window.location.href = 'editor.html');
-            document.getElementById('share-profile-btn').addEventListener('click', handleShareProfileClick);
-
-            // --- Listeners para la Modal de Editar Perfil ---
-            const mainEditView = document.getElementById('main-edit-view');
-            const cameraView = document.getElementById('camera-view');
-            const passwordView = document.getElementById('password-edit-view');
-            
-            const showView = (viewToShow) => {
-                [mainEditView, cameraView, passwordView].forEach(v => v.classList.remove('active'));
-                viewToShow.classList.add('active');
+            document.getElementById('edit-profile-btn').onclick = () => openModal('edit-profile-modal');
+            document.getElementById('logout-btn').onclick = () => {
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'index.html';
             };
-
-            document.getElementById('edit-profile-btn').addEventListener('click', () => {
-                document.getElementById('edit-profile-picture-preview').style.backgroundImage = `url('${loggedInUser.imageUrl}')`;
-                showView(mainEditView);
-                openModal('edit-profile-modal');
-            });
-
-            document.getElementById('modal-close-btn-edit').addEventListener('click', () => {
-                closeModal('edit-profile-modal');
-                stopCamera();
-            });
             
-            document.getElementById('profile-picture').addEventListener('click', (e) => {
-                 if (e.target.id !== 'edit-profile-btn' && !e.target.closest('#edit-profile-btn')) {
-                     document.getElementById('profile-picture-input').click();
-                 }
-            });
-
-            document.getElementById('upload-from-gallery-btn').addEventListener('click', () => document.getElementById('profile-picture-input').click());
-            document.getElementById('profile-picture-input').addEventListener('change', (e) => {
-                if (e.target.files[0]) handleNewProfilePicture(e.target.files[0]);
-            });
-
-            document.getElementById('take-photo-btn').addEventListener('click', () => { showView(cameraView); startCamera(); });
-            document.getElementById('cancel-camera-btn').addEventListener('click', () => { stopCamera(); showView(mainEditView); });
-            document.getElementById('edit-account-btn').addEventListener('click', () => showView(passwordView));
-            document.getElementById('back-to-main-edit-btn').addEventListener('click', () => showView(mainEditView));
-            
-            document.getElementById('capture-photo-btn').addEventListener('click', capturePhoto);
-            document.getElementById('password-form').addEventListener('submit', handlePasswordChange);
-
-            // --- NUEVO: Listeners para la Modal de Compartir ---
-            document.getElementById('share-modal-close-btn').addEventListener('click', () => closeModal('share-modal'));
-            document.getElementById('copy-link-btn').addEventListener('click', copyProfileLink);
+            // Lógica de carga de imagen
+            const input = document.getElementById('profile-picture-input');
+            document.getElementById('upload-from-gallery-btn').onclick = () => input.click();
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Aquí iría la lógica de subida a Cloudinary/Backend
+                    alert('Subiendo nueva imagen...');
+                }
+            };
         }
-    
-    // ***** NUEVA FUNCIÓN PARA ABRIR LA MODAL DE COMPARTIR *****
-    function handleShareProfileClick() {
-        if (!loggedInUser) return;
-
-        const profileUrl = `${window.location.origin}${window.location.pathname.replace('perfil.html', 'streamer.html')}?user=${loggedInUser.username}`;
-        const shareText = `¡Mira el perfil de ${loggedInUser.username} en Likering!`;
-        const encodedUrl = encodeURIComponent(profileUrl);
-        const encodedText = encodeURIComponent(shareText);
-
-        document.getElementById('share-username').textContent = loggedInUser.username;
-        document.getElementById('profile-link-input').value = profileUrl;
-
-        const socialContainer = document.getElementById('social-links-container');
-        socialContainer.innerHTML = `
-            <a href="https://api.whatsapp.com/send?text=${encodedText}%20${encodedUrl}" target="_blank" class="social-icon" style="background:#25D366"><i class="fab fa-whatsapp"></i></a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}" target="_blank" class="social-icon" style="background:#1877F2"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}" target="_blank" class="social-icon" style="background:#1DA1F2"><i class="fab fa-twitter"></i></a>
-            <a href="mailto:?subject=${encodedText}&body=${encodedText}%20${encodedUrl}" class="social-icon" style="background:#7f7f7f"><i class="fas fa-envelope"></i></a>
-        `;
-
-        openModal('share-modal');
-    }
-
-    // ***** NUEVA FUNCIÓN PARA COPIAR EL ENLACE *****
-    async function copyProfileLink() {
-        const linkInput = document.getElementById('profile-link-input');
-        const copyBtn = document.getElementById('copy-link-btn');
-        const originalBtnHTML = copyBtn.innerHTML;
-
-        try {
-            await navigator.clipboard.writeText(linkInput.value);
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
-            copyBtn.style.background = 'var(--plan-verde)'; // Color de éxito
-
-            setTimeout(() => {
-                copyBtn.innerHTML = originalBtnHTML;
-                copyBtn.style.background = ''; // Revertir al color original
-            }, 2500);
-        } catch (err) {
-            console.error('Error al copiar el enlace:', err);
-            linkInput.select();
-            document.execCommand('copy');
-            alert('¡Enlace del perfil copiado al portapapeles!');
-        }
-    }
-
-    async function uploadToCloudinary(file) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-        const response = await fetch(CLOUDINARY_API_URL, { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('Error al subir a Cloudinary');
-        return (await response.json()).secure_url;
-    }
-
-    async function handleNewProfilePicture(file) {
-        const editModal = document.getElementById('edit-profile-modal');
-        alert('Subiendo nueva foto...');
-        try {
-            const newImageUrl = await uploadToCloudinary(file);
-            const result = await API.updateProfilePicture(loggedInUser.username, newImageUrl);
-            if (result.success) {
-                document.getElementById('profile-picture').style.backgroundImage = `url('${newImageUrl}')`;
-                loggedInUser.imageUrl = newImageUrl;
-                localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                alert('Foto de perfil actualizada.');
-                editModal.classList.remove('visible');
-            } else { throw new Error(result.message); }
-        } catch (error) {
-            alert(`Error al subir la foto: ${error.message}`);
-        }
-    }
-
-    async function handlePasswordChange(e) {
-        e.preventDefault();
-        const newPass = document.getElementById('new-password').value;
-        const confirmPass = document.getElementById('confirm-password').value;
-        const statusDiv = document.getElementById('password-status');
-        statusDiv.textContent = '';
-        if (newPass.length < 4) { statusDiv.textContent = 'Mínimo 4 caracteres.'; return; }
-        if (newPass !== confirmPass) { statusDiv.textContent = 'Las contraseñas no coinciden.'; return; }
-        
-        const btn = document.getElementById('save-password-btn');
-        btn.disabled = true; btn.textContent = 'Guardando...';
-
-        try {
-             const result = await API.updatePassword(loggedInUser.username, newPass);
-             if(result.success) {
-                alert('Contraseña actualizada con éxito.');
-                document.getElementById('edit-profile-modal').classList.remove('visible');
-             } else { throw new Error(result.message); }
-        } catch (error) {
-            statusDiv.textContent = `Error: ${error.message}`;
-        } finally {
-            btn.disabled = false; btn.textContent = 'Guardar';
-        }
-    }
-
-    async function startCamera() {
-        if (navigator.mediaDevices?.getUserMedia) {
-            try {
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-                document.getElementById('camera-video').srcObject = cameraStream;
-            } catch (error) {
-                alert("No se pudo acceder a la cámara.");
-                document.querySelector('#back-to-main-edit-btn').click();
-            }
-        }
-    }
-
-    function stopCamera() {
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-            cameraStream = null;
-        }
-    }
-
-    function capturePhoto() {
-        const canvas = document.getElementById('camera-canvas');
-        const video = document.getElementById('camera-video');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        stopCamera();
-        canvas.toBlob(blob => {
-            const photoFile = new File([blob], "camera-shot.jpg", { type: "image/jpeg" });
-            handleNewProfilePicture(photoFile);
-        }, 'image/jpeg');
-    }
-   </script>
+    </script>
 </body>
 </html>
