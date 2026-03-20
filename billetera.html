@@ -949,18 +949,24 @@
             const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
             try {
                 console.log('Solicitando firma a:', signatureUrl);
-                // Obtener firma del backend
                 const response = await fetch(signatureUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reference, amountInCents, currency })
                 });
                 
+                const responseText = await response.text();
+                console.log('Respuesta cruda del servidor:', responseText);
+
                 if (!response.ok) {
-                    throw new Error(`Error en el servidor de firmas (${response.status}). URL: ${signatureUrl}`);
+                    throw new Error(`Error en el servidor de firmas (${response.status}). URL: ${signatureUrl}. Respuesta: ${responseText}`);
                 }
 
-                const { signature } = await response.json();
+                if (!responseText) {
+                    throw new Error('El servidor devolvió una respuesta vacía. Verifica la URL del backend en config.js.');
+                }
+
+                const { signature } = JSON.parse(responseText);
                 console.log('Firma recibida correctamente');
 
                 if (typeof WidgetCheckout === 'undefined') {

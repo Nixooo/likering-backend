@@ -14,9 +14,7 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 // 4. Reemplaza la URL abajo con tu URL real
 // ============================================
 
-const RENDER_BACKEND_URL = window.location.hostname.includes('render.com') 
-    ? `${window.location.origin}` 
-    : 'https://likering-backend.onrender.com';
+const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com'; // ⚠️ CAMBIA ESTA URL SI TU BACKEND ES DIFERENTE
 
 const LOCAL_BACKEND_URL = 'http://localhost:3000';
 
