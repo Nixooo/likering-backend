@@ -389,23 +389,24 @@
             const reference = `PLAN_${planId}_${userId}_${Date.now()}`;
             const currency = 'COP';
 
+            const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
             try {
-                console.log('Solicitando firma a:', `${API_BASE_URL}/wompi/generate-signature`);
-                const response = await fetch(`${API_BASE_URL}/wompi/generate-signature`, {
+                console.log('Solicitando firma a:', signatureUrl);
+                const response = await fetch(signatureUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reference, amountInCents, currency })
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Error en el servidor de firmas: ${response.status}`);
+                    throw new Error(`Error en el servidor de firmas (${response.status}). URL: ${signatureUrl}`);
                 }
 
                 const { signature } = await response.json();
                 console.log('Firma recibida correctamente');
 
                 if (typeof WidgetCheckout === 'undefined') {
-                    throw new Error('El script de Wompi no se ha cargado correctamente. Por favor, recarga la página.');
+                    throw new Error('El script de Wompi (WidgetCheckout) no se ha cargado. Verifica tu conexión a internet o recarga la página.');
                 }
 
                 const checkout = new WidgetCheckout({
