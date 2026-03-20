@@ -1,43 +1,51 @@
 import subprocess
+import random
+import string
+from datetime import datetime
 import sys
 
 def ejecutar_comando(comando):
     print(f"\n⏳ Ejecutando: {comando}")
-    try:
-        # Ejecuta el comando en la consola
-        resultado = subprocess.run(comando, shell=True, check=True, text=True, capture_output=True)
-        # Muestra la respuesta exitosa de la consola
-        if resultado.stdout.strip():
-            print(resultado.stdout.strip())
-    except subprocess.CalledProcessError as e:
-        # Si algo falla (ej. no hay cambios para subir), lo muestra en rojo/error
-        print(f"❌ Error al ejecutar: {comando}")
-        if e.stdout:
-            print(e.stdout.strip())
-        if e.stderr:
-            print(e.stderr.strip())
-        
-        # Si el error es porque no hay cambios en el commit, no detenemos el script de golpe
-        if "nothing to commit" in e.stdout or "nothing to commit" in e.stderr:
-            print("⚠️ Parece que no hay cambios nuevos guardados para subir.")
-        sys.exit(1)
+    # Ejecutamos el comando
+    resultado = subprocess.run(comando, shell=True, text=True, capture_output=True)
+    
+    # Imprimimos lo que responde la consola
+    if resultado.stdout:
+        print(resultado.stdout.strip())
+    if resultado.stderr:
+        print(resultado.stderr.strip())
+
+def generar_mensaje_random():
+    # Lista de prefijos típicos de programación
+    prefijos = [
+        "fix: ajustes y correcciones menores",
+        "chore: actualizacion automatica de archivos",
+        "feat: nuevas mejoras implementadas",
+        "refactor: limpieza y optimizacion de codigo",
+        "style: pequeños ajustes visuales o de formato",
+        "update: guardado rapido de progreso"
+    ]
+    prefijo = random.choice(prefijos)
+    
+    # Añadimos la fecha, hora y un código alfanumérico corto para que sea 100% único
+    fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    codigo_random = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+    
+    return f"{prefijo} [{fecha_hora} - {codigo_random}]"
 
 def main():
-    print("🚀 --- Automatizador de GitHub (Likering) --- 🚀")
+    print("🚀 --- Automatizador de GitHub (Commit Random) --- 🚀")
     
-    # 1. Pedir el mensaje del commit al usuario
-    mensaje_commit = input("\n📝 Escribe el mensaje para este commit: ").strip()
+    # 1. Generar mensaje
+    mensaje_commit = generar_mensaje_random()
+    print(f"\n📝 Mensaje generado para este commit:\n   👉 \"{mensaje_commit}\"")
     
-    if not mensaje_commit:
-        print("⚠️ El mensaje no puede estar vacío. Operación cancelada.")
-        sys.exit(1)
-
-    # 2. Ejecutar los comandos en orden
+    # 2. Ejecutar comandos
     ejecutar_comando("git add .")
     ejecutar_comando(f'git commit -m "{mensaje_commit}"')
     ejecutar_comando("git push origin main")
 
-    print("\n✅ ¡Listo! Los cambios se han subido a GitHub (y Render ya debe estar actualizando).")
+    print("\n✅ ¡Listo! Los cambios se han subido a GitHub a la fuerza.")
 
 if __name__ == "__main__":
     main()

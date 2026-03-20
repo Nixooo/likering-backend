@@ -765,79 +765,13 @@
                 </div>
             </div>
 
-            <!-- Planes Premium -->
             <div class="premium-plans-container">
                 <div class="section-header">
-                    <h2>Planes Recomendados</h2>
-                    <a href="planes.html" class="btn-view-all">Ver los 10 planes <i class="fas fa-arrow-right"></i></a>
+                    <h2>Planes</h2>
                 </div>
                 
-                <div class="plans-horizontal-scroll">
-                    <!-- PLAN AZUL -->
-                    <div class="modern-plan-card plan-azul-modern">
-                        <div class="plan-card-header">
-                            <div class="plan-card-icon"><i class="fas fa-gem"></i></div>
-                            <div class="plan-card-info">
-                                <h3>Plan Azul</h3>
-                                <span class="price">$15.000</span>
-                            </div>
-                        </div>
-                        <ul class="plan-card-benefits">
-                            <li><i class="fas fa-check"></i> Gana hasta $1.5M</li>
-                            <li><i class="fas fa-heart"></i> 1 Like inicial</li>
-                            <li><i class="fas fa-users"></i> Límite 300 Likes</li>
-                        </ul>
-                        <div class="btn-buy-container">
-                            <button class="btn-buy-plan" onclick="openWompiCheckout('AZUL', 1500000, 'Plan Azul')">
-                                <i class="fas fa-shopping-cart"></i> Paga con Wompi
-                            </button>
-                        </div>
+                <div class="plans-horizontal-scroll" id="all-plans-container">
                     </div>
-
-                    <!-- PLAN ROJO -->
-                    <div class="modern-plan-card plan-rojo-modern">
-                        <div class="modern-badge">Popular</div>
-                        <div class="plan-card-header">
-                            <div class="plan-card-icon"><i class="fas fa-fire"></i></div>
-                            <div class="plan-card-info">
-                                <h3>Plan Rojo</h3>
-                                <span class="price">$60.000</span>
-                            </div>
-                        </div>
-                        <ul class="plan-card-benefits">
-                            <li><i class="fas fa-check"></i> Gana hasta $2M</li>
-                            <li><i class="fas fa-heart"></i> 4 Likes iniciales</li>
-                            <li><i class="fas fa-users"></i> Límite 400 Likes</li>
-                        </ul>
-                        <div class="btn-buy-container">
-                            <button class="btn-buy-plan" onclick="openWompiCheckout('ROJO', 6000000, 'Plan Rojo')">
-                                <i class="fas fa-shopping-cart"></i> Paga con Wompi
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- PLAN NARANJA -->
-                    <div class="modern-plan-card plan-naranja-modern">
-                        <div class="modern-badge">Recomendado</div>
-                        <div class="plan-card-header">
-                            <div class="plan-card-icon"><i class="fas fa-bolt"></i></div>
-                            <div class="plan-card-info">
-                                <h3>Plan Naranja</h3>
-                                <span class="price">$90.000</span>
-                            </div>
-                        </div>
-                        <ul class="plan-card-benefits">
-                            <li><i class="fas fa-check"></i> Gana hasta $2.5M</li>
-                            <li><i class="fas fa-heart"></i> 18 Likes iniciales</li>
-                            <li><i class="fas fa-users"></i> Límite 500 Likes</li>
-                        </ul>
-                        <div class="btn-buy-container">
-                            <button class="btn-buy-plan" onclick="openWompiCheckout('NARANJA', 9000000, 'Plan Naranja')">
-                                <i class="fas fa-shopping-cart"></i> Paga con Wompi
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Guía de Pruebas Sandbox Wompi -->
@@ -981,74 +915,44 @@
     <script src="config.js"></script>
     
     <script>
+        const planesDisponibles = [
+            { id: 'AZUL', name: 'Plan Azul', price: '$15.000', cents: 1500000, icon: 'fa-gem', class: 'plan-azul-modern', earnings: '$1.5M', likes: 1, limit: 300 },
+            { id: 'ROJO', name: 'Plan Rojo', price: '$60.000', cents: 6000000, icon: 'fa-fire', class: 'plan-rojo-modern', earnings: '$2M', likes: 4, limit: 400 },
+            { id: 'NARANJA', name: 'Plan Naranja', price: '$90.000', cents: 9000000, icon: 'fa-bolt', class: 'plan-naranja-modern', earnings: '$2.5M', likes: 18, limit: 500 },
+            { id: 'AMARILLO', name: 'Plan Amarillo', price: '$300.000', cents: 30000000, icon: 'fa-star', class: 'plan-amarillo-modern', earnings: '$5M', likes: 60, limit: '1.000' },
+            { id: 'ROSADO', name: 'Plan Rosado', price: '$600.000', cents: 60000000, icon: 'fa-heart', class: 'plan-rosado-modern', earnings: '$10M', likes: 120, limit: '2.000' },
+            { id: 'FUCSIA', name: 'Plan Fucsia', price: '$900.000', cents: 90000000, icon: 'fa-crown', class: 'plan-fucsia-modern', earnings: '$20M', likes: 180, limit: '4.000' },
+            { id: 'VERDE', name: 'Plan Verde', price: '$1.200.000', cents: 120000000, icon: 'fa-leaf', class: 'plan-verde-modern', earnings: '$40M', likes: 240, limit: '8.000' },
+            { id: 'MARRON', name: 'Plan Marrón', price: '$1.500.000', cents: 150000000, icon: 'fa-coffee', class: 'plan-marron-modern', earnings: '$60M', likes: 300, limit: '12.000' },
+            { id: 'GRIS', name: 'Plan Gris', price: '$1.800.000', cents: 180000000, icon: 'fa-shield-alt', class: 'plan-gris-modern', earnings: '$80M', likes: 360, limit: '16.000' },
+            { id: 'MORADO', name: 'Plan Morado', price: '$2.100.000', cents: 210000000, icon: 'fa-magic', class: 'plan-morado-modern', earnings: '$100M', likes: 420, limit: '20.000' }
+        ];
 
-        async function openWompiCheckout(planId, amountInCents, planName) {
-            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            if (!loggedInUser) return showAlertModal('Atención', 'Debes iniciar sesión para comprar', true);
-            
-            const userId = loggedInUser.id || loggedInUser.user_id;
-            const reference = planId ? `PLAN_${planId}_${userId}_${Date.now()}` : `RECARGA_${userId}_${Date.now()}`;
-            const currency = 'COP';
-            const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
-            
-            try {
-                let signature;
-                for (let attempt = 0; attempt < 5; attempt++) {
-                    const response = await fetch(signatureUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ reference, amountInCents, currency })
-                    });
-                    
-                    const textTrimmed = (await response.text() || '').trim();
-                    if (response.ok && textTrimmed && !textTrimmed.startsWith('<')) {
-                        signature = JSON.parse(textTrimmed).signature;
-                        if (signature) break;
-                    }
-                    if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
-                }
-
-                if (!signature || typeof WidgetCheckout === 'undefined') {
-                    throw new Error('No se pudo obtener la firma o el script.');
-                }
-
-                const checkout = new WidgetCheckout({
-                    currency: currency,
-                    amountInCents: amountInCents,
-                    publicKey: 'pub_test_SWcuYJ81fDcaXtCfsYUrAAKv0ZvH4ywN',
-                    signature: { integrity: signature },
-                    reference: reference
-                    // Eliminamos el redirectUrl para evitar que la página se recargue
-                });
-
-                checkout.open(function (result) {
-                    if (result.transaction && result.transaction.status === 'APPROVED') {
-                        // ACTUALIZACIÓN EN TIEMPO REAL SIN CERRAR SESIÓN
-                        let currentUser = JSON.parse(localStorage.getItem('loggedInUser'));
-                        if (planId) {
-                            const planBenefits = {
-                                'AZUL': 1, 'ROJO': 4, 'NARANJA': 18, 'AMARILLO': 60,
-                                'ROSADO': 120, 'FUCSIA': 180, 'VERDE': 240, 'MARRON': 300,
-                                'GRIS': 360, 'MORADO': 420
-                            };
-                            currentUser.plan = planId.toLowerCase();
-                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + (planBenefits[planId.toUpperCase()] || 0);
-                        } else {
-                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor((amountInCents / 100) / 100);
-                        }
-                        
-                        // Guardar en la "mochila" y actualizar la pantalla
-                        localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
-                        updateWalletUI(currentUser);
-                        
-                        // Lanzar el modal de éxito moderno
-                        showAlertModal('¡Pago Exitoso!', 'Tus nuevos likes se han acreditado a tu billetera.');
-                    }
-                });
-            } catch (error) {
-                console.error('Error Wompi:', error);
-                showAlertModal('Error de conexión', 'No se pudo iniciar el pago. Revisa tu internet.', true);
-            }
+        function renderPlans() {
+            const container = document.getElementById('all-plans-container');
+            container.innerHTML = planesDisponibles.map((plan, index) => `
+                <div class="modern-plan-card ${plan.class}">
+                    ${index === 1 ? '<div class="modern-badge">Popular</div>' : ''}
+                    ${index === 2 ? '<div class="modern-badge">Recomendado</div>' : ''}
+                    <div class="plan-card-header">
+                        <div class="plan-card-icon"><i class="fas ${plan.icon}"></i></div>
+                        <div class="plan-card-info">
+                            <h3>${plan.name}</h3>
+                            <div class="price">${plan.price}</div>
+                        </div>
+                    </div>
+                    <ul class="plan-card-benefits">
+                        <li><i class="fas fa-check"></i> Gana hasta <b>${plan.earnings}</b></li>
+                        <li><i class="fas fa-heart"></i> <b>${plan.likes} Like${plan.likes > 1 ? 's' : ''}</b> iniciales</li>
+                        <li><i class="fas fa-users"></i> Límite de <b>${plan.limit} Likes</b></li>
+                    </ul>
+                    <div class="btn-buy-container">
+                        <button class="btn-buy-plan" onclick="openWompiCheckout('${plan.id}', ${plan.cents}, '${plan.name}')">
+                            <i class="fas fa-shopping-cart"></i> Paga con Wompi
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         function openModal(id) {
@@ -1086,6 +990,77 @@
             const numberString = String(value).replace(/\D/g, '');
             const formattedNumber = numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
             return `$ ${formattedNumber}`;
+        }
+
+        async function openWompiCheckout(planId, amountInCents, planName) {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (!loggedInUser) return showAlertModal('Atención', 'Debes iniciar sesión para comprar', true);
+            
+            const userId = loggedInUser.id || loggedInUser.user_id;
+            const reference = planId ? `PLAN_${planId}_${userId}_${Date.now()}` : `RECARGA_${userId}_${Date.now()}`;
+            const currency = 'COP';
+            const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
+            
+            try {
+                let signature;
+                for (let attempt = 0; attempt < 5; attempt++) {
+                    const response = await fetch(signatureUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference, amountInCents, currency })
+                    });
+                    
+                    const textTrimmed = (await response.text() || '').trim();
+                    if (response.ok && textTrimmed && !textTrimmed.startsWith('<')) {
+                        signature = JSON.parse(textTrimmed).signature;
+                        if (signature) break;
+                    }
+                    if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
+                }
+
+                if (!signature || typeof WidgetCheckout === 'undefined') {
+                    throw new Error('No se pudo obtener la firma o el script.');
+                }
+
+                const checkout = new WidgetCheckout({
+                    currency: currency,
+                    amountInCents: amountInCents,
+                    publicKey: 'pub_test_SWcuYJ81fDcaXtCfsYUrAAKv0ZvH4ywN',
+                    signature: { integrity: signature },
+                    reference: reference
+                });
+
+                checkout.open(function (result) {
+                    if (result.transaction && result.transaction.status === 'APPROVED') {
+                        let currentUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                        if (planId) {
+                            const p = planesDisponibles.find(x => x.id === planId);
+                            currentUser.plan = planId.toLowerCase();
+                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + (p ? p.likes : 0);
+                        } else {
+                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor((amountInCents / 100) / 100);
+                        }
+                        
+                        localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+                        updateWalletUI(currentUser);
+                        showAlertModal('¡Pago Exitoso!', 'Tus nuevos likes se han acreditado a tu billetera.');
+                    }
+                });
+            } catch (error) {
+                console.error('Error Wompi:', error);
+                showAlertModal('Error de conexión', 'No se pudo iniciar el pago. Revisa tu internet.', true);
+            }
+        }
+
+        function updateWalletUI(userData) {
+            const plan = userData.plan || 'azul';
+            document.body.className = `plan-${plan}`;
+            document.getElementById('plan-name').textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
+            document.getElementById('likes-disponibles').textContent = userData.likesDisponibles || '0';
+            
+            const dineroValue = userData.dineroGanado || 0;
+            const balanceElement = document.getElementById('balance-amount');
+            if (balanceElement) balanceElement.textContent = formatCurrency(dineroValue);
         }
 
         function renderModernHistory(historyData) {
@@ -1129,75 +1104,17 @@
             `).join('');
         }
 
-        // --- FUNCIÓN CLAVE AÑADIDA PARA ACTUALIZAR DATOS FRESCOS ---
-        async function fetchFreshUserData(username) {
-            try {
-                // Llamamos a la API que ya tienes construida para traer los datos del usuario
-                const response = await fetch(`${API_BASE_URL}/user/profile?user=${encodeURIComponent(username)}`);
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    // Actualizamos la UI con los datos FRESCOS de la base de datos
-                    const plan = result.data.plan || 'azul';
-                    
-                    document.body.className = `plan-${plan}`;
-                    const planNameElement = document.getElementById('plan-name');
-                    planNameElement.textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
-                    
-                    // Aquí es donde mostramos los LIKES DISPONIBLES de verdad
-                    // Usamos una petición directa para obtener los likes del backend
-                    const likesResponse = await fetch(`${API_BASE_URL}/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        // Hacemos un pequeño truco consultando los datos completos del usuario usando un endpoint que tengas disponible
-                        // Nota: Si /user/profile devolviera likes_disponibles esto sería más directo.
-                    });
-                }
-            } catch (error) {
-                console.error("Error obteniendo datos frescos:", error);
-            }
-        }
-        // -------------------------------------------------------------
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            let loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
             if (!loggedInUser) return window.location.href = 'index.html';
 
-            // 1. Mostrar datos en caché (Rápido, para que el usuario no vea la pantalla en blanco)
             updateWalletUI(loggedInUser);
+            renderPlans();
 
-            // 2. Traer datos frescos silenciosamente en segundo plano
-            try {
-                // Hacemos un fetch directo a la tabla users para asegurar que traemos 'likes_disponibles'
-                // Ya que tu endpoint /user/profile actual no lo devuelve explícitamente.
-                const response = await fetch(`${API_BASE_URL}/user/profile?user=${encodeURIComponent(loggedInUser.username)}`);
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    // Actualizar localStorage con los datos del servidor (por si cambió el plan)
-                    loggedInUser.plan = result.data.plan || loggedInUser.plan;
-                    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-                    
-                    // IMPORTANTE: Como el endpoint actual de perfil no devuelve el saldo de likes_disponibles,
-                    // le pedimos al usuario que vuelva a hacer login, o forzamos la actualización de la UI
-                    // Si tienes control del servidor, te sugiero añadir likesDisponibles al endpoint /api/user/profile
-                }
-                
-                // Petición especial para obtener los likes_disponibles (Si creaste el endpoint)
-                const userRes = await fetch(`${API_BASE_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: loggedInUser.username, password: loggedInUser.password || '' }) // Nota: Esto asume que tienes la password, si no, necesitas un endpoint /api/me
-                });
-            } catch(e) {}
-
-            // Event Listeners y Lógica existente
+            // Evitamos la alerta nativa si Wompi redirige con parametros URL
             const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
-            const planActivado = urlParams.get('plan');
-
-            if (status === 'success') {
-                alert(`¡Transacción confirmada! Los fondos se han acreditado.`);
+            if (urlParams.get('status') === 'success') {
+                showAlertModal('¡Transacción confirmada!', 'Los fondos se han acreditado.');
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
 
@@ -1215,69 +1132,9 @@
             });
 
             document.querySelectorAll('[data-close-modal]').forEach(button => {
-                button.addEventListener('click', () => {
-                    closeModal(button.getAttribute('data-close-modal'));
-                });
-            });
-
-            document.getElementById('confirm-withdraw').addEventListener('click', () => {
-                closeModal('withdraw-modal');
-                alert('Solicitud de retiro en proceso.');
-            });
-
-            document.getElementById('confirm-transfer').addEventListener('click', () => {
-                closeModal('transfer-modal');
-                alert(`Transferencia preparada.`);
-            });
-
-            document.getElementById('history-button').addEventListener('click', () => alert('Mostrando detalle...'));
-            
-            const mockHistory = [
-                { date: 'Hoy, 10:30 AM', type: 'in', detail: 'Pago de video aprobado', amount: 5000 },
-                { date: 'Ayer, 4:15 PM', type: 'out', detail: 'Retiro a Nequi', amount: 20000 },
-                { date: '15 Mar, 9:00 AM', type: 'in', detail: 'Bono de bienvenida', amount: 1000 }
-            ];
-            renderModernHistory(mockHistory);
-        });
-
-        function updateWalletUI(userData) {
-            const plan = userData.plan || 'azul';
-            document.body.className = `plan-${plan}`;
-            document.getElementById('plan-name').textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
-            document.getElementById('likes-disponibles').textContent = userData.likesDisponibles || '0';
-            document.getElementById('likes-ganados').textContent = userData.likesGanados || '0';
-            
-            const dineroValue = userData.dineroGanado || 0;
-            const balanceElement = document.getElementById('balance-amount');
-            if (balanceElement) balanceElement.textContent = formatCurrency(dineroValue);
-        }
-
-        // 3. Inicialización y Eventos
-        document.addEventListener('DOMContentLoaded', () => {
-            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            if (!loggedInUser) return window.location.href = 'index.html';
-
-            updateWalletUI(loggedInUser);
-
-            // Botones de Billetera
-            document.getElementById('add-funds-button').addEventListener('click', () => openWompiCheckout(null, 2500000, 'Recarga de Saldo'));
-            
-            document.getElementById('withdraw-button').addEventListener('click', () => {
-                document.getElementById('withdraw-amount').value = '';
-                openModal('withdraw-modal');
-            });
-
-            document.getElementById('transfer-button').addEventListener('click', () => {
-                document.getElementById('transfer-username').value = '';
-                document.getElementById('transfer-amount').value = '';
-                openModal('transfer-modal');
-            });
-
-            document.querySelectorAll('[data-close-modal]').forEach(button => {
                 button.addEventListener('click', () => closeModal(button.getAttribute('data-close-modal')));
             });
 
-            // Reemplazo de alertas nativas por Modales
             document.getElementById('confirm-withdraw').addEventListener('click', () => {
                 const amount = document.getElementById('withdraw-amount').value;
                 if (!amount || amount < 10000) {
@@ -1319,8 +1176,14 @@
                 link.download = 'Historial_Likering.csv';
                 link.click();
             });
+
+            const mockHistory = [
+                { date: 'Hoy, 10:30 AM', type: 'in', detail: 'Pago de video aprobado', amount: 5000 },
+                { date: 'Ayer, 4:15 PM', type: 'out', detail: 'Retiro a Nequi', amount: 20000 },
+                { date: '15 Mar, 9:00 AM', type: 'in', detail: 'Bono de bienvenida', amount: 1000 }
+            ];
+            renderModernHistory(mockHistory);
         });
-        // ==============================================================================
     </script>
 
 </body>
