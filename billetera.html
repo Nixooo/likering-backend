@@ -1033,16 +1033,46 @@
                 checkout.open(function (result) {
                     if (result.transaction && result.transaction.status === 'APPROVED') {
                         let currentUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                        const amountPaid = amountInCents / 100;
+
                         if (planId) {
                             const p = planesDisponibles.find(x => x.id === planId);
                             currentUser.plan = planId.toLowerCase();
                             currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + (p ? p.likes : 0);
                         } else {
-                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor((amountInCents / 100) / 100);
+                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor(amountPaid / 100);
                         }
                         
                         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
                         updateWalletUI(currentUser);
+
+                        // --- NUEVA LÓGICA DE HISTORIAL EN TIEMPO REAL ---
+                        let userHistory = JSON.parse(localStorage.getItem(`history_${currentUser.username}`)) || [];
+                        const now = new Date();
+                        const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+                        
+                        // 1. Ingreso de la compra total
+                        userHistory.unshift({ 
+                            date: dateStr, 
+                            type: 'in', 
+                            detail: `Compra ${planName || 'Recarga'}`, 
+                            amount: amountPaid 
+                        });
+
+                        // 2. Salida de los impuestos/descuentos (40% para que quede el 60% libre)
+                        const taxes = amountPaid * 0.40;
+                        userHistory.unshift({ 
+                            date: dateStr, 
+                            type: 'out', 
+                            detail: 'Descuentos de compras e impuestos (40%)', 
+                            amount: taxes 
+                        });
+
+                        // Guardar y renderizar historial
+                        localStorage.setItem(`history_${currentUser.username}`, JSON.stringify(userHistory));
+                        renderModernHistory(userHistory);
+                        // -------------------------------------------------
+
                         showAlertModal('¡Pago Exitoso!', 'Tus nuevos likes se han acreditado a tu billetera.');
                     }
                 });
@@ -1056,9 +1086,13 @@
             const plan = userData.plan || 'azul';
             document.body.className = `plan-${plan}`;
             document.getElementById('plan-name').textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
-            document.getElementById('likes-disponibles').textContent = userData.likesDisponibles || '0';
             
-            const dineroValue = userData.dineroGanado || 0;
+            const likes = userData.likesDisponibles || 0;
+            document.getElementById('likes-disponibles').textContent = likes;
+            
+            // MATEMÁTICA APLICADA: 1 Like = $15.000. El usuario recibe el 60% ($9.000 por like)
+            const dineroValue = likes * 9000;
+            
             const balanceElement = document.getElementById('balance-amount');
             if (balanceElement) balanceElement.textContent = formatCurrency(dineroValue);
         }
@@ -1177,12 +1211,12 @@
                 link.click();
             });
 
-            const mockHistory = [
-                { date: 'Hoy, 10:30 AM', type: 'in', detail: 'Pago de video aprobado', amount: 5000 },
-                { date: 'Ayer, 4:15 PM', type: 'out', detail: 'Retiro a Nequi', amount: 20000 },
-                { date: '15 Mar, 9:00 AM', type: 'in', detail: 'Bono de bienvenida', amount: 1000 }
-            ];
-            renderModernHistory(mockHistory);
+            const userHistory = JSON.parse(localStorage.getItem(`history_${loggedInUser.username}`)) || [];
+            if (userHistory.length === 0) {
+                // Mensaje inicial si la cuenta es nueva y no hay historial
+                userHistory.push({ date: 'Al registrarse', type: 'in', detail: 'Apertura de Billetera Likering', amount: 0 });
+            }
+            renderModernHistory(userHistory);
         });
     </script>
 
