@@ -28,12 +28,15 @@ app.get('/api/wompi/generate-signature', (req, res) => {
 app.post('/api/wompi/generate-signature', (req, res) => {
     try {
         const { reference, amountInCents, currency } = req.body;
-        console.log('📡 Petición de firma recibida:', { reference, amountInCents, currency });
         
-        const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+        // Forzamos que sea el secreto correcto y eliminamos posibles espacios
+        const secret = 'test_integrity_TK01rdMcCPWhjTRQstc85qXSrRGOyQic'.trim();
+        
+        // Concatenación exacta: <Referencia><Monto><Moneda><SecretoIntegridad>
+        const chain = `${reference}${amountInCents}${currency}${secret}`;
         const signature = crypto.createHash('sha256').update(chain).digest('hex');
         
-        console.log('🔐 Firma generada:', signature);
+        console.log('� Firma generada para:', reference);
         res.json({ signature });
     } catch (error) {
         console.error('❌ Error generando firma:', error);

@@ -14,12 +14,9 @@ const isLocalhost = window.location.hostname === 'localhost' || window.location.
 // 4. Reemplaza la URL abajo con tu URL real
 // ============================================
 
-// Detectar si estamos en Render y configurar la URL base
-// ⚠️ Si tu backend tiene un nombre diferente en Render, puedes ponerlo aquí:
-const RENDER_BACKEND_URL = 'https://likering-backend.onrender.com'; 
-
-// Si prefieres que se detecte automáticamente del dominio actual:
-// const RENDER_BACKEND_URL = window.location.origin;
+// Detectar si estamos en Render y configurar la URL base automáticamente
+// Esto evita errores si cambias el nombre del servicio en Render
+const RENDER_BACKEND_URL = window.location.origin; 
 
 const LOCAL_BACKEND_URL = 'http://localhost:3000';
 
