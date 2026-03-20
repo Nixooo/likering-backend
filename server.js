@@ -1356,8 +1356,6 @@ app.post('/api/public/reports', async (req, res) => {
     }
 });
 
-const crypto = require('crypto'); // Necesario para firmas Wompi
-
 // ==================== PASARELA DE PAGOS (WOMPI) ====================
 
 const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_2ODbmn0TLbPwhSoB7Ci2MJN1z5ztyBSC';
