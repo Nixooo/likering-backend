@@ -742,7 +742,7 @@
                         <span class="label">Likes Disponibles</span>
                         <span class="value" id="likes-disponibles">0</span>
                     </div>
-                    <div class="stat-group">
+                    <div class="stat-group" style="display: none;">
                         <span class="label">Dinero Generado</span>
                         <span class="value" id="dinero-ganado">$0</span>
                     </div>
@@ -759,13 +759,13 @@
                     <div class="action-icon"><i class="fas fa-plus"></i></div>
                     <span class="action-label">Recargar</span>
                 </div>
-                <div class="action-item" id="transfer-button">
+                <div class="action-item" id="transfer-button" style="display: none;">
                     <div class="action-icon"><i class="fas fa-exchange-alt"></i></div>
                     <span class="action-label">Enviar</span>
                 </div>
             </div>
 
-            <div class="premium-plans-container">
+            <div class="premium-plans-container" id="premium-plans-section" style="display: none;">
                 <div class="section-header">
                     <h2>Planes</h2>
                 </div>
@@ -1152,7 +1152,11 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
 
-            document.getElementById('add-funds-button').addEventListener('click', () => openWompiCheckout(null, 2500000, 'Recarga de Saldo'));
+            document.getElementById('add-funds-button').addEventListener('click', () => {
+                const planesSection = document.getElementById('premium-plans-section');
+                planesSection.style.display = 'block';
+                planesSection.scrollIntoView({ behavior: 'smooth' });
+            });
             
             document.getElementById('withdraw-button').addEventListener('click', () => {
                 document.getElementById('withdraw-amount').value = '';
