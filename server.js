@@ -713,9 +713,8 @@ app.post('/api/videos/like', async (req, res) => {
                 return res.json({ success: false, message: 'Ya diste like a este video' });
             }
 
-            const userRow = await queryUsersByIdCompat(
-                client,
-                'SELECT likes_disponibles FROM users WHERE id = $1 OR user_id = $1 FOR UPDATE',
+            // CORRECCIÓN 1: Consulta directa a la columna 'id' para evitar error 25P02
+            const userRow = await client.query(
                 'SELECT likes_disponibles FROM users WHERE id = $1 FOR UPDATE',
                 [userId]
             );
@@ -746,9 +745,8 @@ app.post('/api/videos/like', async (req, res) => {
                 return res.json({ success: false, message: 'No hay likes disponibles para consumir' });
             }
 
-            await queryUsersByIdCompat(
-                client,
-                'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE id = $1 OR user_id = $1',
+            // CORRECCIÓN 2: Actualización directa usando la columna 'id'
+            await client.query(
                 'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE id = $1',
                 [userId]
             );
