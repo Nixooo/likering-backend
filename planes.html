@@ -456,8 +456,11 @@
                 });
             } catch (error) {
                 console.error('Error detallado Wompi:', error);
-                const errorMessage = error.message || 'Error al procesar el pago. Verifica tu conexión e intenta de nuevo.';
-                alert(`Error al iniciar Wompi: ${errorMessage}\n\nURL de la API: ${signatureUrl}`);
+                const errorStr = error.toString();
+                const helpText = errorStr.includes('Failed to fetch') 
+                    ? '\n\n💡 Error de red: No se pudo conectar al servidor de firmas. Verifica que el backend esté encendido.' 
+                    : `\n\nDetalle: ${errorStr}`;
+                alert(`Error al iniciar Wompi: ${helpText}\n\nURL intentada: ${signatureUrl}`);
             }
         }
 
