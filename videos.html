@@ -600,10 +600,9 @@
         left:0;
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Cambiado de 'cover' a 'contain' para visualizar completo */
+        object-fit: contain; /* Mantiene la proporción original sin recortar */
         display: block;
-        background-color: #000; /* Fondo negro para las barras si el video no es比例 */
-        object-fit:cover;
+        background-color: #000; /* Fondo negro para rellenar los espacios vacíos */
         z-index:1;
     }
 
@@ -820,6 +819,17 @@
         let loadedVideoElements = [];
         let currentVideoIndex = 0;
         let loggedInUser = null;
+
+        // NUEVO: Detector de interacción para desbloquear el audio en móviles
+        let globalUserInteracted = false;
+        const unlockAudio = () => {
+            globalUserInteracted = true;
+            // Una vez que toca la pantalla, quitamos los detectores para ahorrar memoria
+            document.removeEventListener('touchstart', unlockAudio);
+            document.removeEventListener('click', unlockAudio);
+        };
+        document.addEventListener('touchstart', unlockAudio, { passive: true });
+        document.addEventListener('click', unlockAudio, { passive: true });
 
         // ––––– Selección de elementos del DOM –––––
         const commentsPanelContainer = document.querySelector('.comments-panel-container'); 
@@ -1583,7 +1593,8 @@
         function updateVideoState() {
             loadedVideoElements.forEach((wrapper, index) => {
                 const video = wrapper.querySelector('video');
-                const audio = wrapper.querySelector('audio');
+                const volumeIndicator = wrapper.querySelector('.volume-indicator');
+                
                 wrapper.style.transform = `translateY(${(index - currentVideoIndex) * 100}%)`;
                 
                 if (!video.src) {
@@ -1591,23 +1602,37 @@
                 }
                 
                 if (index === currentVideoIndex) {
-                    if (audio) {
-                        audio.currentTime = 0;
-                        audio.muted = false;
-                        audio.play().catch(e => console.log("Fallo al reproducir audio:", e));
+                    // LÓGICA MÓVIL: Si el usuario ya interactuó (hizo scroll/click), encendemos el sonido
+                    if (globalUserInteracted) {
+                        video.muted = false;
+                    } else {
+                        // El primer video DEBE nacer muteado en móvil para que arranque automático
+                        video.muted = true; 
                     }
-                    video.play().catch(e => {
-                        console.log("Autoplay bloqueado, requiere interacción del usuario:", e);
-                        showPlayIndicator(wrapper);
-                    });
+
+                    // Actualizar el icono visual del volumen
+                    if (volumeIndicator) {
+                        volumeIndicator.innerHTML = video.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+                    }
+                    
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            hidePlayIndicator(wrapper);
+                        }).catch(e => {
+                            console.log("Autoplay bloqueado por el celular. Intentando plan B silencioso:", e);
+                            // Plan B: Si el celular se pone estricto, lo silenciamos y lo obligamos a reproducir
+                            video.muted = true;
+                            if (volumeIndicator) volumeIndicator.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                            video.play().catch(err => {
+                                showPlayIndicator(wrapper); // Si todo falla, mostramos el botón de Play
+                            });
+                        });
+                    }
                 } else {
                     video.pause();
                     video.currentTime = 0;
                     video.viewCounted = false;
-                    if(audio) {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    }
                     hidePlayIndicator(wrapper);
                 }
             });
