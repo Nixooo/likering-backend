@@ -1034,7 +1034,7 @@
                     reference: reference
                 });
 
-                checkout.open(function (result) {
+                checkout.open(async function (result) {
                     if (result.transaction && result.transaction.status === 'APPROVED') {
                         let currentUser = JSON.parse(localStorage.getItem('loggedInUser'));
                         const amountPaid = amountInCents / 100;
@@ -1050,32 +1050,54 @@
                         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
                         updateWalletUI(currentUser);
 
-                        // --- NUEVA LÓGICA DE HISTORIAL EN TIEMPO REAL ---
-                        let userHistory = JSON.parse(localStorage.getItem(`history_${currentUser.username}`)) || [];
-                        const now = new Date();
-                        const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-                        
-                        // 1. Ingreso de la compra total
-                        userHistory.unshift({ 
-                            date: dateStr, 
-                            type: 'in', 
-                            detail: `Compra ${planName || 'Recarga'}`, 
-                            amount: amountPaid 
-                        });
+                        // --- GUARDAR HISTORIAL EN EL SERVIDOR ---
+                        try {
+                            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                            const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://likering-backend.onrender.com/api';
+                            
+                            // 1. Ingreso de la compra total
+                            await fetch(`${BASE_URL}/wallet/history/add`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    username: currentUser.username,
+                                    type: 'in',
+                                    detail: `Compra ${planName || 'Recarga'}`,
+                                    amount: amountPaid
+                                })
+                            });
 
-                        // 2. Salida de los impuestos/descuentos (40% para que quede el 60% libre)
-                        const taxes = amountPaid * 0.40;
-                        userHistory.unshift({ 
-                            date: dateStr, 
-                            type: 'out', 
-                            detail: 'Descuentos de compras e impuestos (40%)', 
-                            amount: taxes 
-                        });
+                            // 2. Salida de los impuestos (40%)
+                            const taxes = amountPaid * 0.40;
+                            await fetch(`${BASE_URL}/wallet/history/add`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    username: currentUser.username,
+                                    type: 'out',
+                                    detail: 'Descuentos e impuestos (40%)',
+                                    amount: taxes
+                                })
+                            });
 
-                        // Guardar y renderizar historial
-                        localStorage.setItem(`history_${currentUser.username}`, JSON.stringify(userHistory));
-                        renderModernHistory(userHistory);
-                        // -------------------------------------------------
+                            // Recargar el historial visual
+                            const historyRes = await fetch(`${BASE_URL}/wallet/history?username=${currentUser.username}`);
+                            const historyData = await historyRes.json();
+                            if (historyData.success) {
+                                const formattedHistory = historyData.data.map(item => {
+                                    const date = new Date(item.created_at);
+                                    return {
+                                        date: `${date.getDate()}/${date.getMonth()+1} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`,
+                                        type: item.type,
+                                        detail: item.detail,
+                                        amount: parseFloat(item.amount)
+                                    };
+                                });
+                                renderModernHistory(formattedHistory);
+                            }
+                        } catch (e) {
+                            console.error("Error guardando historial de compra:", e);
+                        }
 
                         showAlertModal('¡Pago Exitoso!', 'Tus nuevos likes se han acreditado a tu billetera.');
                     }

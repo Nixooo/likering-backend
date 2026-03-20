@@ -303,7 +303,7 @@ app.post('/api/register', async (req, res) => {
 
 // ==================== RUTAS DE USUARIOS ====================
 
-// Obtener perfil de usuario
+// Obtener perfil de usuario (ACTUALIZADO para incluir saldos)
 app.get('/api/user/profile', async (req, res) => {
     try {
         const { user } = req.query;
@@ -343,21 +343,24 @@ app.get('/api/user/profile', async (req, res) => {
         );
         const likesCount = parseInt(likesResult.rows[0].total_likes) || 0;
 
-        // Normalizar ID: usar id o user_id dependiendo de lo que tenga la BD
+        // Normalizar ID
         const userId = userData.id || userData.user_id;
         
         res.json({
             success: true,
             data: {
                 id: userId,
-                user_id: userId, // Incluir ambos para compatibilidad
+                user_id: userId,
                 username: userData.username,
                 imageUrl: userData.image_url,
                 plan: userData.plan || 'azul',
                 followers: followersCount,
                 following: followingCount,
                 likes: likesCount,
-                posts: postsCount
+                posts: postsCount,
+                // ESTOS CAMPOS SON CRÍTICOS PARA LA BILLETERA
+                likesDisponibles: parseInt(userData.likes_disponibles) || 0,
+                likesGanados: parseInt(userData.likes_ganados) || 0
             }
         });
     } catch (error) {
@@ -1575,6 +1578,52 @@ app.post('/api/wompi/webhook', async (req, res) => {
         res.status(500).send('Error');
     }
 });
+
+
+// Obtener historial de Billetera desde la BD
+app.get('/api/wallet/history', async (req, res) => {
+    try {
+        const { username } = req.query;
+        const result = await pool.query(
+            'SELECT * FROM wallet_history WHERE username = $1 ORDER BY created_at DESC LIMIT 30', 
+            [username]
+        );
+        res.json({ success: true, data: result.rows });
+    } catch (error) {
+        console.error('Error obteniendo historial:', error);
+        res.json({ success: false, data: [] });
+    }
+});
+
+// Registrar historial manualmente (Para las compras de Wompi)
+app.post('/api/wallet/history/add', async (req, res) => {
+    try {
+        const { username, type, detail, amount } = req.body;
+        await pool.query(
+            'INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)',
+            [username, type, detail, amount]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error guardando historial:', error);
+        res.json({ success: false });
+    }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // ==================== RUTA DE SALUD ====================
 
