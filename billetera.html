@@ -972,27 +972,43 @@
             const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
             
             try {
-                const response = await fetch(signatureUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ reference, amountInCents, currency })
-                });
+                let signature;
+                let lastResponseText = '';
+                let lastStatus = 0;
 
-                const responseText = await response.text();
-                console.log('Respuesta del servidor:', responseText);
+                for (let attempt = 0; attempt < 5; attempt++) {
+                    const response = await fetch(signatureUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reference, amountInCents, currency })
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`Error en el servidor de firmas (${response.status}): ${responseText}`);
+                    lastStatus = response.status;
+                    lastResponseText = await response.text();
+                    console.log('Respuesta del servidor:', lastResponseText);
+
+                    const textTrimmed = (lastResponseText || '').trim();
+                    const looksLikeHtml = textTrimmed.startsWith('<') || textTrimmed.includes('Service waking up');
+
+                    if (response.ok && textTrimmed && !looksLikeHtml) {
+                        let signatureData;
+                        try {
+                            signatureData = JSON.parse(lastResponseText);
+                        } catch (e) {
+                            throw new Error(`La respuesta del servidor no es un JSON válido: ${lastResponseText}`);
+                        }
+                        signature = signatureData && signatureData.signature;
+                        if (signature) break;
+                    }
+
+                    if (attempt < 4) {
+                        await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
+                    }
                 }
 
-                let signatureData;
-                try {
-                    signatureData = JSON.parse(responseText);
-                } catch (e) {
-                    throw new Error(`La respuesta del servidor no es un JSON válido: ${responseText}`);
+                if (!signature) {
+                    throw new Error(`No se pudo obtener una firma válida. HTTP ${lastStatus}. Respuesta: ${lastResponseText}`);
                 }
-
-                const { signature } = signatureData;
 
                 if (typeof WidgetCheckout === 'undefined') {
                     throw new Error('El script de Wompi no se ha cargado. Verifica tu conexión.');
