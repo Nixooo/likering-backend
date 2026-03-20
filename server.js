@@ -1432,11 +1432,36 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     
                     console.log(`✨ ¡PAGO APROBADO! Activando ${planId} para usuario ${userId}. Acreditando ${benefits.likes} likes.`);
                     
-                    // Actualizar plan y sumar likes iniciales
-                    await pool.query(
-                        'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
-                        [planId.toLowerCase(), benefits.likes, userId]
-                    );
+                    const client = await pool.connect();
+                    try {
+                        await client.query('BEGIN');
+                        await client.query(
+                            'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
+                            [planId.toLowerCase(), benefits.likes, userId]
+                        );
+
+                        if (benefits.likes > 0) {
+                            const values = [];
+                            const rows = [];
+                            for (let i = 0; i < benefits.likes; i++) {
+                                const likeId = generateId('like');
+                                const idx = values.length + 1;
+                                values.push(likeId, userId);
+                                rows.push(`($${idx}, NULL, $${idx + 1}, CURRENT_TIMESTAMP)`);
+                            }
+                            await client.query(
+                                `INSERT INTO likes (like_id, video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
+                                values
+                            );
+                        }
+
+                        await client.query('COMMIT');
+                    } catch (e) {
+                        await client.query('ROLLBACK');
+                        throw e;
+                    } finally {
+                        client.release();
+                    }
 
                     // Registrar en historial (opcional si tienes tabla de transacciones)
                     console.log(`✅ Usuario ${userId} actualizado con éxito.`);
