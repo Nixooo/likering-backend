@@ -689,21 +689,18 @@ app.post('/api/videos/delete', async (req, res) => {
 app.post('/api/videos/like', async (req, res) => {
     try {
         const { videoId, username } = req.body;
-
-        if (!videoId || !username) {
-            return res.json({ success: false, message: 'Video ID y usuario requeridos' });
-        }
+        if (!videoId || !username) return res.json({ success: false, message: 'Video ID y usuario requeridos' });
 
         const user = await getUserByUsername(username);
-        if (!user) {
-            return res.json({ success: false, message: 'Usuario no encontrado' });
-        }
+        if (!user) return res.json({ success: false, message: 'Usuario no encontrado' });
 
         const userId = user.id || user.user_id;
         const client = await pool.connect();
+        
         try {
             await client.query('BEGIN');
 
+            // 1. Verificar si ya le dio like (prevenir duplicados)
             const existingLike = await client.query(
                 'SELECT 1 FROM video_likes WHERE video_id = $1 AND username = $2',
                 [videoId, username]
@@ -713,9 +710,9 @@ app.post('/api/videos/like', async (req, res) => {
                 return res.json({ success: false, message: 'Ya diste like a este video' });
             }
 
-            // CORRECCIÓN 1: Consulta directa a la columna 'id' para evitar error 25P02
+            // 2. Verificar que tenga saldo en su billetera
             const userRow = await client.query(
-                'SELECT likes_disponibles FROM users WHERE id = $1 FOR UPDATE',
+                'SELECT likes_disponibles FROM users WHERE user_id = $1 FOR UPDATE',
                 [userId]
             );
             const likesDisponibles = userRow.rows[0]?.likes_disponibles ?? 0;
@@ -724,47 +721,23 @@ app.post('/api/videos/like', async (req, res) => {
                 return res.json({ success: false, message: 'No tienes likes disponibles' });
             }
 
-            const consume = await client.query(
-                `WITH picked AS (
-                    SELECT like_id
-                    FROM likes
-                    WHERE user_id = $1 AND video_id IS NULL
-                    ORDER BY created_at ASC
-                    LIMIT 1
-                    FOR UPDATE SKIP LOCKED
-                )
-                UPDATE likes
-                SET video_id = $2
-                WHERE like_id IN (SELECT like_id FROM picked)
-                RETURNING like_id`,
-                [userId, videoId]
-            );
-
-            if (consume.rows.length === 0) {
-                await client.query('ROLLBACK');
-                return res.json({ success: false, message: 'No hay likes disponibles para consumir' });
-            }
-
-            // CORRECCIÓN 2: Actualización directa usando la columna 'id'
+            // 3. Restar el like de su billetera
             await client.query(
-                'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE id = $1',
+                'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE user_id = $1',
                 [userId]
             );
 
+            // 4. Registrar el like en el video
             await client.query(
                 'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
                 [videoId, userId, username]
             );
-
             await client.query(
                 'UPDATE videos SET likes = likes + 1 WHERE video_id = $1',
                 [videoId]
             );
 
-            const videoResult = await client.query(
-                'SELECT likes FROM videos WHERE video_id = $1',
-                [videoId]
-            );
+            const videoResult = await client.query('SELECT likes FROM videos WHERE video_id = $1', [videoId]);
             const newLikeCount = videoResult.rows[0]?.likes || 0;
 
             await client.query('COMMIT');
@@ -1512,15 +1485,11 @@ app.post('/api/wompi/webhook', async (req, res) => {
     try {
         const { event, data } = req.body;
         const tx = data && data.transaction;
-        if (event && tx) {
-            console.log(`📩 Webhook recibido: ${event} ${tx.id} ${tx.status} ${tx.reference}`);
-        }
+        if (event && tx) console.log(`📩 Webhook recibido: ${event} ${tx.id} ${tx.status} ${tx.reference}`);
 
         if (event === 'transaction.updated') {
             const transaction = data.transaction;
             const { status, reference, amount_in_cents } = transaction;
-
-            console.log(`💳 Webhook Wompi: Transacción ${transaction.id} [${status}] - Ref: ${reference}`);
 
             if (status === 'APPROVED') {
                 const parts = reference.split('_');
@@ -1531,50 +1500,27 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     const userId = parts[2];
                     
                     const planBenefits = {
-                        'AZUL': { likes: 1, limit: 300 },
-                        'ROJO': { likes: 4, limit: 400 },
-                        'NARANJA': { likes: 18, limit: 500 },
-                        'AMARILLO': { likes: 60, limit: 1000 },
-                        'ROSADO': { likes: 120, limit: 2000 },
-                        'FUCSIA': { likes: 180, limit: 4000 },
-                        'VERDE': { likes: 240, limit: 8000 },
-                        'MARRON': { likes: 300, limit: 12000 },
-                        'GRIS': { likes: 360, limit: 16000 },
-                        'MORADO': { likes: 420, limit: 20000 }
+                        'AZUL': { likes: 1, limit: 300 }, 'ROJO': { likes: 4, limit: 400 },
+                        'NARANJA': { likes: 18, limit: 500 }, 'AMARILLO': { likes: 60, limit: 1000 },
+                        'ROSADO': { likes: 120, limit: 2000 }, 'FUCSIA': { likes: 180, limit: 4000 },
+                        'VERDE': { likes: 240, limit: 8000 }, 'MARRON': { likes: 300, limit: 12000 },
+                        'GRIS': { likes: 360, limit: 16000 }, 'MORADO': { likes: 420, limit: 20000 }
                     };
 
-                    const benefits = planBenefits[planId] || { likes: 0, limit: 0 };
-                    const likesToAdd = Number(benefits.likes) || 0;
-                    
-                    console.log(`✨ ¡PAGO APROBADO! Activando ${planId} para usuario ${userId}. Acreditando ${likesToAdd} likes.`);
+                    const likesToAdd = Number((planBenefits[planId] || {}).likes) || 0;
                     
                     const client = await pool.connect();
                     try {
                         await client.query('BEGIN');
                         
-                        // 1. Actualizar plan y likes (Usando user_id)
+                        // 1. SOLUCIÓN: Simplemente sumamos el balance al usuario y ya está.
                         await client.query(
                             'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE user_id = $3',
                             [planId.toLowerCase(), likesToAdd, userId]
                         );
 
-                        // 2. Insertar los likes (CORRECCIÓN: Sin el like_id, dejamos que la BD asigne el número sola)
-                        if (likesToAdd > 0) {
-                            const values = [];
-                            const rows = [];
-                            for (let i = 0; i < likesToAdd; i++) {
-                                const idx = values.length + 1;
-                                values.push(userId); // Solo pusheamos el user_id
-                                rows.push(`(NULL, $${idx}, CURRENT_TIMESTAMP)`);
-                            }
-                            await client.query(
-                                `INSERT INTO likes (video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
-                                values
-                            );
-                        }
-
                         await client.query('COMMIT');
-                        console.log(`✅ Transacción DB exitosa: Usuario ${userId} actualizado con ${likesToAdd} likes.`);
+                        console.log(`✅ PAGO DB EXITOSO: Plan ${planId} activado. Usuario ${userId} recibió ${likesToAdd} likes.`);
                     } catch (e) {
                         await client.query('ROLLBACK');
                         console.error('❌ Error DB Wompi:', e.message);
@@ -1583,28 +1529,26 @@ app.post('/api/wompi/webhook', async (req, res) => {
                         client.release();
                     }
                 } 
-                // Recargas normales: RECARGA_<USERID>_<TIMESTAMP>
+                // Recargas normales
                 else if (parts[0] === 'RECARGA' && parts[1]) {
                     const userId = parts[1];
-                    const amount = amount_in_cents / 100;
-                    const likesToAdd = Math.floor(amount / 100);
-
-                    console.log(`✅ Recarga aprobada. Acreditando ${likesToAdd} likes al usuario ${userId}`);
-
+                    const likesToAdd = Math.floor((amount_in_cents / 100) / 100);
+                    
                     await pool.query(
                         'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE user_id = $2',
                         [likesToAdd, userId]
                     );
+                    console.log(`✅ RECARGA DB EXITOSA: Usuario ${userId} recibió ${likesToAdd} likes.`);
                 }
             }
         }
-
         res.status(200).send('OK');
     } catch (error) {
-        console.error('❌ Error en Webhook de Wompi:', error);
+        console.error('❌ Error en Webhook:', error);
         res.status(500).send('Error');
     }
 });
+
 // ==================== RUTA DE SALUD ====================
 
 app.get('/api/health', (req, res) => {
