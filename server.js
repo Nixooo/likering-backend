@@ -1367,19 +1367,24 @@ app.post('/api/wompi/generate-signature', (req, res) => {
     try {
         const { reference, amountInCents, currency } = req.body;
         
+        console.log('📡 Petición de firma recibida:', { reference, amountInCents, currency });
+
         if (!reference || !amountInCents || !currency) {
+            console.error('❌ Faltan parámetros para la firma');
             return res.status(400).json({ error: 'Faltan parámetros: reference, amountInCents, currency' });
         }
 
+        const secret = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_2ODbmn0TLbPwhSoB7Ci2MJN1z5ztyBSC';
+        
         // Concatenación según docs: <Referencia><Monto><Moneda><SecretoIntegridad>
-        const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+        const chain = `${reference}${amountInCents}${currency}${secret}`;
         const signature = crypto.createHash('sha256').update(chain).digest('hex');
         
-        console.log(`🔐 Firma generada para ref: ${reference}, monto: ${amountInCents}`);
+        console.log(`🔐 Firma generada con éxito para ref: ${reference}`);
         res.json({ signature });
     } catch (error) {
-        console.error('❌ Error generando firma Wompi:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        console.error('❌ Error crítico generando firma Wompi:', error);
+        res.status(500).json({ error: 'Error interno del servidor al generar firma' });
     }
 });
 

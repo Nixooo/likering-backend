@@ -947,13 +947,24 @@
             const currency = 'COP';
 
             try {
+                console.log('Solicitando firma a:', `${API_BASE_URL}/wompi/generate-signature`);
                 // Obtener firma del backend
                 const response = await fetch(`${API_BASE_URL}/wompi/generate-signature`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reference, amountInCents, currency })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`Error en el servidor de firmas: ${response.status}`);
+                }
+
                 const { signature } = await response.json();
+                console.log('Firma recibida correctamente');
+
+                if (typeof WidgetCheckout === 'undefined') {
+                    throw new Error('El script de Wompi no se ha cargado correctamente. Por favor, recarga la página.');
+                }
 
                 const checkout = new WidgetCheckout({
                     currency: currency,
