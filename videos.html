@@ -1387,8 +1387,13 @@
             videoPlayer.src = videoData.videoUrl;
             videoPlayer.poster = videoData.thumbnailUrl;
             videoPlayer.loop = true;
+            
+            // ATRIBUTOS OBLIGATORIOS PARA iOS/ANDROID
             videoPlayer.playsInline = true;
-            videoPlayer.muted = false; // RESTAURADO: Sonido activado por defecto
+            videoPlayer.setAttribute('playsinline', 'true');
+            videoPlayer.setAttribute('webkit-playsinline', 'true');
+            videoPlayer.muted = false; // El sonido arranca activo
+            
             videoPlayer.preload = 'auto';
             videoPlayer.viewCounted = false;
             
@@ -1542,6 +1547,11 @@
             
             videoWrapper.addEventListener('click', (e) => {
                 e.stopPropagation();
+                
+                // PREVENCIÓN MÓVIL: Si el click ocurre a menos de medio segundo de un scroll, 
+                // lo ignoramos porque es el celular haciendo un click falso.
+                if (Date.now() - lastSwipeTime < 500) return;
+
                 if (videoPlayer.paused) {
                     videoPlayer.play();
                     hidePlayIndicator(videoWrapper);
@@ -1901,9 +1911,12 @@
 
         let isSwiping = false;
         let startY = 0;
+        let lastSwipeTime = 0;
         const handleSwipe = (direction) => {
             if (isSwiping) return;
             isSwiping = true;
+            lastSwipeTime = Date.now(); // Registramos el momento exacto del deslizamiento
+            
             const newIndex = currentVideoIndex + direction;
             if (newIndex >= 0 && newIndex < loadedVideoElements.length) {
                 currentVideoIndex = newIndex;
