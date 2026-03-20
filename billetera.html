@@ -787,10 +787,8 @@
                             <li><i class="fas fa-heart"></i> 1 Like inicial</li>
                             <li><i class="fas fa-users"></i> Límite 300 Likes</li>
                         </ul>
-                        <div class="btn-buy-container">
-                            <button class="btn-buy-plan" onclick="openWompiCheckout('AZUL', 1500000, 'Plan Azul')">
-                                <i class="fas fa-shopping-cart"></i> Paga con Wompi
-                            </button>
+                        <div class="btn-buy-container" id="wompi-container-AZUL">
+                            <!-- Botón cargado dinámicamente -->
                         </div>
                     </div>
 
@@ -809,10 +807,8 @@
                             <li><i class="fas fa-heart"></i> 4 Likes iniciales</li>
                             <li><i class="fas fa-users"></i> Límite 400 Likes</li>
                         </ul>
-                        <div class="btn-buy-container">
-                            <button class="btn-buy-plan" onclick="openWompiCheckout('ROJO', 6000000, 'Plan Rojo')">
-                                <i class="fas fa-shopping-cart"></i> Paga con Wompi
-                            </button>
+                        <div class="btn-buy-container" id="wompi-container-ROJO">
+                            <!-- Botón cargado dinámicamente -->
                         </div>
                     </div>
 
@@ -831,11 +827,31 @@
                             <li><i class="fas fa-heart"></i> 18 Likes iniciales</li>
                             <li><i class="fas fa-users"></i> Límite 500 Likes</li>
                         </ul>
-                        <div class="btn-buy-container">
-                            <button class="btn-buy-plan" onclick="openWompiCheckout('NARANJA', 9000000, 'Plan Naranja')">
-                                <i class="fas fa-shopping-cart"></i> Paga con Wompi
-                            </button>
+                        <div class="btn-buy-container" id="wompi-container-NARANJA">
+                            <!-- Botón cargado dinámicamente -->
                         </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Pruebas Wompi (Solo para desarrollo) -->
+            <div style="background: rgba(255, 149, 0, 0.05); border: 1px dashed #ff9500; border-radius: 24px; padding: 20px; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <i class="fas fa-flask" style="color: #ff9500;"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #ff9500;">Modo de Prueba (Sandbox)</h3>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 15px;">
+                    Usa estos datos en el checkout para simular pagos exitosos:
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; font-size: 0.8rem;">
+                        <strong>Tarjeta:</strong> <code style="color: var(--plan-verde);">4242 4242 4242 4242</code><br>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">Cualquier fecha futura y CVC: 123</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 10px; border-radius: 12px; font-size: 0.8rem;">
+                        <strong>Nequi:</strong> <code style="color: var(--plan-verde);">3991111111</code><br>
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">Simula aprobación automática</span>
                     </div>
                 </div>
             </div>
@@ -995,8 +1011,7 @@
             }
         }
 
-        // Esta función ya no es necesaria con el nuevo método, pero la mantenemos vacía por si acaso
-        function finalizeWompiButtons() {}
+        // Esta función se define dentro del DOMContentLoaded
 
         function openModal(id) {
             const modal = document.getElementById(id);
@@ -1168,7 +1183,24 @@
                 // Cargar botones de Wompi
                 finalizeWompiButtons();
 
-                // Datos de prueba para el historial (esto vendría del backend)
+                function finalizeWompiButtons() {
+                    const plans = [
+                        { id: 'AZUL', amount: 1500000, name: 'Plan Azul' },
+                        { id: 'ROJO', amount: 6000000, name: 'Plan Rojo' },
+                        { id: 'NARANJA', amount: 9000000, name: 'Plan Naranja' }
+                    ];
+
+                    plans.forEach(plan => {
+                        const container = document.getElementById(`wompi-container-${plan.id}`);
+                        if (container) {
+                            const button = document.createElement('button');
+                            button.className = 'btn-buy-plan';
+                            button.innerHTML = `<i class="fas fa-shopping-cart"></i> Comprar ${plan.name}`;
+                            button.onclick = () => openWompiCheckout(plan.id, plan.amount, plan.name);
+                            container.appendChild(button);
+                        }
+                    });
+                }
                 const mockHistory = [
                     { date: 'Hoy, 10:30 AM', type: 'in', detail: 'Pago de video aprobado', amount: 5000 },
                     { date: 'Ayer, 4:15 PM', type: 'out', detail: 'Retiro a Nequi', amount: 20000 },
