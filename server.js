@@ -1510,7 +1510,6 @@ app.post('/api/public/reports', async (req, res) => {
 // Endpoint para recibir notificaciones de pago (Webhook)
 app.post('/api/wompi/webhook', async (req, res) => {
     try {
-        // En Sandbox, a veces la firma no coincide o no se envía, para pruebas permitimos todo
         const { event, data } = req.body;
         const tx = data && data.transaction;
         if (event && tx) {
@@ -1531,7 +1530,6 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     const planId = parts[1].toUpperCase();
                     const userId = parts[2];
                     
-                    // Mapeo de beneficios por plan (Likes iniciales)
                     const planBenefits = {
                         'AZUL': { likes: 1, limit: 300 },
                         'ROJO': { likes: 4, limit: 400 },
@@ -1553,31 +1551,47 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     const client = await pool.connect();
                     try {
                         await client.query('BEGIN');
-                        await updateUserPlanAndLikesCompat(client, planId.toLowerCase(), likesToAdd, userId);
-                        await insertPurchasedLikesCompat(client, userId, likesToAdd);
+                        
+                        // CORRECCIÓN: Consultas directas a la columna 'id' en vez de las funciones Compat
+                        await client.query(
+                            'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3',
+                            [planId.toLowerCase(), likesToAdd, userId]
+                        );
+
+                        if (likesToAdd > 0) {
+                            const values = [];
+                            const rows = [];
+                            for (let i = 0; i < likesToAdd; i++) {
+                                const likeId = generateId('like');
+                                const idx = values.length + 1;
+                                values.push(likeId, userId);
+                                rows.push(`($${idx}, NULL, $${idx + 1}, CURRENT_TIMESTAMP)`);
+                            }
+                            await client.query(
+                                `INSERT INTO likes (like_id, video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
+                                values
+                            );
+                        }
 
                         await client.query('COMMIT');
+                        console.log(`✅ Transacción DB exitosa: Usuario ${userId} actualizado con ${likesToAdd} likes.`);
                     } catch (e) {
                         await client.query('ROLLBACK');
                         throw e;
                     } finally {
                         client.release();
                     }
-
-                    // Registrar en historial (opcional si tienes tabla de transacciones)
-                    console.log(`✅ Usuario ${userId} actualizado con éxito.`);
                 } 
                 // Recargas normales: RECARGA_<USERID>_<TIMESTAMP>
                 else if (parts[0] === 'RECARGA' && parts[1]) {
                     const userId = parts[1];
                     const amount = amount_in_cents / 100;
-                    const likesToAdd = Math.floor(amount / 100); // 100 COP = 1 Like
+                    const likesToAdd = Math.floor(amount / 100);
 
                     console.log(`✅ Recarga aprobada. Acreditando ${likesToAdd} likes al usuario ${userId}`);
 
-                    await queryUsersByIdCompat(
-                        pool,
-                        'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE id = $2 OR user_id = $2',
+                    // CORRECCIÓN: Consulta directa a la columna 'id'
+                    await pool.query(
                         'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE id = $2',
                         [likesToAdd, userId]
                     );
