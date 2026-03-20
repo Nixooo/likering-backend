@@ -458,7 +458,7 @@
                     currency: currency,
                     amountInCents: amountInCents,
                     publicKey: 'pub_test_SWcuYJ81fDcaXtCfsYUrAAKv0ZvH4ywN', // Llave Sandbox real del usuario
-                    signature: signature,
+                    signature: { integrity: signature },
                     reference: reference,
                     redirectUrl: `${window.location.origin}/billetera.html?status=success&plan=${planId.toLowerCase()}`
                 });
