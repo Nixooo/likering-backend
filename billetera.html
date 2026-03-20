@@ -958,21 +958,22 @@
                 const checkout = new WompiCheckout({
                     currency: currency,
                     amountInCents: amountInCents,
-                    publicKey: 'pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV', // ⚠️ Verifica esta llave en tu dashboard
+                    publicKey: 'pub_test_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV', // ✅ Corregido: 0 en lugar de Q
                     signature: signature,
                     reference: reference,
                     redirectUrl: `${window.location.origin}/billetera.html${planId ? `?status=success&plan=${planId.toLowerCase()}` : ''}`
                 });
 
                 checkout.open(function (result) {
+                    console.log('Wompi Result:', result);
                     if (result.transaction && result.transaction.status === 'APPROVED') {
                         alert('¡Transacción aprobada! Tu cuenta se actualizará en unos segundos.');
                         location.reload();
                     }
                 });
             } catch (error) {
-                console.error('Error al iniciar Wompi:', error);
-                alert('No se pudo cargar el widget de pago. Verifica tu conexión.');
+                console.error('Error detallado Wompi:', error);
+                alert(`Error al iniciar Wompi: ${error.message || 'Verifica tu conexión'}`);
             }
         }
 

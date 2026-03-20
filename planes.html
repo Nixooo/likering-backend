@@ -400,21 +400,22 @@
                 const checkout = new WompiCheckout({
                     currency: currency,
                     amountInCents: amountInCents,
-                    publicKey: 'pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV',
+                    publicKey: 'pub_test_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV', // ✅ Corregido
                     signature: signature,
                     reference: reference,
                     redirectUrl: `${window.location.origin}/billetera.html?status=success&plan=${planId.toLowerCase()}`
                 });
 
                 checkout.open(function (result) {
+                    console.log('Wompi Result:', result);
                     if (result.transaction && result.transaction.status === 'APPROVED') {
                         alert('¡Transacción aprobada!');
                         window.location.href = 'billetera.html?status=success&plan=' + planId.toLowerCase();
                     }
                 });
             } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo iniciar el pago.');
+                console.error('Error detallado Wompi:', error);
+                alert(`Error al iniciar Wompi: ${error.message || 'Intenta de nuevo'}`);
             }
         }
 
