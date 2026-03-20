@@ -1617,7 +1617,106 @@ app.post('/api/wallet/history/add', async (req, res) => {
 
 
 
+// ==================== RETIROS Y PAGOS A TERCEROS ====================
 
+app.post('/api/wallet/withdraw', async (req, res) => {
+    try {
+        const { username, amount, method, destination } = req.body;
+
+        if (!username || !amount || !destination) {
+            return res.json({ success: false, message: 'Faltan datos para el retiro' });
+        }
+
+        const user = await getUserByUsername(username);
+        if (!user) return res.json({ success: false, message: 'Usuario no encontrado' });
+
+        const userId = user.user_id || user.id;
+        
+        // MATEMÁTICA INVERSA: $9.000 COP equivalen a 1 Like que el usuario puede retirar
+        const VALOR_LIKE = 9000;
+        const likesToDeduct = Math.ceil(amount / VALOR_LIKE);
+
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // 1. Verificar que el usuario tenga los likes suficientes
+            const balanceData = await client.query('SELECT likes_disponibles, likes_ganados FROM users WHERE user_id = $1 FOR UPDATE', [userId]);
+            const likesDisponibles = balanceData.rows[0]?.likes_disponibles || 0;
+            const likesGanados = balanceData.rows[0]?.likes_ganados || 0;
+            const totalLikesValidos = likesDisponibles + likesGanados;
+
+            if (totalLikesValidos < likesToDeduct) {
+                await client.query('ROLLBACK');
+                return res.json({ success: false, message: `Saldo insuficiente. Necesitas al menos ${likesToDeduct} likes para retirar $${amount}` });
+            }
+
+            // 2. Descontar los likes (Primero de los ganados, luego de los disponibles)
+            let newGanados = likesGanados;
+            let newDisponibles = likesDisponibles;
+
+            if (likesGanados >= likesToDeduct) {
+                newGanados -= likesToDeduct;
+            } else {
+                const remainder = likesToDeduct - likesGanados;
+                newGanados = 0;
+                newDisponibles -= remainder;
+            }
+
+            await client.query(
+                'UPDATE users SET likes_disponibles = $1, likes_ganados = $2 WHERE user_id = $3',
+                [newDisponibles, newGanados, userId]
+            );
+
+            // 3. Registrar el retiro en el historial (Estado: Pendiente)
+            await client.query(
+                'INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)',
+                [username, 'out', `Retiro en proceso a ${method.toUpperCase()} (${destination})`, amount]
+            );
+
+            // =======================================================================
+            // ⚠️ AQUÍ VA LA CONEXIÓN FUTURA CON WOMPI PARA PAGOS AUTOMÁTICOS
+            // Cuando Wompi te apruebe la "API de Transferencias", usarás este código:
+            // =======================================================================
+            /*
+            const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY; // Clave privada de producción
+            const wompiResponse = await fetch('https://production.wompi.co/v1/transfers', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${WOMPI_PRIVATE_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    amount_in_cents: amount * 100,
+                    currency: "COP",
+                    reference: `RETIRO_${userId}_${Date.now()}`,
+                    destination: {
+                        type: method.toUpperCase(), // "NEQUI" o "BANCOLOMBIA"
+                        account_number: destination
+                    }
+                })
+            });
+            const wompiData = await wompiResponse.json();
+            console.log("Respuesta de Transferencia Wompi:", wompiData);
+            */
+            // =======================================================================
+
+            await client.query('COMMIT');
+            
+            console.log(`💸 Solicitud de Retiro: @${username} pide $${amount} por ${method}`);
+            res.json({ success: true, newLikesBalance: newDisponibles });
+
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
+    } catch (error) {
+        console.error('❌ Error procesando retiro:', error);
+        res.json({ success: false, message: 'Error interno procesando el retiro' });
+    }
+});
 
 
 

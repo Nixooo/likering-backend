@@ -1283,9 +1283,67 @@
                 button.addEventListener('click', () => closeModal(button.getAttribute('data-close-modal')));
             });
 
-            document.getElementById('confirm-withdraw').addEventListener('click', () => {
-                closeModal('withdraw-modal');
-                showAlertModal('Retiro en proceso', 'Tu solicitud se procesará en menos de 24 horas.');
+            document.getElementById('confirm-withdraw').addEventListener('click', async () => {
+                const amount = parseInt(document.getElementById('withdraw-amount').value);
+                const method = document.getElementById('withdraw-method').value;
+                const destination = document.getElementById('withdraw-destination').value;
+                
+                if (!amount || amount < 10000) {
+                    return showAlertModal('Monto Inválido', 'El monto mínimo de retiro es $10.000 COP', true);
+                }
+                if (!destination || destination.length < 10) {
+                    return showAlertModal('Datos incompletos', 'Ingresa un número de cuenta o celular válido', true);
+                }
+
+                // Desactivar botón mientras carga
+                const btn = document.getElementById('confirm-withdraw');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+                try {
+                    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                    const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://likering-backend.onrender.com/api';
+                    
+                    const response = await fetch(`${BASE_URL}/wallet/withdraw`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: loggedInUser.username,
+                            amount: amount,
+                            method: method,
+                            destination: destination
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        closeModal('withdraw-modal');
+                        
+                        // Actualizar UI con el nuevo saldo
+                        loggedInUser.likesDisponibles = result.newLikesBalance;
+                        localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                        updateWalletUI(loggedInUser);
+
+                        // Registrar visualmente la salida en el historial local
+                        const now = new Date();
+                        const dateStr = `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+                        globalHistoryData.unshift({
+                            date: dateStr, type: 'out', amount: amount,
+                            detail: `Retiro solicitado a ${method.toUpperCase()} (${destination})`
+                        });
+                        renderModernHistory(globalHistoryData);
+
+                        showAlertModal('Retiro en proceso', 'Tu solicitud ha sido recibida y los fondos están en revisión. Llegarán a tu cuenta pronto.');
+                    } else {
+                        showAlertModal('Error', result.message, true);
+                    }
+                } catch (error) {
+                    showAlertModal('Error de conexión', 'No pudimos procesar tu retiro. Intenta de nuevo.', true);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Solicitar';
+                }
             });
 
             document.getElementById('history-button').addEventListener('click', () => {
