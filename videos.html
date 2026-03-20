@@ -1235,61 +1235,94 @@
 
         async function handleLikeClick(likeArea, videoData) {
             const videoId = videoData.videoId;
-            // Limpiamos el username del creador
-            const receiverUsername = videoData.user ? videoData.user.replace('@', '') : 'creador';
             const iconDiv = likeArea.querySelector('.icon');
             const countSpan = likeArea.querySelector('.count');
-            
             if (iconDiv.classList.contains('liked')) return;
             
-            // Valor monetario del Like (60% de $15.000)
-            const VALOR_MONETARIO_LIKE = 9000;
-            
             try {
-                const result = await API.likeVideo(videoId, loggedInUser.username);
+                // Hacer petición directa para poder enviar el Avatar
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://likering-backend.onrender.com/api';
+                
+                const response = await fetch(`${BASE_URL}/videos/like`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        videoId: videoId, 
+                        username: loggedInUser.username,
+                        avatarUrl: loggedInUser.imageUrl 
+                    })
+                });
+                
+                const result = await response.json();
                 
                 if (result.success) {
-                    // Actualizar interfaz visual
                     iconDiv.classList.add('liked');
                     if (result.likes !== undefined) countSpan.textContent = result.likes;
                     saveLikedVideo(videoId);
-
-                    const now = new Date();
-                    const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-                    const videoTitle = videoData.titulo ? videoData.titulo.substring(0, 15) : 'Video';
-
-                    // 1. REGISTRAR SALIDA (En tu historial local)
-                    let myHistory = JSON.parse(localStorage.getItem(`history_${loggedInUser.username}`)) || [];
-                    myHistory.unshift({ 
-                        date: dateStr, 
-                        type: 'out', 
-                        detail: `Transferencia Like a @${receiverUsername} (Ref: ${videoTitle}...)`, 
-                        amount: VALOR_MONETARIO_LIKE 
-                    });
-                    localStorage.setItem(`history_${loggedInUser.username}`, JSON.stringify(myHistory));
-
-                    // 2. REGISTRAR INGRESO (En el historial del creador)
-                    // Nota: Esto solo se verá si el creador abre sesión en este mismo navegador.
-                    let receiverHistory = JSON.parse(localStorage.getItem(`history_${receiverUsername}`)) || [];
-                    receiverHistory.unshift({ 
-                        date: dateStr, 
-                        type: 'in', 
-                        detail: `Ingreso por Like de @${loggedInUser.username} (Ref: ${videoTitle}...)`, 
-                        amount: VALOR_MONETARIO_LIKE 
-                    });
-                    localStorage.setItem(`history_${receiverUsername}`, JSON.stringify(receiverHistory));
-
-                    // Actualizar el objeto del usuario en memoria para que la billetera no necesite recargar
+                    
                     loggedInUser.likesDisponibles = result.senderLikes;
                     localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
-
                 } else {
-                    alert(result.message); // Ejemplo: "No tienes likes disponibles"
+                    alert(result.message);
                 }
             } catch (error) {
                 console.error("Error al transferir like:", error);
             }
         }
+
+        // ==========================================
+        // SISTEMA DE NOTIFICACIONES PUSH EN TIEMPO REAL
+        // ==========================================
+        const notifAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+        function showPushNotification(avatar, message) {
+            let container = document.getElementById('notification-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'notification-container';
+                container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; overflow: hidden; padding: 10px;';
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.style.cssText = 'background: rgba(20,20,20,0.95); border: 1px solid #fe2c55; border-radius: 16px; padding: 15px; display: flex; align-items: center; gap: 15px; color: white; box-shadow: 0 10px 30px rgba(254,44,85,0.3); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 300px;';
+            
+            toast.innerHTML = `
+                <img src="${avatar || 'https://i.postimg.cc/FKgZRLrW/image.png'}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fe2c55;">
+                <div style="flex: 1; font-size: 0.85rem; line-height: 1.3;">
+                    <strong style="color: #fe2c55; display: block; margin-bottom: 3px;">¡Nuevo Ingreso!</strong>
+                    ${message}
+                </div>
+            `;
+            
+            container.appendChild(toast);
+            notifAudio.play().catch(e => console.log('Silenciado por el navegador'));
+            
+            setTimeout(() => toast.style.transform = 'translateX(0)', 100);
+            setTimeout(() => {
+                toast.style.transform = 'translateX(120%)';
+                setTimeout(() => toast.remove(), 400);
+            }, 5000);
+        }
+
+        // Buscar notificaciones nuevas cada 5 segundos
+        setInterval(async () => {
+            if (!loggedInUser) return;
+            try {
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://likering-backend.onrender.com/api';
+                
+                const res = await fetch(`${BASE_URL}/notifications?username=${loggedInUser.username}`);
+                const data = await res.json();
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(notif => {
+                        showPushNotification(notif.avatar_url, notif.message);
+                    });
+                }
+            } catch(e) {}
+        }, 5000);
+        // ==========================================
 
        async function recordView(videoId, username) {
     const currentWrapper = loadedVideoElements[currentVideoIndex];

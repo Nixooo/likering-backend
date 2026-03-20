@@ -1148,18 +1148,44 @@
             `).join('');
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
             if (!loggedInUser) return window.location.href = 'index.html';
 
             updateWalletUI(loggedInUser);
             renderPlans();
 
-            // Evitamos la alerta nativa si Wompi redirige con parametros URL
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('status') === 'success') {
-                showAlertModal('¡Transacción confirmada!', 'Los fondos se han acreditado.');
-                window.history.replaceState({}, document.title, window.location.pathname);
+            // OBTENER DATOS FRESCOS DESDE EL SERVIDOR (Evita el bug de la recarga)
+            try {
+                // 1. Sincronizar Balances
+                const profileRes = await fetch(`${API_BASE_URL}/user/profile?user=${loggedInUser.username}`);
+                const profileData = await profileRes.json();
+                if (profileData.success) {
+                    loggedInUser.likesDisponibles = profileData.data.likesDisponibles;
+                    loggedInUser.likesGanados = profileData.data.likesGanados;
+                    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+                    updateWalletUI(loggedInUser);
+                }
+
+                // 2. Sincronizar Historial Real desde Base de Datos
+                const historyRes = await fetch(`${API_BASE_URL}/wallet/history?username=${loggedInUser.username}`);
+                const historyData = await historyRes.json();
+                if (historyData.success && historyData.data.length > 0) {
+                    const formattedHistory = historyData.data.map(item => {
+                        const date = new Date(item.created_at);
+                        return {
+                            date: `${date.getDate()}/${date.getMonth()+1} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`,
+                            type: item.type,
+                            detail: item.detail,
+                            amount: parseFloat(item.amount)
+                        };
+                    });
+                    renderModernHistory(formattedHistory);
+                } else {
+                    renderModernHistory([{ date: 'Hoy', type: 'in', detail: 'Apertura de Billetera Likering', amount: 0 }]);
+                }
+            } catch(e) {
+                console.error("Error sincronizando base de datos:", e);
             }
 
             document.getElementById('add-funds-button').addEventListener('click', () => {
@@ -1173,47 +1199,18 @@
                 openModal('withdraw-modal');
             });
 
-            document.getElementById('transfer-button').addEventListener('click', () => {
-                document.getElementById('transfer-username').value = '';
-                document.getElementById('transfer-amount').value = '';
-                openModal('transfer-modal');
-            });
-
             document.querySelectorAll('[data-close-modal]').forEach(button => {
                 button.addEventListener('click', () => closeModal(button.getAttribute('data-close-modal')));
             });
 
             document.getElementById('confirm-withdraw').addEventListener('click', () => {
-                const amount = document.getElementById('withdraw-amount').value;
-                if (!amount || amount < 10000) {
-                    showAlertModal('Monto Inválido', 'El monto mínimo de retiro es $10.000 COP', true);
-                    return;
-                }
                 closeModal('withdraw-modal');
                 showAlertModal('Retiro en proceso', 'Tu solicitud se procesará en menos de 24 horas.');
             });
 
-            document.getElementById('confirm-transfer').addEventListener('click', () => {
-                const user = document.getElementById('transfer-username').value;
-                const amount = document.getElementById('transfer-amount').value;
-                if (!user || !amount) {
-                    showAlertModal('Campos Incompletos', 'Completa todos los campos para transferir.', true);
-                    return;
-                }
-                closeModal('transfer-modal');
-                showAlertModal('Transferencia Exitosa', `Se enviarán ${amount} likes a ${user}.`);
-            });
-
-            document.getElementById('history-button').addEventListener('click', () => {
-                showAlertModal('Historial', 'Esta función estará disponible muy pronto.');
-            });
-
             document.getElementById('export-history-button').addEventListener('click', () => {
                 const rows = document.querySelector('#history-table tbody').querySelectorAll('tr');
-                if (rows.length === 0) {
-                    showAlertModal('Sin datos', 'No hay movimientos para exportar.', true);
-                    return;
-                }
+                if (rows.length === 0) return showAlertModal('Sin datos', 'No hay movimientos para exportar.', true);
                 let csv = 'Fecha,Tipo,Detalle,Monto\n';
                 rows.forEach(row => {
                     const cols = row.querySelectorAll('td');
@@ -1224,14 +1221,10 @@
                 link.download = 'Historial_Likering.csv';
                 link.click();
             });
-
-            const userHistory = JSON.parse(localStorage.getItem(`history_${loggedInUser.username}`)) || [];
-            if (userHistory.length === 0) {
-                // Mensaje inicial si la cuenta es nueva y no hay historial
-                userHistory.push({ date: 'Al registrarse', type: 'in', detail: 'Apertura de Billetera Likering', amount: 0 });
-            }
-            renderModernHistory(userHistory);
         });
+
+
+
     </script>
 
 </body>

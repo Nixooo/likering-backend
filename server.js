@@ -686,94 +686,85 @@ app.post('/api/videos/delete', async (req, res) => {
 });
 
 
-// Dar like a un video (Transferencia de valor entre usuarios)
+// ==========================================
+// AUTO-CREAR TABLAS DE HISTORIAL Y NOTIFICACIONES
+// ==========================================
+pool.query(`
+    CREATE TABLE IF NOT EXISTS wallet_history (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50),
+        type VARCHAR(10),
+        detail TEXT,
+        amount DECIMAL(10,2),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50),
+        message TEXT,
+        avatar_url TEXT,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+`).then(() => console.log('✅ Tablas de historial y notificaciones listas')).catch(console.error);
+
+// Dar like a un video (Transferencia Oficial de Valor)
 app.post('/api/videos/like', async (req, res) => {
     try {
-        const { videoId, username } = req.body;
+        const { videoId, username, avatarUrl } = req.body;
         if (!videoId || !username) return res.json({ success: false, message: 'Faltan datos' });
 
         const user = await getUserByUsername(username);
         if (!user) return res.json({ success: false, message: 'Usuario emisor no encontrado' });
 
-        // Usamos el ID real de la base de datos (user_id según tus imágenes de DBeaver)
         const senderId = user.user_id || user.id;
         const client = await pool.connect();
         
         try {
             await client.query('BEGIN');
 
-            // 1. Verificar si ya existe el like
-            const existingLike = await client.query(
-                'SELECT 1 FROM video_likes WHERE video_id = $1 AND username = $2',
-                [videoId, username]
-            );
+            const existingLike = await client.query('SELECT 1 FROM video_likes WHERE video_id = $1 AND username = $2', [videoId, username]);
             if (existingLike.rows.length > 0) {
                 await client.query('ROLLBACK');
-                return res.json({ success: false, message: 'Ya transferiste valor a este video' });
+                return res.json({ success: false, message: 'Ya transferiste un like a este video' });
             }
 
-            // 2. Verificar saldo del emisor (quien da el like)
-            const senderBalance = await client.query(
-                'SELECT likes_disponibles FROM users WHERE user_id = $1 FOR UPDATE',
-                [senderId]
-            );
+            const senderBalance = await client.query('SELECT likes_disponibles FROM users WHERE user_id = $1 OR id = $1 FOR UPDATE', [senderId]);
             if ((senderBalance.rows[0]?.likes_disponibles || 0) <= 0) {
                 await client.query('ROLLBACK');
-                return res.json({ success: false, message: 'No tienes likes disponibles en tu billetera' });
+                return res.json({ success: false, message: 'Tu billetera no tiene likes disponibles' });
             }
 
-            // 3. Identificar al creador del video
-            const videoData = await client.query('SELECT username FROM videos WHERE video_id = $1', [videoId]);
+            const videoData = await client.query('SELECT username, titulo FROM videos WHERE video_id = $1', [videoId]);
             const creatorUsername = videoData.rows[0]?.username;
+            const videoTitle = videoData.rows[0]?.titulo || 'Video';
 
             if (!creatorUsername) {
                 await client.query('ROLLBACK');
-                return res.json({ success: false, message: 'No se encontró al creador del video' });
+                return res.json({ success: false, message: 'No se encontró al creador' });
             }
 
-            // 4. EJECUTAR TRANSFERENCIA EN DB
-            // Restar al que da el like
-            await client.query(
-                'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE user_id = $1',
-                [senderId]
-            );
+            // CORRECCIÓN MATEMÁTICA: COALESCE evita que los valores nulos rompan la transacción
+            await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) - 1 WHERE user_id = $1 OR id = $1', [senderId]);
+            await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + 1, likes_ganados = COALESCE(likes_ganados, 0) + 1 WHERE username = $1', [creatorUsername]);
 
-            // Sumar al que recibe el like (El creador)
-            await client.query(
-                'UPDATE users SET likes_disponibles = likes_disponibles + 1, likes_ganados = likes_ganados + 1 WHERE username = $1',
-                [creatorUsername]
-            );
+            await client.query('INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)', [videoId, senderId, username]);
+            const updateVideo = await client.query('UPDATE videos SET likes = likes + 1 WHERE video_id = $1 RETURNING likes', [videoId]);
 
-            // 5. Registrar el like en el video
-            await client.query(
-                'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
-                [videoId, senderId, username]
-            );
-            const videoUpdate = await client.query(
-                'UPDATE videos SET likes = likes + 1 WHERE video_id = $1 RETURNING likes',
-                [videoId]
-            );
+            // REGISTRAR HISTORIAL EN BASE DE DATOS
+            const VALOR_MONETARIO = 9000;
+            await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
+                [username, 'out', `Envío de Like a @${creatorUsername} (${videoTitle.substring(0, 15)}...)`, VALOR_MONETARIO]);
+            
+            await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
+                [creatorUsername, 'in', `Ingreso por Like de @${username} (${videoTitle.substring(0, 15)}...)`, VALOR_MONETARIO]);
 
-
+            // ENVIAR NOTIFICACIÓN PUSH AL RECEPTOR
+            await client.query('INSERT INTO notifications (username, message, avatar_url) VALUES ($1, $2, $3)', 
+                [creatorUsername, `@${username} te dio un like y ganaste $9.000 COP`, avatarUrl || '']);
 
             await client.query('COMMIT');
-            
-            // Preparamos los datos del historial para que el frontend los guarde
-            const now = new Date();
-            const dateStr = `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-            
-            res.json({ 
-                success: true, 
-                likes: videoUpdate.rows[0].likes,
-                senderLikes: (senderBalance.rows[0].likes_disponibles - 1),
-                receiverUsername: creatorUsername, // Enviamos el nombre del creador para el historial
-                historyData: {
-                    date: dateStr,
-                    videoTitle: videoData.rows[0].titulo || 'Video'
-                }
-            });
-
-
+            res.json({ success: true, isLiked: true, likes: updateVideo.rows[0].likes, senderLikes: (senderBalance.rows[0].likes_disponibles - 1) });
         } catch (e) {
             await client.query('ROLLBACK');
             throw e;
@@ -781,8 +772,59 @@ app.post('/api/videos/like', async (req, res) => {
             client.release();
         }
     } catch (error) {
-        console.error('❌ Error en transferencia de like:', error.message);
         res.json({ success: false, message: 'Error en la base de datos' });
+    }
+});
+
+// NUEVO: Obtener historial de Billetera
+app.get('/api/wallet/history', async (req, res) => {
+    try {
+        const { username } = req.query;
+        const result = await pool.query('SELECT * FROM wallet_history WHERE username = $1 ORDER BY created_at DESC LIMIT 30', [username]);
+        res.json({ success: true, data: result.rows });
+    } catch (error) {
+        res.json({ success: false, data: [] });
+    }
+});
+
+// NUEVO: Leer notificaciones
+app.get('/api/notifications', async (req, res) => {
+    try {
+        const { username } = req.query;
+        const result = await pool.query('SELECT * FROM notifications WHERE username = $1 AND is_read = FALSE ORDER BY created_at ASC', [username]);
+        if (result.rows.length > 0) {
+            await pool.query('UPDATE notifications SET is_read = TRUE WHERE username = $1', [username]);
+        }
+        res.json({ success: true, data: result.rows });
+    } catch (error) {
+        res.json({ success: false, data: [] });
+    }
+});
+
+// REEMPLAZAR API PERFIL (Para traer la suma fresca al abrir billetera)
+app.get('/api/user/profile', async (req, res) => {
+    try {
+        const { user } = req.query;
+        if (!user) return res.json({ success: false, message: 'Usuario requerido' });
+        const userData = await getUserByUsername(user);
+        if (!userData) return res.json({ success: false, message: 'Usuario no encontrado' });
+
+        const videosResult = await pool.query('SELECT COUNT(*) as count FROM videos WHERE username = $1', [user]);
+        const followersResult = await pool.query('SELECT COUNT(*) as count FROM follows WHERE following_username = $1', [user]);
+        const followingResult = await pool.query('SELECT COUNT(*) as count FROM follows WHERE follower_username = $1', [user]);
+        const likesResult = await pool.query('SELECT COALESCE(SUM(v.likes), 0) as total_likes FROM videos v WHERE v.username = $1', [user]);
+
+        res.json({
+            success: true,
+            data: {
+                id: userData.id || userData.user_id, username: userData.username, imageUrl: userData.image_url, plan: userData.plan || 'azul',
+                followers: parseInt(followersResult.rows[0].count) || 0, following: parseInt(followingResult.rows[0].count) || 0,
+                likes: parseInt(likesResult.rows[0].total_likes) || 0, posts: parseInt(videosResult.rows[0].count) || 0,
+                likesDisponibles: userData.likes_disponibles || 0, likesGanados: userData.likes_ganados || 0
+            }
+        });
+    } catch (error) {
+        res.json({ success: false, message: 'Error al obtener perfil' });
     }
 });
 
