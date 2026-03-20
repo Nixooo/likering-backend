@@ -668,16 +668,45 @@
     .add-comment-area input{flex-grow:1;padding:12px 15px;border:none;background-color:#2c2c2c;border-radius:20px;color:#fff;outline:none}
     .add-comment-area input::placeholder{color:#888}
     .add-comment-area .send-comment-btn{background:none;border:none;color:#fff;font-size:1.3rem;cursor:pointer;padding:5px}
-    .share-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}
-    .share-panel-header h4{margin:0;font-weight:600;font-size:1.1em}
-    .share-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:20px}
-    .share-option{display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer}
-    .share-icon{width:65px;height:65px;border-radius:12px;display:flex;justify-content:center;align-items:center;font-size:2em;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .2s ease-out,box-shadow .2s ease-out}
-    .share-icon:hover{transform:translateY(-5px) scale(1.05);box-shadow:0 8px 20px rgba(0,0,0,.4)}
-    .share-icon.whatsapp{background:linear-gradient(135deg,#25d366,#128c7e)}
-    .share-icon.instagram{background:radial-gradient(circle at 30% 107%,#fdf497 0,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285aeb 90%)}
-    .share-icon.copy-link{background:linear-gradient(135deg,#6c757d,#343a40)}
-    .share-option span{font-size:.8em;font-weight:500;color:#ccc}
+    /* ==== MEJORA INTERFAZ COMPARTIR (Estilo TikTok) ==== */
+    .share-panel {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #181818;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+        transform: translateY(100%);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        padding: 20px;
+        box-sizing: border-box;
+        box-shadow: 0 -5px 25px rgba(0,0,0,0.5);
+    }
+    .share-menu-container.active .share-panel {
+        transform: translateY(0);
+    }
+    .share-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px; padding-bottom: 15px; border-bottom: 1px solid #333;}
+    .share-panel-header h4{margin:0;font-weight:600;font-size:1.1em; color: #fff;}
+    .close-share { color: #888; font-size: 1.2rem; cursor: pointer; }
+    
+    /* Scroll horizontal para los iconos */
+    .share-grid {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        padding-bottom: 15px;
+        scrollbar-width: none; /* Ocultar scrollbar Firefox */
+    }
+    .share-grid::-webkit-scrollbar { display: none; } /* Ocultar scrollbar Chrome */
+    
+    .share-option{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer; min-width: 65px;}
+    .share-icon{width:55px;height:55px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:1.6em;color:#fff;transition:transform .2s ease-out;}
+    .share-icon:hover{transform:scale(1.1);}
+    .share-icon.whatsapp{background:#25d366;}
+    .share-icon.instagram{background:radial-gradient(circle at 30% 107%,#fdf497 0,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285aeb 90%);}
+    .share-icon.copy-link{background:#444;}
+    .share-option span{font-size:.75em;font-weight:500;color:#ccc; text-align: center; white-space: nowrap;}
     .download-progress-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.7);z-index:999;display:flex;justify-content:center;align-items:center;opacity:0;visibility:hidden;transition:opacity .3s,visibility 0s .3s}
     .download-progress-overlay.active{opacity:1;visibility:visible;transition:opacity .3s}
     .download-progress-box{background-color:#282828;color:#fff;padding:20px 30px;border-radius:12px;text-align:center;font-weight:600}
@@ -2028,6 +2057,69 @@
         shareMenuContainer.addEventListener('click', e => {
             if (e.target === shareMenuContainer) shareMenuContainer.classList.remove('active')
         });
+
+        // ==========================================
+        // LÓGICA DE COMPARTIR (Links Profundos / Deep Links)
+        // ==========================================
+        function getShareableLink() {
+            const currentVideoData = loadedVideoElements[currentVideoIndex]?.videoData;
+            if (!currentVideoData) return window.location.href;
+            
+            // Creamos la URL pública del video. 
+            // Si el usuario tiene la App "Likering" instalada y configurada con App Links, 
+            // su celular interceptará esta URL y abrirá la App automáticamente.
+            const baseUrl = window.location.origin;
+            const cleanUsername = currentVideoData.user.replace('@', '');
+            return `${baseUrl}/videos.html?user=${cleanUsername}&videoId=${currentVideoData.videoId}`;
+        }
+
+        // Compartir por WhatsApp
+        const btnWhatsapp = document.querySelector('.share-icon.whatsapp').parentElement;
+        btnWhatsapp.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const link = getShareableLink();
+            const text = `¡Mira este increíble video en Likering! 🚀\n\n${link}`;
+            
+            // Abre la app de WhatsApp predeterminada
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+            shareMenuContainer.classList.remove('active');
+        });
+
+        // Copiar Enlace
+        const btnCopyLink = document.querySelector('.share-icon.copy-link').parentElement;
+        btnCopyLink.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const link = getShareableLink();
+            try {
+                // Intenta usar el portapapeles moderno
+                await navigator.clipboard.writeText(link);
+                alert('¡Enlace copiado al portapapeles! 📋');
+            } catch (err) {
+                // Método alternativo para navegadores antiguos/móviles estrictos
+                const tempInput = document.createElement('input');
+                tempInput.value = link;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                alert('¡Enlace copiado al portapapeles! 📋');
+            }
+            shareMenuContainer.classList.remove('active');
+        });
+
+        // (Opcional) Instagram: Instagram no permite pre-cargar texto mediante enlace web,
+        // pero podemos copiar el link automáticamente y abrir la app.
+        const btnInstagram = document.querySelector('.share-icon.instagram').parentElement;
+        btnInstagram.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await navigator.clipboard.writeText(getShareableLink());
+            alert('¡Enlace copiado! Abre Instagram para pegarlo en tu historia o mensaje.');
+            shareMenuContainer.classList.remove('active');
+        });
+        // ==========================================
+
+
+
         downloadButton.addEventListener('click', async (e) => {
             e.stopPropagation();
             optionsMenuContainer.classList.remove('active');
