@@ -349,16 +349,11 @@
                     </ul>
                     <div class="btn-buy-container">
                         <form>
-                            <script 
-                                data-wompi-button
-                                data-render="button" 
-                                data-public-key="pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV" 
-                                data-currency="COP" 
-                                data-amount-in-cents="${plan.cents}" 
-                                data-name="${plan.name}"
-                                data-reference="PLAN_${plan.id}_REPLACE_ME" 
-                                data-redirect-url="https://likering.onrender.com/billetera.html?status=success&plan=${plan.id.toLowerCase()}"
-                            ></script>
+                            <div data-wompi-button-placeholder 
+                                 data-amount-in-cents="${plan.cents}" 
+                                 data-name="${plan.name}" 
+                                 data-plan-id="${plan.id}">
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -372,18 +367,12 @@
             if (!loggedInUser) return;
             
             const userId = loggedInUser.id || loggedInUser.user_id;
-            // Seleccionar solo los scripts que tienen nuestro atributo personalizado
-            const scripts = document.querySelectorAll('script[data-wompi-button]');
+            const placeholders = document.querySelectorAll('[data-wompi-button-placeholder]');
 
-            for (const script of scripts) {
-                const amountInCents = script.getAttribute('data-amount-in-cents');
-                const refAttr = script.getAttribute('data-reference');
-                if (!refAttr) continue;
-                
-                const planMatch = refAttr.match(/PLAN_([A-Z]+)_REPLACE_ME/);
-                if (!planMatch) continue;
-
-                const planId = planMatch[1];
+            for (const placeholder of placeholders) {
+                const amountInCents = placeholder.getAttribute('data-amount-in-cents');
+                const planId = placeholder.getAttribute('data-plan-id');
+                const planName = placeholder.getAttribute('data-name');
                 const reference = `PLAN_${planId}_${userId}_${Date.now()}`;
                 const currency = 'COP';
 
@@ -396,19 +385,25 @@
                     
                     if (response.ok) {
                         const { signature } = await response.json();
+                        
+                        // Crear el script de Wompi dinámicamente
+                        const script = document.createElement('script');
+                        script.src = "https://checkout.wompi.co/widget.js";
+                        script.setAttribute('data-render', 'button');
+                        script.setAttribute('data-public-key', 'pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV');
+                        script.setAttribute('data-currency', 'COP');
+                        script.setAttribute('data-amount-in-cents', amountInCents);
+                        script.setAttribute('data-name', planName);
                         script.setAttribute('data-reference', reference);
                         script.setAttribute('data-signature:integrity', signature);
+                        script.setAttribute('data-redirect-url', `https://likering.onrender.com/billetera.html?status=success&plan=${planId.toLowerCase()}`);
+                        
+                        placeholder.appendChild(script);
                     }
                 } catch (error) {
                     console.error(`Error firma ${planId}:`, error);
                 }
             }
-
-            // CARGA ÚNICA DEL WIDGET: Solo después de tener todas las firmas
-            const wompiScript = document.createElement('script');
-            wompiScript.src = "https://checkout.wompi.co/widget.js";
-            wompiScript.type = "text/javascript";
-            document.body.appendChild(wompiScript);
         }
 
         document.addEventListener('DOMContentLoaded', renderPlans);
