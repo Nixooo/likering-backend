@@ -737,10 +737,14 @@
                         <i class="fas fa-info-circle"></i> Dinero disponible para retirar
                     </p>
                 </div>
-                <div class="balance-stats">
+                <div class="balance-stats" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
                     <div class="stat-group">
-                        <span class="label">Likes Disponibles</span>
+                        <span class="label">Disponibles</span>
                         <span class="value" id="likes-disponibles">0</span>
+                    </div>
+                    <div class="stat-group">
+                        <span class="label">Obtenidos</span>
+                        <span class="value" id="likes-obtenidos">0</span>
                     </div>
                     <div class="stat-group" style="display: none;">
                         <span class="label">Dinero Generado</span>
@@ -1087,14 +1091,20 @@
             document.body.className = `plan-${plan}`;
             document.getElementById('plan-name').textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
             
-            const likes = userData.likesDisponibles || 0;
-            document.getElementById('likes-disponibles').textContent = likes;
+            // Datos desde el servidor/memoria
+            const disponibles = parseInt(userData.likesDisponibles) || 0;
+            const ganados = parseInt(userData.likesGanados) || 0;
             
-            // MATEMÁTICA APLICADA: 1 Like = $15.000. El usuario recibe el 60% ($9.000 por like)
-            const dineroValue = likes * 9000;
+            // Actualizar etiquetas individuales
+            document.getElementById('likes-disponibles').textContent = disponibles;
+            document.getElementById('likes-obtenidos').textContent = ganados;
+            
+            // MATEMÁTICA: El balance total es la suma de ambos multiplicado por $9.000 (el 60% de 15k)
+            const totalLikes = disponibles + ganados;
+            const dineroTotal = totalLikes * 9000;
             
             const balanceElement = document.getElementById('balance-amount');
-            if (balanceElement) balanceElement.textContent = formatCurrency(dineroValue);
+            if (balanceElement) balanceElement.textContent = formatCurrency(dineroTotal);
         }
 
         function renderModernHistory(historyData) {

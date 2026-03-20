@@ -754,15 +754,26 @@ app.post('/api/videos/like', async (req, res) => {
                 [videoId]
             );
 
+
+
             await client.query('COMMIT');
-            console.log(`✅ Transferencia Exitosa: De @${username} a @${creatorUsername} por Video ${videoId}`);
+            
+            // Preparamos los datos del historial para que el frontend los guarde
+            const now = new Date();
+            const dateStr = `${now.getDate()}/${now.getMonth()+1} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
             
             res.json({ 
                 success: true, 
-                isLiked: true, 
                 likes: videoUpdate.rows[0].likes,
-                senderLikes: (senderBalance.rows[0].likes_disponibles - 1)
+                senderLikes: (senderBalance.rows[0].likes_disponibles - 1),
+                receiverUsername: creatorUsername, // Enviamos el nombre del creador para el historial
+                historyData: {
+                    date: dateStr,
+                    videoTitle: videoData.rows[0].titulo || 'Video'
+                }
             });
+
+
         } catch (e) {
             await client.query('ROLLBACK');
             throw e;
