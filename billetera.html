@@ -238,7 +238,7 @@
         /* Grid de Acciones Rápidas */
         .quick-actions {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr; /* Cambiado a 2 columnas iguales */
             gap: 15px;
         }
 
@@ -724,7 +724,6 @@
                 </div>
             </header>
 
-            <!-- Tarjeta de Balance -->
             <div class="main-balance-card">
                 <div class="card-top">
                     <div class="plan-badge" id="plan-name">Cargando...</div>
@@ -736,6 +735,9 @@
                     <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 5px;">
                         <i class="fas fa-info-circle"></i> Dinero disponible para retirar
                     </p>
+                    <p style="font-size: 0.85rem; color: var(--plan-color-principal); margin-top: 10px; font-weight: 600;">
+                        Límite Balance actual: <span id="limite-balance">$0</span>
+                    </p>
                 </div>
                 <div class="balance-stats" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
                     <div class="stat-group">
@@ -745,6 +747,10 @@
                     <div class="stat-group">
                         <span class="label">Obtenidos</span>
                         <span class="value" id="likes-obtenidos">0</span>
+                    </div>
+                    <div class="stat-group">
+                        <span class="label">Límite de likes</span>
+                        <span class="value" id="limite-likes">0</span>
                     </div>
                     <div class="stat-group" style="display: none;">
                         <span class="label">Dinero Generado</span>
@@ -779,7 +785,7 @@
             </div>
 
             <!-- Guía de Pruebas Sandbox Wompi -->
-            <div style="background: rgba(255, 149, 0, 0.08); border: 1px dashed #ff9500; border-radius: 24px; padding: 20px; margin-top: 10px;">
+            <div style="display: none; background: rgba(255, 149, 0, 0.08); border: 1px dashed #ff9500; border-radius: 24px; padding: 20px; margin-top: 10px;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
                     <i class="fas fa-flask" style="color: #ff9500;"></i>
                     <h3 style="font-size: 0.95rem; font-weight: 700; color: #ff9500;">Modo Sandbox: Datos de Prueba</h3>
@@ -799,6 +805,13 @@
                     </div>
                 </div>
             </div>
+
+
+
+
+
+
+
 
             <!-- Historial y Utilidades -->
             <div class="history-section">
@@ -868,6 +881,28 @@
             </div>
         </div>
     </div>
+
+
+
+    <div class="modal-overlay" id="history-modal">
+        <div class="modern-modal" style="max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header-modern" style="margin-bottom: 15px;">
+                <h3>Historial Completo</h3>
+            </div>
+            <div class="history-list" id="full-history-list" style="overflow-y: auto; padding-right: 10px; margin-top: 0; flex: 1;">
+                </div>
+            <div class="modal-footer" style="grid-template-columns: 1fr; margin-top: 15px;">
+                <button class="btn-modal btn-cancel" data-close-modal="history-modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
 
     <div class="modal-overlay" id="transfer-modal">
         <div class="modern-modal">
@@ -1121,15 +1156,34 @@
             document.getElementById('likes-disponibles').textContent = disponibles;
             document.getElementById('likes-obtenidos').textContent = ganados;
             
-            // MATEMÁTICA: El balance total es la suma de ambos multiplicado por $9.000 (el 60% de 15k)
+            // MATEMÁTICA: El balance total
             const totalLikes = disponibles + ganados;
             const dineroTotal = totalLikes * 9000;
             
             const balanceElement = document.getElementById('balance-amount');
             if (balanceElement) balanceElement.textContent = formatCurrency(dineroTotal);
+
+            // NUEVO: ACTUALIZAR LÍMITES DEL PLAN EN PANTALLA
+            const planActual = planesDisponibles.find(p => p.id.toLowerCase() === plan.toLowerCase());
+            if (planActual) {
+                // Actualizar límite de likes (Ej: 400)
+                document.getElementById('limite-likes').textContent = planActual.limit;
+                
+                // Actualizar límite monetario (Convirtiendo "$2M" a formato numérico real)
+                let limiteDinero = planActual.earnings;
+                if (limiteDinero.includes('M')) {
+                    // Quitamos el signo $ y la M, lo multiplicamos por 1 millón y lo formateamos
+                    let numeroBase = parseFloat(limiteDinero.replace('$', '').replace('M', ''));
+                    limiteDinero = formatCurrency(numeroBase * 1000000);
+                }
+                document.getElementById('limite-balance').textContent = limiteDinero;
+            }
         }
 
+        let globalHistoryData = []; // Variable global para guardar el historial completo
+
         function renderModernHistory(historyData) {
+            globalHistoryData = historyData; // Guardar en memoria para el modal
             const container = document.getElementById('wallet-history-list');
             const emptyMsg = document.getElementById('history-empty');
             
@@ -1140,7 +1194,11 @@
             }
 
             emptyMsg.style.display = 'none';
-            container.innerHTML = historyData.map(item => `
+            
+            // MOSTRAR SOLAMENTE LOS ÚLTIMOS 5 EN LA BILLETERA PRINCIPAL
+            const top5History = historyData.slice(0, 5);
+            
+            container.innerHTML = top5History.map(item => `
                 <div class="history-item">
                     <div class="history-item-left">
                         <div class="history-item-icon ${item.type === 'in' ? 'icon-in' : 'icon-out'}">
@@ -1229,6 +1287,36 @@
                 closeModal('withdraw-modal');
                 showAlertModal('Retiro en proceso', 'Tu solicitud se procesará en menos de 24 horas.');
             });
+
+            document.getElementById('history-button').addEventListener('click', () => {
+                const fullContainer = document.getElementById('full-history-list');
+                if (!globalHistoryData || globalHistoryData.length === 0) {
+                    fullContainer.innerHTML = '<p style="text-align:center; color:var(--text-secondary);">No hay movimientos</p>';
+                } else {
+                    fullContainer.innerHTML = globalHistoryData.map(item => `
+                        <div class="history-item" style="margin-bottom: 10px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 18px;">
+                            <div class="history-item-left">
+                                <div class="history-item-icon ${item.type === 'in' ? 'icon-in' : 'icon-out'}">
+                                    <i class="fas ${item.type === 'in' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                                </div>
+                                <div class="history-item-info">
+                                    <h4>${item.detail}</h4>
+                                    <p>${item.date}</p>
+                                </div>
+                            </div>
+                            <div class="history-item-right">
+                                <span class="history-item-amount ${item.type === 'in' ? 'amount-in' : 'amount-out'}">
+                                    ${item.type === 'in' ? '+' : '-'}${formatCurrency(item.amount)}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                openModal('history-modal');
+            });
+
+
+
 
             document.getElementById('export-history-button').addEventListener('click', () => {
                 const rows = document.querySelector('#history-table tbody').querySelectorAll('tr');
