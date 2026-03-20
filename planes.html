@@ -397,10 +397,10 @@
                 });
                 const { signature } = await response.json();
 
-                const checkout = new WompiCheckout({
+                const checkout = new WidgetCheckout({
                     currency: currency,
                     amountInCents: amountInCents,
-                    publicKey: 'pub_test_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV', // ✅ Corregido
+                    publicKey: 'pub_test_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV',
                     signature: signature,
                     reference: reference,
                     redirectUrl: `${window.location.origin}/billetera.html?status=success&plan=${planId.toLowerCase()}`
