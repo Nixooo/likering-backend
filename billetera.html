@@ -886,8 +886,7 @@
                 </div>
             </div>
 
-            <!-- Likes Ganados (Info Adicional) -->
-            <div style="background: var(--glass-bg); border-radius: 24px; padding: 20px; border: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: none; background: var(--glass-bg); border-radius: 24px; padding: 20px; border: 1px solid var(--glass-border); justify-content: space-between; align-items: center;">
                 <div>
                     <span style="font-size: 0.75rem; color: var(--text-secondary); display: block;">Total Likes Ganados</span>
                     <span style="font-size: 1.1rem; font-weight: 700;" id="likes-ganados">0</span>
@@ -896,6 +895,9 @@
                     <i class="fas fa-heart" style="font-size: 0.9rem;"></i>
                 </div>
             </div>
+
+
+
         </div>
     </div>
 
@@ -950,6 +952,25 @@
         </div>
     </div>
 
+
+    <div class="modal-overlay" id="alert-modal">
+        <div class="modern-modal" style="text-align: center;">
+            <div class="modal-header-modern">
+                <div style="font-size: 3.5rem; margin-bottom: 15px;">
+                    <i class="fas fa-check-circle" id="alert-icon" style="color: var(--plan-color-principal);"></i>
+                </div>
+                <h3 id="alert-title">Éxito</h3>
+                <p id="alert-message">Operación realizada correctamente.</p>
+            </div>
+            <div class="modal-footer" style="grid-template-columns: 1fr; margin-top: 20px;">
+                <button class="btn-modal btn-confirm" onclick="closeModal('alert-modal')">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
     <!-- Contenedor para el widget de Wompi (Formulario dinámico) -->
     <div id="wompi-form-container" style="display: none;"></div>
 
@@ -960,56 +981,35 @@
     <script src="config.js"></script>
     
     <script>
+
         async function openWompiCheckout(planId, amountInCents, planName) {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            if (!loggedInUser) return alert('Debes iniciar sesión para realizar compras');
+            if (!loggedInUser) return showAlertModal('Atención', 'Debes iniciar sesión para comprar', true);
             
             const userId = loggedInUser.id || loggedInUser.user_id;
             const reference = planId ? `PLAN_${planId}_${userId}_${Date.now()}` : `RECARGA_${userId}_${Date.now()}`;
             const currency = 'COP';
-
             const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
             
             try {
                 let signature;
-                let lastResponseText = '';
-                let lastStatus = 0;
-
                 for (let attempt = 0; attempt < 5; attempt++) {
                     const response = await fetch(signatureUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ reference, amountInCents, currency })
                     });
-
-                    lastStatus = response.status;
-                    lastResponseText = await response.text();
                     
-                    const textTrimmed = (lastResponseText || '').trim();
-                    const looksLikeHtml = textTrimmed.startsWith('<') || textTrimmed.includes('Service waking up');
-
-                    if (response.ok && textTrimmed && !looksLikeHtml) {
-                        let signatureData;
-                        try {
-                            signatureData = JSON.parse(lastResponseText);
-                        } catch (e) {
-                            throw new Error(`Respuesta no JSON: ${lastResponseText}`);
-                        }
-                        signature = signatureData && signatureData.signature;
+                    const textTrimmed = (await response.text() || '').trim();
+                    if (response.ok && textTrimmed && !textTrimmed.startsWith('<')) {
+                        signature = JSON.parse(textTrimmed).signature;
                         if (signature) break;
                     }
-
-                    if (attempt < 4) {
-                        await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
-                    }
+                    if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
                 }
 
-                if (!signature) {
-                    throw new Error(`Firma inválida HTTP ${lastStatus}`);
-                }
-
-                if (typeof WidgetCheckout === 'undefined') {
-                    throw new Error('Script de Wompi no cargado.');
+                if (!signature || typeof WidgetCheckout === 'undefined') {
+                    throw new Error('No se pudo obtener la firma o el script.');
                 }
 
                 const checkout = new WidgetCheckout({
@@ -1017,21 +1017,37 @@
                     amountInCents: amountInCents,
                     publicKey: 'pub_test_SWcuYJ81fDcaXtCfsYUrAAKv0ZvH4ywN',
                     signature: { integrity: signature },
-                    reference: reference,
-                    redirectUrl: `${window.location.origin}/billetera.html${planId ? `?status=success&plan=${planId.toLowerCase()}` : ''}`
+                    reference: reference
+                    // Eliminamos el redirectUrl para evitar que la página se recargue
                 });
 
                 checkout.open(function (result) {
                     if (result.transaction && result.transaction.status === 'APPROVED') {
-                        // Esperar un par de segundos para que el webhook haga su trabajo en el backend
-                        setTimeout(() => {
-                            window.location.href = `billetera.html?status=success&plan=${planId ? planId.toLowerCase() : 'recarga'}`;
-                        }, 2000);
+                        // ACTUALIZACIÓN EN TIEMPO REAL SIN CERRAR SESIÓN
+                        let currentUser = JSON.parse(localStorage.getItem('loggedInUser'));
+                        if (planId) {
+                            const planBenefits = {
+                                'AZUL': 1, 'ROJO': 4, 'NARANJA': 18, 'AMARILLO': 60,
+                                'ROSADO': 120, 'FUCSIA': 180, 'VERDE': 240, 'MARRON': 300,
+                                'GRIS': 360, 'MORADO': 420
+                            };
+                            currentUser.plan = planId.toLowerCase();
+                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + (planBenefits[planId.toUpperCase()] || 0);
+                        } else {
+                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor((amountInCents / 100) / 100);
+                        }
+                        
+                        // Guardar en la "mochila" y actualizar la pantalla
+                        localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+                        updateWalletUI(currentUser);
+                        
+                        // Lanzar el modal de éxito moderno
+                        showAlertModal('¡Pago Exitoso!', 'Tus nuevos likes se han acreditado a tu billetera.');
                     }
                 });
             } catch (error) {
                 console.error('Error Wompi:', error);
-                alert('Error al iniciar Wompi. Revisa la consola o intenta de nuevo.');
+                showAlertModal('Error de conexión', 'No se pudo iniciar el pago. Revisa tu internet.', true);
             }
         }
 
@@ -1049,6 +1065,20 @@
                 modal.classList.remove('active');
                 setTimeout(() => modal.style.display = 'none', 300);
             }
+        }
+
+        function showAlertModal(title, message, isError = false) {
+            document.getElementById('alert-title').textContent = title;
+            document.getElementById('alert-message').textContent = message;
+            const icon = document.getElementById('alert-icon');
+            if (isError) {
+                icon.className = 'fas fa-times-circle';
+                icon.style.color = '#ff2d55';
+            } else {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = 'var(--plan-color-principal)';
+            }
+            openModal('alert-modal');
         }
 
         function formatCurrency(value) {
@@ -1213,19 +1243,84 @@
         function updateWalletUI(userData) {
             const plan = userData.plan || 'azul';
             document.body.className = `plan-${plan}`;
-            const planNameElement = document.getElementById('plan-name');
-            planNameElement.textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
-            
+            document.getElementById('plan-name').textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
             document.getElementById('likes-disponibles').textContent = userData.likesDisponibles || '0';
             document.getElementById('likes-ganados').textContent = userData.likesGanados || '0';
             
             const dineroValue = userData.dineroGanado || 0;
             const balanceElement = document.getElementById('balance-amount');
-            const dineroGanadoElement = document.getElementById('dinero-ganado');
-            
             if (balanceElement) balanceElement.textContent = formatCurrency(dineroValue);
-            if (dineroGanadoElement) dineroGanadoElement.textContent = formatCurrency(dineroValue);
         }
+
+        // 3. Inicialización y Eventos
+        document.addEventListener('DOMContentLoaded', () => {
+            const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+            if (!loggedInUser) return window.location.href = 'index.html';
+
+            updateWalletUI(loggedInUser);
+
+            // Botones de Billetera
+            document.getElementById('add-funds-button').addEventListener('click', () => openWompiCheckout(null, 2500000, 'Recarga de Saldo'));
+            
+            document.getElementById('withdraw-button').addEventListener('click', () => {
+                document.getElementById('withdraw-amount').value = '';
+                openModal('withdraw-modal');
+            });
+
+            document.getElementById('transfer-button').addEventListener('click', () => {
+                document.getElementById('transfer-username').value = '';
+                document.getElementById('transfer-amount').value = '';
+                openModal('transfer-modal');
+            });
+
+            document.querySelectorAll('[data-close-modal]').forEach(button => {
+                button.addEventListener('click', () => closeModal(button.getAttribute('data-close-modal')));
+            });
+
+            // Reemplazo de alertas nativas por Modales
+            document.getElementById('confirm-withdraw').addEventListener('click', () => {
+                const amount = document.getElementById('withdraw-amount').value;
+                if (!amount || amount < 10000) {
+                    showAlertModal('Monto Inválido', 'El monto mínimo de retiro es $10.000 COP', true);
+                    return;
+                }
+                closeModal('withdraw-modal');
+                showAlertModal('Retiro en proceso', 'Tu solicitud se procesará en menos de 24 horas.');
+            });
+
+            document.getElementById('confirm-transfer').addEventListener('click', () => {
+                const user = document.getElementById('transfer-username').value;
+                const amount = document.getElementById('transfer-amount').value;
+                if (!user || !amount) {
+                    showAlertModal('Campos Incompletos', 'Completa todos los campos para transferir.', true);
+                    return;
+                }
+                closeModal('transfer-modal');
+                showAlertModal('Transferencia Exitosa', `Se enviarán ${amount} likes a ${user}.`);
+            });
+
+            document.getElementById('history-button').addEventListener('click', () => {
+                showAlertModal('Historial', 'Esta función estará disponible muy pronto.');
+            });
+
+            document.getElementById('export-history-button').addEventListener('click', () => {
+                const rows = document.querySelector('#history-table tbody').querySelectorAll('tr');
+                if (rows.length === 0) {
+                    showAlertModal('Sin datos', 'No hay movimientos para exportar.', true);
+                    return;
+                }
+                let csv = 'Fecha,Tipo,Detalle,Monto\n';
+                rows.forEach(row => {
+                    const cols = row.querySelectorAll('td');
+                    csv += Array.from(cols).map(c => `"${c.textContent.trim()}"`).join(',') + '\n';
+                });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+                link.download = 'Historial_Likering.csv';
+                link.click();
+            });
+        });
+        // ==============================================================================
     </script>
 
 </body>
