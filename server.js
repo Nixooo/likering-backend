@@ -1552,9 +1552,9 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     try {
                         await client.query('BEGIN');
                         
-                        // CORRECCIÓN: Consultas directas a la columna 'id' en vez de las funciones Compat
+                        // CORRECCIÓN DEFINITIVA: Usar user_id que es la columna real en DBeaver
                         await client.query(
-                            'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3',
+                            'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE user_id = $3',
                             [planId.toLowerCase(), likesToAdd, userId]
                         );
 
@@ -1577,6 +1577,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
                         console.log(`✅ Transacción DB exitosa: Usuario ${userId} actualizado con ${likesToAdd} likes.`);
                     } catch (e) {
                         await client.query('ROLLBACK');
+                        console.error('❌ Error DB Wompi:', e.message);
                         throw e;
                     } finally {
                         client.release();
@@ -1590,9 +1591,9 @@ app.post('/api/wompi/webhook', async (req, res) => {
 
                     console.log(`✅ Recarga aprobada. Acreditando ${likesToAdd} likes al usuario ${userId}`);
 
-                    // CORRECCIÓN: Consulta directa a la columna 'id'
+                    // CORRECCIÓN DEFINITIVA: Usar user_id
                     await pool.query(
-                        'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE id = $2',
+                        'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE user_id = $2',
                         [likesToAdd, userId]
                     );
                 }
@@ -1605,7 +1606,6 @@ app.post('/api/wompi/webhook', async (req, res) => {
         res.status(500).send('Error');
     }
 });
-
 // ==================== RUTA DE SALUD ====================
 
 app.get('/api/health', (req, res) => {
