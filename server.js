@@ -104,6 +104,63 @@ async function queryUsersByIdCompat(client, sqlWithUserId, sqlIdOnly, params) {
     }
 }
 
+async function updateUserPlanAndLikesCompat(client, plan, likesToAdd, userId) {
+    try {
+        return await queryUsersByIdCompat(
+            client,
+            'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
+            'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3',
+            [plan, likesToAdd, userId]
+        );
+    } catch (e) {
+        if (e && e.code === '42703') {
+            return await queryUsersByIdCompat(
+                client,
+                'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
+                'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3',
+                [plan, likesToAdd, userId]
+            );
+        }
+        throw e;
+    }
+}
+
+async function insertPurchasedLikesCompat(client, userId, likeCount) {
+    if (!likeCount || likeCount <= 0) return;
+
+    const values = [];
+    const rows = [];
+    for (let i = 0; i < likeCount; i++) {
+        const likeId = generateId('like');
+        const idx = values.length + 1;
+        values.push(likeId, userId);
+        rows.push(`($${idx}, NULL, $${idx + 1}, CURRENT_TIMESTAMP)`);
+    }
+
+    try {
+        await client.query(
+            `INSERT INTO likes (like_id, video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
+            values
+        );
+    } catch (e) {
+        if (e && (e.code === '22P02' || e.code === '42804' || e.code === '42703')) {
+            const values2 = [];
+            const rows2 = [];
+            for (let i = 0; i < likeCount; i++) {
+                const idx = values2.length + 1;
+                values2.push(userId);
+                rows2.push(`(NULL, $${idx}, CURRENT_TIMESTAMP)`);
+            }
+            await client.query(
+                `INSERT INTO likes (video_id, user_id, created_at) VALUES ${rows2.join(', ')}`,
+                values2
+            );
+            return;
+        }
+        throw e;
+    }
+}
+
 async function getUserByUsername(username) {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     const user = result.rows[0];
@@ -1491,33 +1548,15 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     };
 
                     const benefits = planBenefits[planId] || { likes: 0, limit: 0 };
+                    const likesToAdd = Number(benefits.likes) || 0;
                     
-                    console.log(`✨ ¡PAGO APROBADO! Activando ${planId} para usuario ${userId}. Acreditando ${benefits.likes} likes.`);
+                    console.log(`✨ ¡PAGO APROBADO! Activando ${planId} para usuario ${userId}. Acreditando ${likesToAdd} likes.`);
                     
                     const client = await pool.connect();
                     try {
                         await client.query('BEGIN');
-                        await queryUsersByIdCompat(
-                            client,
-                            'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
-                            'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3',
-                            [planId.toLowerCase(), benefits.likes, userId]
-                        );
-
-                        if (benefits.likes > 0) {
-                            const values = [];
-                            const rows = [];
-                            for (let i = 0; i < benefits.likes; i++) {
-                                const likeId = generateId('like');
-                                const idx = values.length + 1;
-                                values.push(likeId, userId);
-                                rows.push(`($${idx}, NULL, $${idx + 1}, CURRENT_TIMESTAMP)`);
-                            }
-                            await client.query(
-                                `INSERT INTO likes (like_id, video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
-                                values
-                            );
-                        }
+                        await updateUserPlanAndLikesCompat(client, planId.toLowerCase(), likesToAdd, userId);
+                        await insertPurchasedLikesCompat(client, userId, likesToAdd);
 
                         await client.query('COMMIT');
                     } catch (e) {
