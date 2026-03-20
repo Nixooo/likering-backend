@@ -327,9 +327,30 @@
                 </div>
             </header>
 
-            <!-- Grid de Planes -->
             <div class="plans-grid" id="plans-container">
                 <!-- Los planes se cargarán dinámicamente -->
+            </div>
+
+            <!-- Guía de Pruebas Sandbox Wompi -->
+            <div style="background: rgba(255, 149, 0, 0.08); border: 1px dashed #ff9500; border-radius: 24px; padding: 20px; margin-top: 10px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <i class="fas fa-flask" style="color: #ff9500;"></i>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #ff9500;">Modo Sandbox: Datos de Prueba</h3>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; font-size: 0.8rem;">
+                        <strong style="display: block; margin-bottom: 5px; color: #4cd964;"><i class="fas fa-check-circle"></i> Para APROBAR (Nequi):</strong>
+                        <code>3991111111</code>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; font-size: 0.8rem;">
+                        <strong style="display: block; margin-bottom: 5px; color: #ff2d55;"><i class="fas fa-times-circle"></i> Para RECHAZAR (Nequi):</strong>
+                        <code>3992222222</code>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 14px; font-size: 0.8rem;">
+                        <strong style="display: block; margin-bottom: 5px; color: var(--plan-azul);"><i class="fas fa-credit-card"></i> Tarjeta Aprobada:</strong>
+                        <code>4242 4242 4242 4242</code>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -391,7 +412,6 @@
 
             const signatureUrl = `${API_BASE_URL}/wompi/generate-signature`;
             try {
-                console.log('Solicitando firma a:', signatureUrl);
                 const response = await fetch(signatureUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -399,27 +419,29 @@
                 });
                 
                 const responseText = await response.text();
-                console.log('Respuesta cruda del servidor:', responseText);
+                console.log('Respuesta del servidor:', responseText);
 
                 if (!response.ok) {
-                    throw new Error(`Error en el servidor de firmas (${response.status}). URL: ${signatureUrl}. Respuesta: ${responseText}`);
+                    throw new Error(`Error en el servidor de firmas (${response.status}): ${responseText}`);
                 }
 
-                if (!responseText) {
-                    throw new Error('El servidor devolvió una respuesta vacía. Verifica la URL del backend en config.js.');
+                let signatureData;
+                try {
+                    signatureData = JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error(`La respuesta del servidor no es un JSON válido: ${responseText}`);
                 }
 
-                const { signature } = JSON.parse(responseText);
-                console.log('Firma recibida correctamente');
+                const { signature } = signatureData;
 
                 if (typeof WidgetCheckout === 'undefined') {
-                    throw new Error('El script de Wompi (WidgetCheckout) no se ha cargado. Verifica tu conexión a internet o recarga la página.');
+                    throw new Error('El script de Wompi no se ha cargado. Verifica tu conexión.');
                 }
 
                 const checkout = new WidgetCheckout({
                     currency: currency,
                     amountInCents: amountInCents,
-                    publicKey: 'pub_test_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV',
+                    publicKey: 'pub_test_X0zDA9xoKdePzhd8a0x9HAez7HgGO2fH', // Llave de Sandbox
                     signature: signature,
                     reference: reference,
                     redirectUrl: `${window.location.origin}/billetera.html?status=success&plan=${planId.toLowerCase()}`
@@ -434,7 +456,8 @@
                 });
             } catch (error) {
                 console.error('Error detallado Wompi:', error);
-                alert(`Error al iniciar Wompi: ${error.message || 'Intenta de nuevo'}`);
+                const errorMessage = error.message || 'Error al procesar el pago. Verifica tu conexión e intenta de nuevo.';
+                alert(`Error al iniciar Wompi: ${errorMessage}\n\nURL de la API: ${signatureUrl}`);
             }
         }
 

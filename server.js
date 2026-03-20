@@ -1365,15 +1365,27 @@ const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integ
 const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || 'test_events_l52UAR1l5SzTxIzBdowEaig1gPNAguQK';
 
 // Generar firma de integridad para el frontend
+app.get('/api/wompi/generate-signature', (req, res) => {
+    res.json({ message: 'El endpoint de firmas está activo. Usa POST para generar una firma.' });
+});
+
 app.post('/api/wompi/generate-signature', (req, res) => {
     try {
         const { reference, amountInCents, currency } = req.body;
         
-        console.log('📡 Petición de firma recibida:', { reference, amountInCents, currency });
+        console.log('📡 [DEBUG] Petición de firma recibida:', { 
+            reference, 
+            amountInCents, 
+            currency,
+            body: req.body 
+        });
 
         if (!reference || !amountInCents || !currency) {
-            console.error('❌ Faltan parámetros para la firma');
-            return res.status(400).json({ error: 'Faltan parámetros: reference, amountInCents, currency' });
+            console.error('❌ [DEBUG] Faltan parámetros para la firma:', { reference, amountInCents, currency });
+            return res.status(400).json({ 
+                error: 'Faltan parámetros: reference, amountInCents, currency',
+                recibido: req.body 
+            });
         }
 
         const secret = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_2ODbmn0TLbPwhSoB7Ci2MJN1z5ztyBSC';
