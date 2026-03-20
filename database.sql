@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     image_url TEXT,
     plan VARCHAR(20) DEFAULT 'azul' CHECK (plan IN ('azul', 'rojo', 'naranja', 'verde', 'morado', 'negro', 'amarillo')),
+    likes INTEGER DEFAULT 0,
     likes_disponibles INTEGER DEFAULT 0,
     likes_ganados INTEGER DEFAULT 0,
     dinero_ganado DECIMAL(10, 2) DEFAULT 0,
@@ -42,6 +43,13 @@ CREATE TABLE IF NOT EXISTS video_likes (
     username VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(video_id, username)
+);
+
+CREATE TABLE IF NOT EXISTS likes (
+    like_id VARCHAR(100) PRIMARY KEY,
+    video_id VARCHAR(100) REFERENCES videos(video_id) ON DELETE SET NULL,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tabla de comentarios
@@ -98,6 +106,8 @@ CREATE INDEX IF NOT EXISTS idx_videos_user_id ON videos(user_id);
 CREATE INDEX IF NOT EXISTS idx_videos_username ON videos(username);
 CREATE INDEX IF NOT EXISTS idx_video_likes_video_id ON video_likes(video_id);
 CREATE INDEX IF NOT EXISTS idx_video_likes_username ON video_likes(username);
+CREATE INDEX IF NOT EXISTS idx_likes_user_id ON likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_likes_video_id ON likes(video_id);
 CREATE INDEX IF NOT EXISTS idx_comments_video_id ON comments(video_id);
 CREATE INDEX IF NOT EXISTS idx_comments_username ON comments(username);
 CREATE INDEX IF NOT EXISTS idx_video_views_video_id ON video_views(video_id);
@@ -124,4 +134,3 @@ CREATE TRIGGER update_videos_updated_at BEFORE UPDATE ON videos
 
 CREATE TRIGGER update_comments_updated_at BEFORE UPDATE ON comments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-

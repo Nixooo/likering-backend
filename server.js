@@ -631,37 +631,80 @@ app.post('/api/videos/like', async (req, res) => {
             return res.json({ success: false, message: 'Usuario no encontrado' });
         }
 
-        // Verificar si ya dio like
-        const existingLike = await pool.query(
-            'SELECT * FROM video_likes WHERE video_id = $1 AND username = $2',
-            [videoId, username]
-        );
-
-        if (existingLike.rows.length > 0) {
-            return res.json({ success: false, message: 'Ya diste like a este video' });
-        }
-
-        // Agregar like
         const userId = user.id || user.user_id;
-        await pool.query(
-            'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
-            [videoId, userId, username]
-        );
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
 
-        // Actualizar contador de likes del video
-        await pool.query(
-            'UPDATE videos SET likes = likes + 1 WHERE video_id = $1',
-            [videoId]
-        );
+            const existingLike = await client.query(
+                'SELECT 1 FROM video_likes WHERE video_id = $1 AND username = $2',
+                [videoId, username]
+            );
+            if (existingLike.rows.length > 0) {
+                await client.query('ROLLBACK');
+                return res.json({ success: false, message: 'Ya diste like a este video' });
+            }
 
-        // Obtener el nuevo contador
-        const videoResult = await pool.query(
-            'SELECT likes FROM videos WHERE video_id = $1',
-            [videoId]
-        );
-        const newLikeCount = videoResult.rows[0]?.likes || 0;
+            const userRow = await client.query(
+                'SELECT likes_disponibles FROM users WHERE id = $1 OR user_id = $1 FOR UPDATE',
+                [userId]
+            );
+            const likesDisponibles = userRow.rows[0]?.likes_disponibles ?? 0;
+            if (likesDisponibles <= 0) {
+                await client.query('ROLLBACK');
+                return res.json({ success: false, message: 'No tienes likes disponibles' });
+            }
 
-        res.json({ success: true, message: 'Like agregado', isLiked: true, likes: newLikeCount });
+            const consume = await client.query(
+                `WITH picked AS (
+                    SELECT like_id
+                    FROM likes
+                    WHERE user_id = $1 AND video_id IS NULL
+                    ORDER BY created_at ASC
+                    LIMIT 1
+                    FOR UPDATE SKIP LOCKED
+                )
+                UPDATE likes
+                SET video_id = $2
+                WHERE like_id IN (SELECT like_id FROM picked)
+                RETURNING like_id`,
+                [userId, videoId]
+            );
+
+            if (consume.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.json({ success: false, message: 'No hay likes disponibles para consumir' });
+            }
+
+            await client.query(
+                'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE id = $1 OR user_id = $1',
+                [userId]
+            );
+
+            await client.query(
+                'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
+                [videoId, userId, username]
+            );
+
+            await client.query(
+                'UPDATE videos SET likes = likes + 1 WHERE video_id = $1',
+                [videoId]
+            );
+
+            const videoResult = await client.query(
+                'SELECT likes FROM videos WHERE video_id = $1',
+                [videoId]
+            );
+            const newLikeCount = videoResult.rows[0]?.likes || 0;
+
+            await client.query('COMMIT');
+            res.json({ success: true, message: 'Like agregado', isLiked: true, likes: newLikeCount });
+        } catch (e) {
+            await client.query('ROLLBACK');
+            throw e;
+        } finally {
+            client.release();
+        }
     } catch (error) {
         console.error('Error al dar like:', error);
         res.json({ success: false, message: 'Error al dar like' });
@@ -1436,7 +1479,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     try {
                         await client.query('BEGIN');
                         await client.query(
-                            'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
+                            'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
                             [planId.toLowerCase(), benefits.likes, userId]
                         );
 
