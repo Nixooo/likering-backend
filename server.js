@@ -16,6 +16,30 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ==================== PASARELA DE PAGOS (WOMPI) ====================
+const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_2ODbmn0TLbPwhSoB7Ci2MJN1z5ztyBSC';
+
+app.get('/api/wompi/generate-signature', (req, res) => {
+    res.json({ message: 'El endpoint de firmas está activo. Usa POST para generar una firma.' });
+});
+
+app.post('/api/wompi/generate-signature', (req, res) => {
+    try {
+        const { reference, amountInCents, currency } = req.body;
+        console.log('📡 Petición de firma recibida:', { reference, amountInCents, currency });
+        
+        const chain = `${reference}${amountInCents}${currency}${WOMPI_INTEGRITY_SECRET}`;
+        const signature = crypto.createHash('sha256').update(chain).digest('hex');
+        
+        console.log('🔐 Firma generada:', signature);
+        res.json({ signature });
+    } catch (error) {
+        console.error('❌ Error generando firma:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// ===================================================================
+
 // Servir archivos estáticos (frontend)
 app.use(express.static('.'));
 
@@ -1359,48 +1383,7 @@ app.post('/api/public/reports', async (req, res) => {
     }
 });
 
-// ==================== PASARELA DE PAGOS (WOMPI) ====================
-
-const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_2ODbmn0TLbPwhSoB7Ci2MJN1z5ztyBSC';
-const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || 'test_events_l52UAR1l5SzTxIzBdowEaig1gPNAguQK';
-
-// Generar firma de integridad para el frontend
-app.get('/api/wompi/generate-signature', (req, res) => {
-    res.json({ message: 'El endpoint de firmas está activo. Usa POST para generar una firma.' });
-});
-
-app.post('/api/wompi/generate-signature', (req, res) => {
-    try {
-        const { reference, amountInCents, currency } = req.body;
-        
-        console.log('📡 [DEBUG] Petición de firma recibida:', { 
-            reference, 
-            amountInCents, 
-            currency,
-            body: req.body 
-        });
-
-        if (!reference || !amountInCents || !currency) {
-            console.error('❌ [DEBUG] Faltan parámetros para la firma:', { reference, amountInCents, currency });
-            return res.status(400).json({ 
-                error: 'Faltan parámetros: reference, amountInCents, currency',
-                recibido: req.body 
-            });
-        }
-
-        const secret = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_2ODbmn0TLbPwhSoB7Ci2MJN1z5ztyBSC';
-        
-        // Concatenación según docs: <Referencia><Monto><Moneda><SecretoIntegridad>
-        const chain = `${reference}${amountInCents}${currency}${secret}`;
-        const signature = crypto.createHash('sha256').update(chain).digest('hex');
-        
-        console.log(`🔐 Firma generada con éxito para ref: ${reference}`);
-        res.json({ signature });
-    } catch (error) {
-        console.error('❌ Error crítico generando firma Wompi:', error);
-        res.status(500).json({ error: 'Error interno del servidor al generar firma' });
-    }
-});
+// ==================== WEBHOOKS Y OTROS ====================
 
 // Endpoint para recibir notificaciones de pago (Webhook)
 app.post('/api/wompi/webhook', async (req, res) => {
