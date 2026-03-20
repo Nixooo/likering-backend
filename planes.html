@@ -272,6 +272,30 @@
         .plan-gris-modern { --plan-accent: var(--plan-gris); }
         .plan-morado-modern { --plan-accent: var(--plan-morado); }
 
+        .btn-buy-plan {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 18px;
+            background: var(--plan-accent);
+            color: #000;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-buy-plan:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+
         @media (max-width: 600px) {
             .header-titles h1 { font-size: 1.4rem; }
             .plans-grid { grid-template-columns: 1fr; }
@@ -310,6 +334,7 @@
         </div>
     </div>
 
+    <script src="https://checkout.wompi.co/widget.js"></script>
     <script src="config.js"></script>
     <script>
         const plans = [
@@ -348,63 +373,53 @@
                         <li><i class="fas fa-users"></i> Límite de <b>${plan.limit} Likes</b></li>
                     </ul>
                     <div class="btn-buy-container">
-                        <form>
-                            <div data-wompi-button-placeholder 
-                                 data-amount-in-cents="${plan.cents}" 
-                                 data-name="${plan.name}" 
-                                 data-plan-id="${plan.id}">
-                            </div>
-                        </form>
+                        <button class="btn-buy-plan" onclick="openWompiCheckout('${plan.id}', ${plan.cents}, '${plan.name}')">
+                            <i class="fas fa-shopping-cart"></i> Paga con Wompi
+                        </button>
                     </div>
                 </div>
             `).join('');
-            
-            finalizeWompiButtons();
         }
 
-        async function finalizeWompiButtons() {
+        async function openWompiCheckout(planId, amountInCents, planName) {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-            if (!loggedInUser) return;
+            if (!loggedInUser) return alert('Debes iniciar sesión para realizar compras');
             
             const userId = loggedInUser.id || loggedInUser.user_id;
-            const placeholders = document.querySelectorAll('[data-wompi-button-placeholder]');
+            const reference = `PLAN_${planId}_${userId}_${Date.now()}`;
+            const currency = 'COP';
 
-            for (const placeholder of placeholders) {
-                const amountInCents = placeholder.getAttribute('data-amount-in-cents');
-                const planId = placeholder.getAttribute('data-plan-id');
-                const planName = placeholder.getAttribute('data-name');
-                const reference = `PLAN_${planId}_${userId}_${Date.now()}`;
-                const currency = 'COP';
+            try {
+                const response = await fetch(`${API_BASE_URL}/wompi/generate-signature`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reference, amountInCents, currency })
+                });
+                const { signature } = await response.json();
 
-                try {
-                    const response = await fetch(`${API_BASE_URL}/wompi/generate-signature`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ reference, amountInCents, currency })
-                    });
-                    
-                    if (response.ok) {
-                        const { signature } = await response.json();
-                        
-                        // Crear el script de Wompi dinámicamente
-                        const script = document.createElement('script');
-                        script.src = "https://checkout.wompi.co/widget.js";
-                        script.setAttribute('data-render', 'button');
-                        script.setAttribute('data-public-key', 'pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV');
-                        script.setAttribute('data-currency', 'COP');
-                        script.setAttribute('data-amount-in-cents', amountInCents);
-                        script.setAttribute('data-name', planName);
-                        script.setAttribute('data-reference', reference);
-                        script.setAttribute('data-signature:integrity', signature);
-                        script.setAttribute('data-redirect-url', `https://likering.onrender.com/billetera.html?status=success&plan=${planId.toLowerCase()}`);
-                        
-                        placeholder.appendChild(script);
+                const checkout = new WompiCheckout({
+                    currency: currency,
+                    amountInCents: amountInCents,
+                    publicKey: 'pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV',
+                    signature: signature,
+                    reference: reference,
+                    redirectUrl: `${window.location.origin}/billetera.html?status=success&plan=${planId.toLowerCase()}`
+                });
+
+                checkout.open(function (result) {
+                    if (result.transaction && result.transaction.status === 'APPROVED') {
+                        alert('¡Transacción aprobada!');
+                        window.location.href = 'billetera.html?status=success&plan=' + planId.toLowerCase();
                     }
-                } catch (error) {
-                    console.error(`Error firma ${planId}:`, error);
-                }
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo iniciar el pago.');
             }
         }
+
+        // Ya no es necesaria, pero la mantenemos por compatibilidad si se llama en algún lado
+        function finalizeWompiButtons() {}
 
         document.addEventListener('DOMContentLoaded', renderPlans);
     </script>
