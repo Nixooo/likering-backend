@@ -1552,23 +1552,23 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     try {
                         await client.query('BEGIN');
                         
-                        // CORRECCIÓN DEFINITIVA: Usar user_id que es la columna real en DBeaver
+                        // 1. Actualizar plan y likes (Usando user_id)
                         await client.query(
                             'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE user_id = $3',
                             [planId.toLowerCase(), likesToAdd, userId]
                         );
 
+                        // 2. Insertar los likes (CORRECCIÓN: Sin el like_id, dejamos que la BD asigne el número sola)
                         if (likesToAdd > 0) {
                             const values = [];
                             const rows = [];
                             for (let i = 0; i < likesToAdd; i++) {
-                                const likeId = generateId('like');
                                 const idx = values.length + 1;
-                                values.push(likeId, userId);
-                                rows.push(`($${idx}, NULL, $${idx + 1}, CURRENT_TIMESTAMP)`);
+                                values.push(userId); // Solo pusheamos el user_id
+                                rows.push(`(NULL, $${idx}, CURRENT_TIMESTAMP)`);
                             }
                             await client.query(
-                                `INSERT INTO likes (like_id, video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
+                                `INSERT INTO likes (video_id, user_id, created_at) VALUES ${rows.join(', ')}`,
                                 values
                             );
                         }
@@ -1591,7 +1591,6 @@ app.post('/api/wompi/webhook', async (req, res) => {
 
                     console.log(`✅ Recarga aprobada. Acreditando ${likesToAdd} likes al usuario ${userId}`);
 
-                    // CORRECCIÓN DEFINITIVA: Usar user_id
                     await pool.query(
                         'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE user_id = $2',
                         [likesToAdd, userId]
