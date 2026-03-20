@@ -969,7 +969,7 @@
                 const checkout = new WidgetCheckout({
                     currency: currency,
                     amountInCents: amountInCents,
-                    publicKey: 'pub_test_0Rsy9763EPuRJrEkBY8XAGOk7mL7rvUV',
+                    publicKey: 'pub_test_X0zDA9xoKdePzhd8a0x9HAez7HgGO2fH',
                     signature: signature,
                     reference: reference,
                     redirectUrl: `${window.location.origin}/billetera.html${planId ? `?status=success&plan=${planId.toLowerCase()}` : ''}`
@@ -984,7 +984,8 @@
                 });
             } catch (error) {
                 console.error('Error detallado Wompi:', error);
-                alert(`Error al iniciar Wompi: ${error.message || 'Error al procesar el pago. Verifica tu conexión e intenta de nuevo.'}`);
+                const errorMessage = error.message || 'Error al procesar el pago. Verifica tu conexión e intenta de nuevo.';
+                alert(`Error al iniciar Wompi: ${errorMessage}\n\nURL de la API: ${signatureUrl}`);
             }
         }
 
