@@ -17,8 +17,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ==================== PASARELA DE PAGOS (WOMPI) ====================
-// Usar llaves de prueba del Sandbox de Wompi por defecto
-const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_Z5mMke9x0k8gpErbDqwrJXMqsI6SFli6';
+// Usar llaves de prueba del Sandbox de Wompi del dashboard del usuario
+const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_TK01rdMcCPWhjTRQstc85qXSrRGOyQic';
 
 app.get('/api/wompi/generate-signature', (req, res) => {
     res.json({ message: 'El endpoint de firmas está activo. Usa POST para generar una firma.' });
