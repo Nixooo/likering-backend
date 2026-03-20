@@ -765,7 +765,7 @@
                         </ul>
                         <form>
                             <script 
-                                src="https://checkout.wompi.co/widget.js" 
+                                data-wompi-button
                                 data-render="button" 
                                 data-public-key="pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV" 
                                 data-currency="COP" 
@@ -794,7 +794,7 @@
                         </ul>
                         <form>
                             <script 
-                                src="https://checkout.wompi.co/widget.js" 
+                                data-wompi-button
                                 data-render="button" 
                                 data-public-key="pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV" 
                                 data-currency="COP" 
@@ -822,7 +822,7 @@
                         </ul>
                         <form>
                             <script 
-                                src="https://checkout.wompi.co/widget.js" 
+                                data-wompi-button
                                 data-render="button" 
                                 data-public-key="pub_test_Q5yS9763EPuRJrEkBY8XAGOk7mL7rvUV" 
                                 data-currency="COP" 
@@ -930,21 +930,23 @@
     <!-- Mantenemos la tabla original oculta para que la lógica de exportación CSV siga funcionando sin cambios -->
     <table id="history-table" style="display: none;"><thead><tr><th>Fecha</th><th>Tipo</th><th>Detalle</th><th>Monto</th></tr></thead><tbody></tbody></table>
     
-    <!-- El widget.js de Wompi se cargará dinámicamente después de las firmas -->
-
+    <script src="config.js"></script>
+    
     <script>
-        // Función para inyectar las referencias únicas y firmas en los scripts estáticos
         async function finalizeWompiButtons() {
             const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
             if (!loggedInUser) return;
             
             const userId = loggedInUser.id || loggedInUser.user_id;
-            // Selector actualizado para el nuevo contenedor de planes
-            const scripts = document.querySelectorAll('.plans-horizontal-scroll form script');
+            // Seleccionar solo los scripts que tienen nuestro atributo personalizado
+            const scripts = document.querySelectorAll('script[data-wompi-button]');
 
             for (const script of scripts) {
                 const amountInCents = script.getAttribute('data-amount-in-cents');
-                const planMatch = script.getAttribute('data-reference').match(/PLAN_([A-Z]+)_REPLACE_ME/);
+                const refAttr = script.getAttribute('data-reference');
+                if (!refAttr) continue;
+                
+                const planMatch = refAttr.match(/PLAN_([A-Z]+)_REPLACE_ME/);
                 if (!planMatch) continue;
 
                 const planName = planMatch[1];
@@ -952,15 +954,13 @@
                 const currency = 'COP';
 
                 try {
-                    // Obtener firma de integridad del backend
-                    const response = await fetch('/api/wompi/generate-signature', {
+                    const response = await fetch(`${API_BASE_URL}/wompi/generate-signature`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ reference, amountInCents, currency })
                     });
                     const { signature } = await response.json();
 
-                    // Actualizar los atributos del script antes de que Wompi lo vea
                     script.setAttribute('data-reference', reference);
                     script.setAttribute('data-signature:integrity', signature);
                 } catch (error) {
@@ -968,7 +968,7 @@
                 }
             }
 
-            // Una vez puestas todas las firmas reales, cargamos el script de Wompi
+            // CARGA ÚNICA DEL WIDGET: Solo después de tener todas las firmas
             const wompiScript = document.createElement('script');
             wompiScript.src = "https://checkout.wompi.co/widget.js";
             wompiScript.type = "text/javascript";
@@ -981,7 +981,7 @@
             const currency = 'COP';
 
             try {
-                const response = await fetch('/api/wompi/generate-signature', {
+                const response = await fetch(`${API_BASE_URL}/wompi/generate-signature`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ reference, amountInCents, currency })
