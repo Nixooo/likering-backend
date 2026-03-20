@@ -685,72 +685,84 @@ app.post('/api/videos/delete', async (req, res) => {
     }
 });
 
-// Dar like a un video (Transferencia Oficial de Like)
+
+// Dar like a un video (Transferencia de valor entre usuarios)
 app.post('/api/videos/like', async (req, res) => {
     try {
         const { videoId, username } = req.body;
-        if (!videoId || !username) return res.json({ success: false, message: 'Video ID y usuario requeridos' });
+        if (!videoId || !username) return res.json({ success: false, message: 'Faltan datos' });
 
         const user = await getUserByUsername(username);
-        if (!user) return res.json({ success: false, message: 'Usuario no encontrado' });
+        if (!user) return res.json({ success: false, message: 'Usuario emisor no encontrado' });
 
-        const userId = user.id || user.user_id;
+        // Usamos el ID real de la base de datos (user_id según tus imágenes de DBeaver)
+        const senderId = user.user_id || user.id;
         const client = await pool.connect();
         
         try {
             await client.query('BEGIN');
 
-            // 1. Evitar dar doble like (doble transferencia)
+            // 1. Verificar si ya existe el like
             const existingLike = await client.query(
                 'SELECT 1 FROM video_likes WHERE video_id = $1 AND username = $2',
                 [videoId, username]
             );
             if (existingLike.rows.length > 0) {
                 await client.query('ROLLBACK');
-                return res.json({ success: false, message: 'Ya transferiste un like a este video' });
+                return res.json({ success: false, message: 'Ya transferiste valor a este video' });
             }
 
-            // 2. Verificar saldo del que da el Like
-            const userRow = await client.query(
+            // 2. Verificar saldo del emisor (quien da el like)
+            const senderBalance = await client.query(
                 'SELECT likes_disponibles FROM users WHERE user_id = $1 FOR UPDATE',
-                [userId]
+                [senderId]
             );
-            const likesDisponibles = userRow.rows[0]?.likes_disponibles ?? 0;
-            if (likesDisponibles <= 0) {
+            if ((senderBalance.rows[0]?.likes_disponibles || 0) <= 0) {
                 await client.query('ROLLBACK');
-                return res.json({ success: false, message: 'Tu billetera no tiene likes disponibles' });
+                return res.json({ success: false, message: 'No tienes likes disponibles en tu billetera' });
             }
 
-            // 3. Obtener al DUEÑO del video
-            const videoInfo = await client.query('SELECT username FROM videos WHERE video_id = $1', [videoId]);
-            const videoOwner = videoInfo.rows[0]?.username;
+            // 3. Identificar al creador del video
+            const videoData = await client.query('SELECT username FROM videos WHERE video_id = $1', [videoId]);
+            const creatorUsername = videoData.rows[0]?.username;
 
-            // 4. RESTAR 1 like de la billetera del espectador
+            if (!creatorUsername) {
+                await client.query('ROLLBACK');
+                return res.json({ success: false, message: 'No se encontró al creador del video' });
+            }
+
+            // 4. EJECUTAR TRANSFERENCIA EN DB
+            // Restar al que da el like
             await client.query(
                 'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE user_id = $1',
-                [userId]
+                [senderId]
             );
 
-            // 5. SUMAR 1 like a la billetera del Creador (Ingreso)
-            if (videoOwner) {
-                await client.query(
-                    'UPDATE users SET likes_disponibles = likes_disponibles + 1, likes_ganados = likes_ganados + 1 WHERE username = $1',
-                    [videoOwner]
-                );
-            }
+            // Sumar al que recibe el like (El creador)
+            await client.query(
+                'UPDATE users SET likes_disponibles = likes_disponibles + 1, likes_ganados = likes_ganados + 1 WHERE username = $1',
+                [creatorUsername]
+            );
 
-            // 6. Registrar en el video
+            // 5. Registrar el like en el video
             await client.query(
                 'INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)',
-                [videoId, userId, username]
+                [videoId, senderId, username]
             );
-            const updateVideo = await client.query(
+            const videoUpdate = await client.query(
                 'UPDATE videos SET likes = likes + 1 WHERE video_id = $1 RETURNING likes',
                 [videoId]
             );
 
             await client.query('COMMIT');
-            res.json({ success: true, message: 'Transferencia exitosa', isLiked: true, likes: updateVideo.rows[0]?.likes || 0 });
+            console.log(`✅ Transferencia Exitosa: De @${username} a @${creatorUsername} por Video ${videoId}`);
+            
+            res.json({ 
+                success: true, 
+                isLiked: true, 
+                likes: videoUpdate.rows[0].likes,
+                senderLikes: (senderBalance.rows[0].likes_disponibles - 1)
+            });
         } catch (e) {
             await client.query('ROLLBACK');
             throw e;
@@ -758,10 +770,12 @@ app.post('/api/videos/like', async (req, res) => {
             client.release();
         }
     } catch (error) {
-        console.error('Error al dar like:', error);
-        res.json({ success: false, message: 'Error interno al transferir el like' });
+        console.error('❌ Error en transferencia de like:', error.message);
+        res.json({ success: false, message: 'Error en la base de datos' });
     }
 });
+
+
 
 // Registrar visualización
 app.post('/api/videos/view', async (req, res) => {

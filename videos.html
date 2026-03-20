@@ -1233,59 +1233,61 @@
 }
 
 
-    async function handleLikeClick(likeArea, videoData) {
+        async function handleLikeClick(likeArea, videoData) {
             const videoId = videoData.videoId;
-            const receiverUsername = videoData.user ? videoData.user.replace('@', '') : 'usuario';
+            // Limpiamos el username del creador
+            const receiverUsername = videoData.user ? videoData.user.replace('@', '') : 'creador';
             const iconDiv = likeArea.querySelector('.icon');
             const countSpan = likeArea.querySelector('.count');
             
             if (iconDiv.classList.contains('liked')) return;
             
-            let currentLikes = parseInt(countSpan.textContent) || 0;
-            iconDiv.classList.add('liked');
-            countSpan.textContent = currentLikes + 1;
-            saveLikedVideo(videoId);
+            // Valor monetario del Like (60% de $15.000)
+            const VALOR_MONETARIO_LIKE = 9000;
             
             try {
                 const result = await API.likeVideo(videoId, loggedInUser.username);
                 
                 if (result.success) {
+                    // Actualizar interfaz visual
+                    iconDiv.classList.add('liked');
                     if (result.likes !== undefined) countSpan.textContent = result.likes;
+                    saveLikedVideo(videoId);
 
-                    // --- CREAR HISTORIAL DE TRANSFERENCIA ---
                     const now = new Date();
                     const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-                    const titleShort = videoData.titulo ? videoData.titulo.substring(0, 20) : 'video';
+                    const videoTitle = videoData.titulo ? videoData.titulo.substring(0, 15) : 'Video';
 
-                    // 1. Registrar SALIDA (Para el que dio el like)
+                    // 1. REGISTRAR SALIDA (En tu historial local)
                     let myHistory = JSON.parse(localStorage.getItem(`history_${loggedInUser.username}`)) || [];
                     myHistory.unshift({ 
-                        date: dateStr, type: 'out', 
-                        detail: `Enviaste 1 Like a @${receiverUsername} (${titleShort}...)`, 
-                        amount: 1 
+                        date: dateStr, 
+                        type: 'out', 
+                        detail: `Transferencia Like a @${receiverUsername} (Ref: ${videoTitle}...)`, 
+                        amount: VALOR_MONETARIO_LIKE 
                     });
                     localStorage.setItem(`history_${loggedInUser.username}`, JSON.stringify(myHistory));
 
-                    // 2. Registrar INGRESO (Para el creador del video)
+                    // 2. REGISTRAR INGRESO (En el historial del creador)
+                    // Nota: Esto solo se verá si el creador abre sesión en este mismo navegador.
                     let receiverHistory = JSON.parse(localStorage.getItem(`history_${receiverUsername}`)) || [];
                     receiverHistory.unshift({ 
-                        date: dateStr, type: 'in', 
-                        detail: `Recibiste 1 Like de @${loggedInUser.username} (${titleShort}...)`, 
-                        amount: 1 
+                        date: dateStr, 
+                        type: 'in', 
+                        detail: `Ingreso por Like de @${loggedInUser.username} (Ref: ${videoTitle}...)`, 
+                        amount: VALOR_MONETARIO_LIKE 
                     });
                     localStorage.setItem(`history_${receiverUsername}`, JSON.stringify(receiverHistory));
-                    
+
+                    // Actualizar el objeto del usuario en memoria para que la billetera no necesite recargar
+                    loggedInUser.likesDisponibles = result.senderLikes;
+                    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+
                 } else {
-                    iconDiv.classList.remove('liked');
-                    countSpan.textContent = currentLikes;
-                    removeLikedVideo(videoId);
-                    alert(result.message); // Avisa si se quedó sin likes
+                    alert(result.message); // Ejemplo: "No tienes likes disponibles"
                 }
             } catch (error) {
-                console.error("Error al registrar el like:", error);
-                iconDiv.classList.remove('liked');
-                countSpan.textContent = currentLikes;
-                removeLikedVideo(videoId);
+                console.error("Error al transferir like:", error);
             }
         }
 
