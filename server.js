@@ -18,8 +18,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // ==================== PASARELA DE PAGOS (WOMPI) ====================
 // Usar llaves de prueba del Sandbox de Wompi del dashboard del usuario
-const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_TK01rdMcCPWhjTRQstc85qXSrRGOyQic';
-const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || 'test_events_DoAbxWv46sT7tEo3EJS7OBLJd6ySZ7Qe';
+const WOMPI_INTEGRITY_SECRET = process.env.WOMPI_INTEGRITY_SECRET || 'test_integrity_TK01rdMcCPWhjTRQstc05qXSrRGOyQid';
+const WOMPI_EVENTS_SECRET = process.env.WOMPI_EVENTS_SECRET || 'test_events_DoAbxWv46sT7tEo3EJS7oBLDjd6y5ZQe';
 
 app.get('/api/wompi/generate-signature', (req, res) => {
     res.json({ message: 'El endpoint de firmas está activo. Usa POST para generar una firma.' });
@@ -30,7 +30,7 @@ app.post('/api/wompi/generate-signature', (req, res) => {
         const { reference, amountInCents, currency } = req.body;
         
         // Forzamos que sea el secreto correcto y eliminamos posibles espacios
-        const secret = 'test_integrity_TK01rdMcCPWhjTRQstc85qXSrRGOyQic'.trim();
+        const secret = 'test_integrity_TK01rdMcCPWhjTRQstc05qXSrRGOyQid'.trim();
         
         // Concatenación exacta: <Referencia><Monto><Moneda><SecretoIntegridad>
         const chain = `${reference}${amountInCents}${currency}${secret}`;
