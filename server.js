@@ -93,6 +93,17 @@ function generateId(prefix) {
     return `${prefix}_${uuidv4()}`;
 }
 
+async function queryUsersByIdCompat(client, sqlWithUserId, sqlIdOnly, params) {
+    try {
+        return await client.query(sqlWithUserId, params);
+    } catch (e) {
+        if (e && e.code === '42703') {
+            return await client.query(sqlIdOnly, params);
+        }
+        throw e;
+    }
+}
+
 async function getUserByUsername(username) {
     const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
     const user = result.rows[0];
@@ -645,8 +656,10 @@ app.post('/api/videos/like', async (req, res) => {
                 return res.json({ success: false, message: 'Ya diste like a este video' });
             }
 
-            const userRow = await client.query(
+            const userRow = await queryUsersByIdCompat(
+                client,
                 'SELECT likes_disponibles FROM users WHERE id = $1 OR user_id = $1 FOR UPDATE',
+                'SELECT likes_disponibles FROM users WHERE id = $1 FOR UPDATE',
                 [userId]
             );
             const likesDisponibles = userRow.rows[0]?.likes_disponibles ?? 0;
@@ -676,8 +689,10 @@ app.post('/api/videos/like', async (req, res) => {
                 return res.json({ success: false, message: 'No hay likes disponibles para consumir' });
             }
 
-            await client.query(
+            await queryUsersByIdCompat(
+                client,
                 'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE id = $1 OR user_id = $1',
+                'UPDATE users SET likes_disponibles = likes_disponibles - 1 WHERE id = $1',
                 [userId]
             );
 
@@ -1442,6 +1457,10 @@ app.post('/api/wompi/webhook', async (req, res) => {
     try {
         // En Sandbox, a veces la firma no coincide o no se envía, para pruebas permitimos todo
         const { event, data } = req.body;
+        const tx = data && data.transaction;
+        if (event && tx) {
+            console.log(`📩 Webhook recibido: ${event} ${tx.id} ${tx.status} ${tx.reference}`);
+        }
 
         if (event === 'transaction.updated') {
             const transaction = data.transaction;
@@ -1478,8 +1497,10 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     const client = await pool.connect();
                     try {
                         await client.query('BEGIN');
-                        await client.query(
+                        await queryUsersByIdCompat(
+                            client,
                             'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3 OR user_id = $3',
+                            'UPDATE users SET plan = $1, likes = COALESCE(likes, 0) + $2, likes_disponibles = likes_disponibles + $2 WHERE id = $3',
                             [planId.toLowerCase(), benefits.likes, userId]
                         );
 
@@ -1517,8 +1538,10 @@ app.post('/api/wompi/webhook', async (req, res) => {
 
                     console.log(`✅ Recarga aprobada. Acreditando ${likesToAdd} likes al usuario ${userId}`);
 
-                    await pool.query(
+                    await queryUsersByIdCompat(
+                        pool,
                         'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE id = $2 OR user_id = $2',
+                        'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE id = $2',
                         [likesToAdd, userId]
                     );
                 }
