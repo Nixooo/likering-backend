@@ -16,6 +16,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Servir archivos estáticos (frontend)
+app.use(express.static('.'));
+
 // Configuración de PostgreSQL (Aiven)
 const pool = new Pool({
     host: process.env.DB_HOST,
