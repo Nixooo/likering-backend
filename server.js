@@ -1790,10 +1790,7 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 [username, 'out', `Retiro en proceso a ${method} (${destination})`, amount]
             );
 
-            // =======================================================================
-            // 4. EJECUTAR TRANSFERENCIA VÍA WOMPI API (O SIMULACIÓN EN SANDBOX)
-            // =======================================================================
-            const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
+            const WOMPI_PRIVATE_KEY = (process.env.WOMPI_PRIVATE_KEY || '').trim();
             
             if (!WOMPI_PRIVATE_KEY) {
                 throw new Error('Llave privada de Wompi no configurada en el servidor.');
