@@ -690,9 +690,104 @@ app.post('/api/videos/delete', async (req, res) => {
 
 
 // ==========================================
-// AUTO-CREAR TABLAS DE HISTORIAL Y NOTIFICACIONES
+// AUTO-CREAR TODAS LAS TABLAS DE LA BASE DE DATOS
 // ==========================================
 pool.query(`
+    -- 1. Tabla de Usuarios
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        user_id INT, -- Alias para compatibilidad con el código
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        image_url TEXT,
+        plan VARCHAR(20) DEFAULT 'azul',
+        likes INT DEFAULT 0,
+        likes_disponibles INT DEFAULT 0,
+        likes_ganados INT DEFAULT 0,
+        dinero_ganado DECIMAL(10,2) DEFAULT 0,
+        estado VARCHAR(20) DEFAULT 'Activo',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 2. Tabla de Videos
+    CREATE TABLE IF NOT EXISTS videos (
+        id SERIAL PRIMARY KEY,
+        video_id VARCHAR(100) UNIQUE NOT NULL,
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(50) NOT NULL,
+        titulo VARCHAR(255),
+        descripcion TEXT,
+        video_url TEXT NOT NULL,
+        thumbnail_url TEXT,
+        music_url TEXT,
+        music_name VARCHAR(255),
+        likes INT DEFAULT 0,
+        comments_count INT DEFAULT 0,
+        visualizaciones INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 3. Tabla de Likes (video_likes)
+    CREATE TABLE IF NOT EXISTS video_likes (
+        id SERIAL PRIMARY KEY,
+        video_id VARCHAR(100) REFERENCES videos(video_id) ON DELETE CASCADE,
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(video_id, username)
+    );
+
+    -- 4. Tabla de Vistas (video_views)
+    CREATE TABLE IF NOT EXISTS video_views (
+        id SERIAL PRIMARY KEY,
+        video_id VARCHAR(100) REFERENCES videos(video_id) ON DELETE CASCADE,
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(video_id, username)
+    );
+
+    -- 5. Tabla de Comentarios
+    CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        comment_id VARCHAR(100) UNIQUE NOT NULL,
+        video_id VARCHAR(100) REFERENCES videos(video_id) ON DELETE CASCADE,
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        username VARCHAR(50),
+        comment_text TEXT NOT NULL,
+        is_edited BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 6. Tabla de Seguidores
+    CREATE TABLE IF NOT EXISTS follows (
+        id SERIAL PRIMARY KEY,
+        follower_id INT REFERENCES users(id) ON DELETE CASCADE,
+        follower_username VARCHAR(50),
+        following_id INT REFERENCES users(id) ON DELETE CASCADE,
+        following_username VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(follower_username, following_username)
+    );
+
+    -- 7. Tabla de Mensajes
+    CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        message_id VARCHAR(100) UNIQUE NOT NULL,
+        from_user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        from_username VARCHAR(50),
+        to_user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        to_username VARCHAR(50),
+        message_text TEXT NOT NULL,
+        read BOOLEAN DEFAULT FALSE,
+        read_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 8. Tabla de Historial de Billetera
     CREATE TABLE IF NOT EXISTS wallet_history (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50),
@@ -701,6 +796,8 @@ pool.query(`
         amount DECIMAL(10,2),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- 9. Tabla de Notificaciones
     CREATE TABLE IF NOT EXISTS notifications (
         id SERIAL PRIMARY KEY,
         username VARCHAR(50),
@@ -709,7 +806,25 @@ pool.query(`
         is_read BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
-`).then(() => console.log('✅ Tablas de historial y notificaciones listas')).catch(console.error);
+
+    -- 10. Tabla de Reportes
+    CREATE TABLE IF NOT EXISTS reportes (
+        id SERIAL PRIMARY KEY,
+        tipo_reporte VARCHAR(20),
+        id_video_reportado INT,
+        id_usuario_reportado INT,
+        id_usuario_reporter INT,
+        motivo VARCHAR(100),
+        descripcion TEXT,
+        estado VARCHAR(20) DEFAULT 'pendiente',
+        prioridad VARCHAR(20) DEFAULT 'media',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+`).then(() => {
+    console.log('✅ Base de datos y TODAS las tablas inicializadas correctamente');
+    // Pequeño parche para asegurar que user_id sea igual a id
+    return pool.query('UPDATE users SET user_id = id WHERE user_id IS NULL');
+}).catch(console.error);
 
 // Dar like a un video (Transferencia Oficial de Valor)
 // Dar like a un video (Transferencia Oficial de Valor)
