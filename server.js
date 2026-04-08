@@ -1732,7 +1732,7 @@ app.post('/api/wallet/history/add', async (req, res) => {
 
 
 
-// ==================== RETIROS Y PAGOS A TERCEROS ====================
+// ==================== RETIROS Y PAGOS A TERCEROS (WOMPI) ====================
 
 app.post('/api/wallet/withdraw', async (req, res) => {
     try {
@@ -1757,8 +1757,8 @@ app.post('/api/wallet/withdraw', async (req, res) => {
 
             // 1. Verificar que el usuario tenga los likes suficientes bloqueando la fila para evitar doble gasto
             const balanceData = await client.query('SELECT likes_disponibles, likes_ganados FROM users WHERE user_id = $1 FOR UPDATE', [userId]);
-            const likesDisponibles = balanceData.rows[0]?.likes_disponibles || 0;
-            const likesGanados = balanceData.rows[0]?.likes_ganados || 0;
+            const likesDisponibles = parseInt(balanceData.rows[0]?.likes_disponibles) || 0;
+            const likesGanados = parseInt(balanceData.rows[0]?.likes_ganados) || 0;
             const totalLikesValidos = likesDisponibles + likesGanados;
 
             if (totalLikesValidos < likesToDeduct) {
@@ -1791,7 +1791,7 @@ app.post('/api/wallet/withdraw', async (req, res) => {
             );
 
             // =======================================================================
-            // 4. EJECUTAR TRANSFERENCIA VÍA WOMPI API
+            // 4. EJECUTAR TRANSFERENCIA VÍA WOMPI API (O SIMULACIÓN EN SANDBOX)
             // =======================================================================
             const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
             
@@ -1799,42 +1799,54 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 throw new Error('Llave privada de Wompi no configurada en el servidor.');
             }
 
-            const wompiResponse = await fetch('https://production.wompi.co/v1/transfers', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${WOMPI_PRIVATE_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    amount_in_cents: amount * 100,
-                    currency: "COP",
-                    reference: referenceId,
-                    destination: {
-                        type: method.toUpperCase(), // "NEQUI", "BANCOLOMBIA", "DAVIPLATA"
-                        account_number: destination,
-                        account_holder_document_type: docType,
-                        account_holder_document_number: docNumber
-                    }
-                })
-            });
+            // SIMULADOR: Si usamos llave de pruebas, simulamos que el banco responde OK
+            if (WOMPI_PRIVATE_KEY.startsWith('prv_test_')) {
+                console.log('🧪 MODO SANDBOX DETECTADO: Simulando respuesta exitosa de Wompi...');
+                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulamos tiempo de red
+                console.log(`✅ Transferencia Simulada Exitosa - Ref: ${referenceId}`);
+            } 
+            // FLUJO REAL DE PRODUCCIÓN
+            else {
+                const wompiResponse = await fetch('https://production.wompi.co/v1/transfers', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${WOMPI_PRIVATE_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount_in_cents: amount * 100,
+                        currency: "COP",
+                        reference: referenceId,
+                        destination: {
+                            type: method.toUpperCase(), // "NEQUI", "BANCOLOMBIA", "DAVIPLATA"
+                            account_number: destination,
+                            account_holder_document_type: docType,
+                            account_holder_document_number: docNumber
+                        }
+                    })
+                });
 
-            const wompiData = await wompiResponse.json();
+                const wompiData = await wompiResponse.json();
 
-            // Evaluar respuesta de Wompi. Si falla, lanzamos error para disparar el ROLLBACK.
-            if (!wompiResponse.ok || wompiData.error) {
-                console.error("❌ Error de Wompi:", wompiData);
-                const errorMsg = wompiData.error?.messages ? wompiData.error.messages.join(', ') : 'La pasarela rechazó la transacción bancaria.';
-                throw new Error(errorMsg);
+                if (!wompiResponse.ok || wompiData.error) {
+                    console.error("❌ Error de Wompi:", wompiData);
+                    const errorMsg = wompiData.error?.messages ? wompiData.error.messages.join(', ') : (wompiData.message || 'La pasarela rechazó la transacción bancaria.');
+                    throw new Error(errorMsg);
+                }
+                
+                console.log(`💸 Solicitud de Retiro Exitosa: @${username} pide $${amount} por ${method} - Ref Wompi: ${wompiData.data?.id}`);
             }
 
-            // Si llegamos aquí, Wompi aceptó la transferencia (estado PENDING). Confirmamos BD.
+            // Si llegamos aquí (simulado o real), confirmamos la Base de Datos.
             await client.query('COMMIT');
             
-            console.log(`💸 Solicitud de Retiro Exitosa: @${username} pide $${amount} por ${method} - Ref Wompi: ${wompiData.data?.id}`);
-            res.json({ success: true, newLikesBalance: newDisponibles });
+            res.json({ 
+                success: true, 
+                newLikesBalance: newDisponibles, 
+                newLikesGanados: newGanados 
+            });
 
         } catch (e) {
-            // Si la base de datos o Wompi falla, revertimos para que el usuario NO pierda su saldo
             await client.query('ROLLBACK');
             console.error('❌ Error procesando retiro o Wompi:', e.message);
             res.json({ success: false, message: `No se pudo procesar el retiro: ${e.message}` });
@@ -1846,8 +1858,6 @@ app.post('/api/wallet/withdraw', async (req, res) => {
         res.json({ success: false, message: 'Error interno procesando el retiro' });
     }
 });
-
-
 
 
 
