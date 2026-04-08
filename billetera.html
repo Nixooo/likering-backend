@@ -1258,6 +1258,10 @@
                 if (profileData.success) {
                     loggedInUser.likesDisponibles = profileData.data.likesDisponibles;
                     loggedInUser.likesGanados = profileData.data.likesGanados;
+                    
+                    // LÍNEA NUEVA: Sincronizar el plan para no perderlo visualmente al recargar
+                    loggedInUser.plan = profileData.data.plan; 
+                    
                     localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
                     updateWalletUI(loggedInUser);
                 }

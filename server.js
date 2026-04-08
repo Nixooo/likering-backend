@@ -1658,9 +1658,9 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     try {
                         await client.query('BEGIN');
                         
-                        // 1. SOLUCIÓN: Simplemente sumamos el balance al usuario y ya está.
+                        // 1. SOLUCIÓN CORREGIDA: Buscamos por id OR user_id
                         await client.query(
-                            'UPDATE users SET plan = $1, likes_disponibles = likes_disponibles + $2 WHERE user_id = $3',
+                            'UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE id = $3 OR user_id = $3',
                             [planId.toLowerCase(), likesToAdd, userId]
                         );
 
@@ -1680,7 +1680,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     const likesToAdd = Math.floor((amount_in_cents / 100) / 100);
                     
                     await pool.query(
-                        'UPDATE users SET likes_disponibles = likes_disponibles + $1 WHERE user_id = $2',
+                        'UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE id = $2 OR user_id = $2',
                         [likesToAdd, userId]
                     );
                     console.log(`✅ RECARGA DB EXITOSA: Usuario ${userId} recibió ${likesToAdd} likes.`);
