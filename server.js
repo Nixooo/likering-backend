@@ -1621,10 +1621,10 @@ app.post('/api/wallet/history/add', async (req, res) => {
 
 app.post('/api/wallet/withdraw', async (req, res) => {
     try {
-        const { username, amount, method, destination } = req.body;
+        const { username, amount, method, destination, docType, docNumber } = req.body;
 
-        if (!username || !amount || !destination) {
-            return res.json({ success: false, message: 'Faltan datos para el retiro' });
+        if (!username || !amount || !destination || !docType || !docNumber) {
+            return res.json({ success: false, message: 'Faltan datos bancarios para el retiro' });
         }
 
         const user = await getUserByUsername(username);
@@ -1640,7 +1640,7 @@ app.post('/api/wallet/withdraw', async (req, res) => {
         try {
             await client.query('BEGIN');
 
-            // 1. Verificar que el usuario tenga los likes suficientes
+            // 1. Verificar que el usuario tenga los likes suficientes bloqueando la fila para evitar doble gasto
             const balanceData = await client.query('SELECT likes_disponibles, likes_ganados FROM users WHERE user_id = $1 FOR UPDATE', [userId]);
             const likesDisponibles = balanceData.rows[0]?.likes_disponibles || 0;
             const likesGanados = balanceData.rows[0]?.likes_ganados || 0;
@@ -1668,18 +1668,22 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 [newDisponibles, newGanados, userId]
             );
 
-            // 3. Registrar el retiro en el historial (Estado: Pendiente)
+            // 3. Registrar el retiro en el historial interno
+            const referenceId = `RETIRO_${userId}_${Date.now()}`;
             await client.query(
                 'INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)',
-                [username, 'out', `Retiro en proceso a ${method.toUpperCase()} (${destination})`, amount]
+                [username, 'out', `Retiro en proceso a ${method} (${destination})`, amount]
             );
 
             // =======================================================================
-            // ⚠️ AQUÍ VA LA CONEXIÓN FUTURA CON WOMPI PARA PAGOS AUTOMÁTICOS
-            // Cuando Wompi te apruebe la "API de Transferencias", usarás este código:
+            // 4. EJECUTAR TRANSFERENCIA VÍA WOMPI API
             // =======================================================================
-            /*
-            const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY; // Clave privada de producción
+            const WOMPI_PRIVATE_KEY = process.env.WOMPI_PRIVATE_KEY;
+            
+            if (!WOMPI_PRIVATE_KEY) {
+                throw new Error('Llave privada de Wompi no configurada en el servidor.');
+            }
+
             const wompiResponse = await fetch('https://production.wompi.co/v1/transfers', {
                 method: 'POST',
                 headers: {
@@ -1689,31 +1693,41 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 body: JSON.stringify({
                     amount_in_cents: amount * 100,
                     currency: "COP",
-                    reference: `RETIRO_${userId}_${Date.now()}`,
+                    reference: referenceId,
                     destination: {
-                        type: method.toUpperCase(), // "NEQUI" o "BANCOLOMBIA"
-                        account_number: destination
+                        type: method.toUpperCase(), // "NEQUI", "BANCOLOMBIA", "DAVIPLATA"
+                        account_number: destination,
+                        account_holder_document_type: docType,
+                        account_holder_document_number: docNumber
                     }
                 })
             });
-            const wompiData = await wompiResponse.json();
-            console.log("Respuesta de Transferencia Wompi:", wompiData);
-            */
-            // =======================================================================
 
+            const wompiData = await wompiResponse.json();
+
+            // Evaluar respuesta de Wompi. Si falla, lanzamos error para disparar el ROLLBACK.
+            if (!wompiResponse.ok || wompiData.error) {
+                console.error("❌ Error de Wompi:", wompiData);
+                const errorMsg = wompiData.error?.messages ? wompiData.error.messages.join(', ') : 'La pasarela rechazó la transacción bancaria.';
+                throw new Error(errorMsg);
+            }
+
+            // Si llegamos aquí, Wompi aceptó la transferencia (estado PENDING). Confirmamos BD.
             await client.query('COMMIT');
             
-            console.log(`💸 Solicitud de Retiro: @${username} pide $${amount} por ${method}`);
+            console.log(`💸 Solicitud de Retiro Exitosa: @${username} pide $${amount} por ${method} - Ref Wompi: ${wompiData.data?.id}`);
             res.json({ success: true, newLikesBalance: newDisponibles });
 
         } catch (e) {
+            // Si la base de datos o Wompi falla, revertimos para que el usuario NO pierda su saldo
             await client.query('ROLLBACK');
-            throw e;
+            console.error('❌ Error procesando retiro o Wompi:', e.message);
+            res.json({ success: false, message: `No se pudo procesar el retiro: ${e.message}` });
         } finally {
             client.release();
         }
     } catch (error) {
-        console.error('❌ Error procesando retiro:', error);
+        console.error('❌ Error general procesando retiro:', error);
         res.json({ success: false, message: 'Error interno procesando el retiro' });
     }
 });
