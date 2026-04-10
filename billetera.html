@@ -1107,14 +1107,14 @@
         const planesDisponibles = [
             { id: 'AZUL', name: 'Plan Azul', price: '$15.000', cents: 1500000, icon: 'fa-gem', class: 'plan-azul-modern', earnings: '$1.5M', likes: 1, limit: 300 },
             { id: 'ROJO', name: 'Plan Rojo', price: '$60.000', cents: 6000000, icon: 'fa-fire', class: 'plan-rojo-modern', earnings: '$2M', likes: 4, limit: 400 },
-            { id: 'NARANJA', name: 'Plan Naranja', price: '$90.000', cents: 9000000, icon: 'fa-bolt', class: 'plan-naranja-modern', earnings: '$2.5M', likes: 18, limit: 500 },
-            { id: 'AMARILLO', name: 'Plan Amarillo', price: '$300.000', cents: 30000000, icon: 'fa-star', class: 'plan-amarillo-modern', earnings: '$5M', likes: 60, limit: '1.000' },
-            { id: 'ROSADO', name: 'Plan Rosado', price: '$600.000', cents: 60000000, icon: 'fa-heart', class: 'plan-rosado-modern', earnings: '$10M', likes: 120, limit: '2.000' },
-            { id: 'FUCSIA', name: 'Plan Fucsia', price: '$900.000', cents: 90000000, icon: 'fa-crown', class: 'plan-fucsia-modern', earnings: '$20M', likes: 180, limit: '4.000' },
-            { id: 'VERDE', name: 'Plan Verde', price: '$1.200.000', cents: 120000000, icon: 'fa-leaf', class: 'plan-verde-modern', earnings: '$40M', likes: 240, limit: '8.000' },
-            { id: 'MARRON', name: 'Plan Marrón', price: '$1.500.000', cents: 150000000, icon: 'fa-coffee', class: 'plan-marron-modern', earnings: '$60M', likes: 300, limit: '12.000' },
-            { id: 'GRIS', name: 'Plan Gris', price: '$1.800.000', cents: 180000000, icon: 'fa-shield-alt', class: 'plan-gris-modern', earnings: '$80M', likes: 360, limit: '16.000' },
-            { id: 'MORADO', name: 'Plan Morado', price: '$2.100.000', cents: 210000000, icon: 'fa-magic', class: 'plan-morado-modern', earnings: '$100M', likes: 420, limit: '20.000' }
+            { id: 'NARANJA', name: 'Plan Naranja', price: '$150.000', cents: 15000000, icon: 'fa-bolt', class: 'plan-naranja-modern', earnings: '$2.5M', likes: 10, limit: 500 },
+            { id: 'AMARILLO', name: 'Plan Amarillo', price: '$300.000', cents: 30000000, icon: 'fa-star', class: 'plan-amarillo-modern', earnings: '$5M', likes: 20, limit: '1.000' },
+            { id: 'ROSADO', name: 'Plan Rosado', price: '$600.000', cents: 60000000, icon: 'fa-heart', class: 'plan-rosado-modern', earnings: '$10M', likes: 40, limit: '2.000' },
+            { id: 'FUCSIA', name: 'Plan Fucsia', price: '$900.000', cents: 90000000, icon: 'fa-crown', class: 'plan-fucsia-modern', earnings: '$20M', likes: 60, limit: '4.000' },
+            { id: 'VERDE', name: 'Plan Verde', price: '$1.200.000', cents: 120000000, icon: 'fa-leaf', class: 'plan-verde-modern', earnings: '$40M', likes: 80, limit: '8.000' },
+            { id: 'MARRON', name: 'Plan Marrón', price: '$1.500.000', cents: 150000000, icon: 'fa-coffee', class: 'plan-marron-modern', earnings: '$60M', likes: 100, limit: '12.000' },
+            { id: 'GRIS', name: 'Plan Gris', price: '$1.800.000', cents: 180000000, icon: 'fa-shield-alt', class: 'plan-gris-modern', earnings: '$80M', likes: 120, limit: '16.000' },
+            { id: 'MORADO', name: 'Plan Morado', price: '$2.100.000', cents: 210000000, icon: 'fa-magic', class: 'plan-morado-modern', earnings: '$100M', likes: 140, limit: '20.000' }
         ];
 
         function renderPlans() {
@@ -1207,9 +1207,7 @@
                     if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
                 }
 
-                if (!signature || typeof WidgetCheckout === 'undefined') {
-                    throw new Error('No se pudo obtener la firma o el script.');
-                }
+                if (!signature || typeof WidgetCheckout === 'undefined') throw new Error('No se pudo obtener la firma o el script.');
 
                 const checkout = new WidgetCheckout({
                     currency: currency,
@@ -1229,66 +1227,19 @@
                             currentUser.plan = planId.toLowerCase();
                             currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + (p ? p.likes : 0);
                         } else {
-                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor(amountPaid / 100);
+                            currentUser.likesDisponibles = (currentUser.likesDisponibles || 0) + Math.floor(amountPaid / 15000); // 1 Like = 15k
                         }
                         
                         localStorage.setItem('loggedInUser', JSON.stringify(currentUser));
                         updateWalletUI(currentUser);
 
-                        // --- GUARDAR HISTORIAL EN EL SERVIDOR ---
-                        try {
-                            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                            const BASE_URL = isLocalhost ? 'http://localhost:3000/api' : 'https://likering-backend.onrender.com/api';
-                            
-                            // 1. Ingreso de la compra total
-                            await fetch(`${BASE_URL}/wallet/history/add`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    username: currentUser.username,
-                                    type: 'in',
-                                    detail: `Compra ${planName || 'Recarga'}`,
-                                    amount: amountPaid
-                                })
-                            });
-
-                            // 2. Salida de los impuestos (40%)
-                            const taxes = amountPaid * 0.40;
-                            await fetch(`${BASE_URL}/wallet/history/add`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    username: currentUser.username,
-                                    type: 'out',
-                                    detail: 'Descuentos e impuestos (40%)',
-                                    amount: taxes
-                                })
-                            });
-
-                            // Recargar el historial visual
-                            const historyRes = await fetch(`${BASE_URL}/wallet/history?username=${currentUser.username}`);
-                            const historyData = await historyRes.json();
-                            if (historyData.success) {
-                                const formattedHistory = historyData.data.map(item => {
-                                    const date = new Date(item.created_at);
-                                    return {
-                                        date: `${date.getDate()}/${date.getMonth()+1} ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`,
-                                        type: item.type,
-                                        detail: item.detail,
-                                        amount: parseFloat(item.amount)
-                                    };
-                                });
-                                renderModernHistory(formattedHistory);
-                            }
-                        } catch (e) {
-                            console.error("Error guardando historial de compra:", e);
-                        }
-
-                        showAlertModal('¡Pago Exitoso!', 'Tus nuevos likes se han acreditado a tu billetera.');
+                        // YA NO INSERTAMOS HISTORIAL FALSO DESDE EL FRONTEND AQUÍ.
+                        // El Webhook del Backend se encarga de todo ahora.
+                        
+                        showAlertModal('¡Pago Exitoso!', 'La compra se procesó. Actualiza la página en un momento para ver tu historial.');
                     }
                 });
             } catch (error) {
-                console.error('Error Wompi:', error);
                 showAlertModal('Error de conexión', 'No se pudo iniciar el pago. Revisa tu internet.', true);
             }
         }
@@ -1298,31 +1249,24 @@
             document.body.className = `plan-${plan}`;
             document.getElementById('plan-name').textContent = `Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
             
-            // Datos desde el servidor/memoria
             const disponibles = parseInt(userData.likesDisponibles) || 0;
             const ganados = parseInt(userData.likesGanados) || 0;
             
-            // Actualizar etiquetas individuales
             document.getElementById('likes-disponibles').textContent = disponibles;
             document.getElementById('likes-obtenidos').textContent = ganados;
             
-            // MATEMÁTICA: El balance total
+            // NUEVA MATEMÁTICA: 1 LIKE = $5.000 COP EN LA BILLETERA
             const totalLikes = disponibles + ganados;
-            const dineroTotal = totalLikes * 9000;
+            const dineroTotal = totalLikes * 5000; 
             
             const balanceElement = document.getElementById('balance-amount');
             if (balanceElement) balanceElement.textContent = formatCurrency(dineroTotal);
 
-            // NUEVO: ACTUALIZAR LÍMITES DEL PLAN EN PANTALLA
             const planActual = planesDisponibles.find(p => p.id.toLowerCase() === plan.toLowerCase());
             if (planActual) {
-                // Actualizar límite de likes (Ej: 400)
                 document.getElementById('limite-likes').textContent = planActual.limit;
-                
-                // Actualizar límite monetario (Convirtiendo "$2M" a formato numérico real)
                 let limiteDinero = planActual.earnings;
                 if (limiteDinero.includes('M')) {
-                    // Quitamos el signo $ y la M, lo multiplicamos por 1 millón y lo formateamos
                     let numeroBase = parseFloat(limiteDinero.replace('$', '').replace('M', ''));
                     limiteDinero = formatCurrency(numeroBase * 1000000);
                 }

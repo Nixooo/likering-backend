@@ -870,9 +870,9 @@ app.post('/api/videos/like', async (req, res) => {
 
             await client.query('INSERT INTO video_likes (video_id, user_id, username) VALUES ($1, $2, $3)', [videoId, senderId, username]);
             const updateVideo = await client.query('UPDATE videos SET likes = likes + 1 WHERE video_id = $1 RETURNING likes', [videoId]);
-
+            
             // REGISTRAR HISTORIAL EN BASE DE DATOS
-            const VALOR_MONETARIO = 9000;
+            const VALOR_MONETARIO = 5000; // <-- NUEVO VALOR DEL LIKE PARA EL CREADOR
             await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
                 [username, 'out', `Envío de Like a @${creatorUsername} (${videoTitle.substring(0, 15)}...)`, VALOR_MONETARIO]);
             
@@ -881,7 +881,7 @@ app.post('/api/videos/like', async (req, res) => {
 
             // ENVIAR NOTIFICACIÓN PUSH AL RECEPTOR
             await client.query('INSERT INTO notifications (username, message, avatar_url) VALUES ($1, $2, $3)', 
-                [creatorUsername, `@${username} te dio un like y ganaste $9.000 COP`, avatarUrl || '']);
+                [creatorUsername, `@${username} te dio un like y ganaste $5.000 COP`, avatarUrl || '']);
 
             await client.query('COMMIT');
             res.json({ success: true, isLiked: true, likes: updateVideo.rows[0].likes, senderLikes: (senderBalance.rows[0].likes_disponibles - 1) });
@@ -1634,22 +1634,24 @@ app.post('/api/wompi/webhook', async (req, res) => {
 
         if (event === 'transaction.updated') {
             const transaction = data.transaction;
-            const { status, reference, amount_in_cents } = transaction;
+            const { status, reference, amount_in_cents, customer_email } = transaction;
 
             if (status === 'APPROVED') {
                 const parts = reference.split('_');
+                const montoTotalCOP = amount_in_cents / 100;
                 
                 // Referencia: PLAN_<NAME>_<USERID>_<TIMESTAMP>
                 if (parts[0] === 'PLAN' && parts[1] && parts[2]) {
                     const planId = parts[1].toUpperCase();
                     const userId = parts[2];
                     
+                    // Nueva tabla de beneficios (1 Like = 15.000)
                     const planBenefits = {
-                        'AZUL': { likes: 1, limit: 300 }, 'ROJO': { likes: 4, limit: 400 },
-                        'NARANJA': { likes: 18, limit: 500 }, 'AMARILLO': { likes: 60, limit: 1000 },
-                        'ROSADO': { likes: 120, limit: 2000 }, 'FUCSIA': { likes: 180, limit: 4000 },
-                        'VERDE': { likes: 240, limit: 8000 }, 'MARRON': { likes: 300, limit: 12000 },
-                        'GRIS': { likes: 360, limit: 16000 }, 'MORADO': { likes: 420, limit: 20000 }
+                        'AZUL': { likes: 1 }, 'ROJO': { likes: 4 },
+                        'NARANJA': { likes: 10 }, 'AMARILLO': { likes: 20 },
+                        'ROSADO': { likes: 40 }, 'FUCSIA': { likes: 60 },
+                        'VERDE': { likes: 80 }, 'MARRON': { likes: 100 },
+                        'GRIS': { likes: 120 }, 'MORADO': { likes: 140 }
                     };
 
                     const likesToAdd = Number((planBenefits[planId] || {}).likes) || 0;
@@ -1658,32 +1660,53 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     try {
                         await client.query('BEGIN');
                         
-                        // 1. SOLUCIÓN CORREGIDA: Buscamos por id OR user_id
+                        // 1. Asignar Likes al usuario
                         await client.query(
                             'UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE id = $3 OR user_id = $3',
                             [planId.toLowerCase(), likesToAdd, userId]
                         );
 
+                        // 2. Obtener el username para el historial
+                        const userRes = await client.query('SELECT username FROM users WHERE id = $1 OR user_id = $1', [userId]);
+                        const username = userRes.rows[0]?.username;
+
+                        // 3. Registrar Historial Real (Solo la compra total, sin impuestos falsos)
+                        if (username) {
+                            await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
+                                [username, 'in', `Compra de Plan ${planId}`, montoTotalCOP]);
+                        }
+
                         await client.query('COMMIT');
-                        console.log(`✅ PAGO DB EXITOSO: Plan ${planId} activado. Usuario ${userId} recibió ${likesToAdd} likes.`);
+                        console.log(`✅ PAGO DB EXITOSO: Plan ${planId} activado para ${username}.`);
                     } catch (e) {
                         await client.query('ROLLBACK');
-                        console.error('❌ Error DB Wompi:', e.message);
                         throw e;
                     } finally {
                         client.release();
                     }
                 } 
-                // Recargas normales
+                // Recargas normales libres
                 else if (parts[0] === 'RECARGA' && parts[1]) {
                     const userId = parts[1];
-                    const likesToAdd = Math.floor((amount_in_cents / 100) / 100);
+                    // Regla exacta: 15.000 COP = 1 Like
+                    const likesToAdd = Math.floor(montoTotalCOP / 15000); 
                     
-                    await pool.query(
-                        'UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE id = $2 OR user_id = $2',
-                        [likesToAdd, userId]
-                    );
-                    console.log(`✅ RECARGA DB EXITOSA: Usuario ${userId} recibió ${likesToAdd} likes.`);
+                    if (likesToAdd > 0) {
+                        const client = await pool.connect();
+                        try {
+                            await client.query('BEGIN');
+                            await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE id = $2 OR user_id = $2', [likesToAdd, userId]);
+                            
+                            const userRes = await client.query('SELECT username FROM users WHERE id = $1 OR user_id = $1', [userId]);
+                            if(userRes.rows[0]) {
+                                await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
+                                    [userRes.rows[0].username, 'in', `Recarga de ${likesToAdd} Likes`, montoTotalCOP]);
+                            }
+                            await client.query('COMMIT');
+                        } finally {
+                            client.release();
+                        }
+                    }
                 }
             }
         }
@@ -1732,8 +1755,6 @@ app.post('/api/wallet/history/add', async (req, res) => {
 
 
 
-// ==================== RETIROS Y PAGOS A TERCEROS (WOMPI) ====================
-
 app.post('/api/wallet/withdraw', async (req, res) => {
     try {
         const { username, amount, method, destination, docType, docNumber } = req.body;
@@ -1747,15 +1768,22 @@ app.post('/api/wallet/withdraw', async (req, res) => {
 
         const userId = user.user_id || user.id;
         
-        // MATEMÁTICA INVERSA: $9.000 COP equivalen a 1 Like que el usuario puede retirar
-        const VALOR_LIKE = 9000;
+        // MATEMÁTICA: 1 Like a retirar equivale a 5.000 COP
+        const VALOR_LIKE = 5000;
         const likesToDeduct = Math.ceil(amount / VALOR_LIKE);
+
+        // COSTO TRANSFERENCIA (Lo que Wompi cobra por enviar a Nequi/Bancos). Ejemplo: $3.200 COP
+        // Si retiras 10.000, te llegan 6.800. El creador asume el costo de dispersión.
+        const COMISION_DISPERSION_WOMPI = 3200; 
+        
+        if (amount <= COMISION_DISPERSION_WOMPI) {
+            return res.json({ success: false, message: `El monto mínimo a retirar debe ser mayor a la comisión bancaria ($${COMISION_DISPERSION_WOMPI} COP)`});
+        }
 
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
 
-            // 1. Verificar que el usuario tenga los likes suficientes bloqueando la fila para evitar doble gasto
             const balanceData = await client.query('SELECT likes_disponibles, likes_ganados FROM users WHERE user_id = $1 FOR UPDATE', [userId]);
             const likesDisponibles = parseInt(balanceData.rows[0]?.likes_disponibles) || 0;
             const likesGanados = parseInt(balanceData.rows[0]?.likes_ganados) || 0;
@@ -1766,7 +1794,6 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 return res.json({ success: false, message: `Saldo insuficiente. Necesitas al menos ${likesToDeduct} likes para retirar $${amount}` });
             }
 
-            // 2. Descontar los likes (Primero de los ganados, luego de los disponibles)
             let newGanados = likesGanados;
             let newDisponibles = likesDisponibles;
 
@@ -1783,27 +1810,20 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 [newDisponibles, newGanados, userId]
             );
 
-            // 3. Registrar el retiro en el historial interno
+            // Registrar el retiro. Mostramos el bruto, pero enviamos el neto.
             const referenceId = `RETIRO_${userId}_${Date.now()}`;
+            const montoNetoAlBanco = amount - COMISION_DISPERSION_WOMPI;
+
             await client.query(
                 'INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)',
-                [username, 'out', `Retiro en proceso a ${method} (${destination})`, amount]
+                [username, 'out', `Retiro ${method} (Comisión: -$${COMISION_DISPERSION_WOMPI})`, amount]
             );
 
             const WOMPI_PRIVATE_KEY = (process.env.WOMPI_PRIVATE_KEY || '').trim();
-            
-            if (!WOMPI_PRIVATE_KEY) {
-                throw new Error('Llave privada de Wompi no configurada en el servidor.');
-            }
 
-            // SIMULADOR: Si usamos llave de pruebas, simulamos que el banco responde OK
             if (WOMPI_PRIVATE_KEY.startsWith('prv_test_')) {
-                console.log('🧪 MODO SANDBOX DETECTADO: Simulando respuesta exitosa de Wompi...');
-                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulamos tiempo de red
-                console.log(`✅ Transferencia Simulada Exitosa - Ref: ${referenceId}`);
-            } 
-            // FLUJO REAL DE PRODUCCIÓN
-            else {
+                console.log(`🧪 MODO SANDBOX: Retiro simulado de $${montoNetoAlBanco} netos. Comisión: $${COMISION_DISPERSION_WOMPI}`);
+            } else {
                 const wompiResponse = await fetch('https://production.wompi.co/v1/transfers', {
                     method: 'POST',
                     headers: {
@@ -1811,11 +1831,11 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        amount_in_cents: amount * 100,
+                        amount_in_cents: montoNetoAlBanco * 100, // <-- AQUÍ SE LE QUITA A ÉL LA COMISIÓN
                         currency: "COP",
                         reference: referenceId,
                         destination: {
-                            type: method.toUpperCase(), // "NEQUI", "BANCOLOMBIA", "DAVIPLATA"
+                            type: method.toUpperCase(), 
                             account_number: destination,
                             account_holder_document_type: docType,
                             account_holder_document_number: docNumber
@@ -1826,32 +1846,21 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 const wompiData = await wompiResponse.json();
 
                 if (!wompiResponse.ok || wompiData.error) {
-                    console.error("❌ Error de Wompi:", wompiData);
-                    const errorMsg = wompiData.error?.messages ? wompiData.error.messages.join(', ') : (wompiData.message || 'La pasarela rechazó la transacción bancaria.');
-                    throw new Error(errorMsg);
+                    throw new Error(wompiData.error?.messages ? wompiData.error.messages.join(', ') : (wompiData.message || 'Rechazado'));
                 }
-                
-                console.log(`💸 Solicitud de Retiro Exitosa: @${username} pide $${amount} por ${method} - Ref Wompi: ${wompiData.data?.id}`);
             }
 
-            // Si llegamos aquí (simulado o real), confirmamos la Base de Datos.
             await client.query('COMMIT');
             
-            res.json({ 
-                success: true, 
-                newLikesBalance: newDisponibles, 
-                newLikesGanados: newGanados 
-            });
+            res.json({ success: true, newLikesBalance: newDisponibles, newLikesGanados: newGanados });
 
         } catch (e) {
             await client.query('ROLLBACK');
-            console.error('❌ Error procesando retiro o Wompi:', e.message);
             res.json({ success: false, message: `No se pudo procesar el retiro: ${e.message}` });
         } finally {
             client.release();
         }
     } catch (error) {
-        console.error('❌ Error general procesando retiro:', error);
         res.json({ success: false, message: 'Error interno procesando el retiro' });
     }
 });
