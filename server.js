@@ -1634,7 +1634,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
 
         if (event === 'transaction.updated') {
             const transaction = data.transaction;
-            const { status, reference, amount_in_cents, customer_email } = transaction;
+            const { status, reference, amount_in_cents } = transaction;
 
             if (status === 'APPROVED') {
                 const parts = reference.split('_');
@@ -1645,7 +1645,6 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     const planId = parts[1].toUpperCase();
                     const userId = parts[2];
                     
-                    // Nueva tabla de beneficios (1 Like = 15.000)
                     const planBenefits = {
                         'AZUL': { likes: 1 }, 'ROJO': { likes: 4 },
                         'NARANJA': { likes: 10 }, 'AMARILLO': { likes: 20 },
@@ -1660,17 +1659,23 @@ app.post('/api/wompi/webhook', async (req, res) => {
                     try {
                         await client.query('BEGIN');
                         
-                        // 1. Asignar Likes al usuario
-                        await client.query(
-                            'UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE id = $3 OR user_id = $3',
-                            [planId.toLowerCase(), likesToAdd, userId]
-                        );
+                        let username;
+                        // Bloque de seguridad para manejar diferencias de columnas (user_id vs id)
+                        try {
+                            await client.query('UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE user_id = $3', [planId.toLowerCase(), likesToAdd, userId]);
+                            const userRes = await client.query('SELECT username FROM users WHERE user_id = $1', [userId]);
+                            username = userRes.rows[0]?.username;
+                        } catch (colErr) {
+                            if (colErr.code === '42703') { // Error: column does not exist
+                                await client.query('UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE id = $3', [planId.toLowerCase(), likesToAdd, userId]);
+                                const userRes = await client.query('SELECT username FROM users WHERE id = $1', [userId]);
+                                username = userRes.rows[0]?.username;
+                            } else {
+                                throw colErr;
+                            }
+                        }
 
-                        // 2. Obtener el username para el historial
-                        const userRes = await client.query('SELECT username FROM users WHERE id = $1 OR user_id = $1', [userId]);
-                        const username = userRes.rows[0]?.username;
-
-                        // 3. Registrar Historial Real (Solo la compra total, sin impuestos falsos)
+                        // Guardamos el historial en la base de datos
                         if (username) {
                             await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
                                 [username, 'in', `Compra de Plan ${planId}`, montoTotalCOP]);
@@ -1680,6 +1685,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
                         console.log(`✅ PAGO DB EXITOSO: Plan ${planId} activado para ${username}.`);
                     } catch (e) {
                         await client.query('ROLLBACK');
+                        console.error('❌ Error guardando Plan en BD:', e.message);
                         throw e;
                     } finally {
                         client.release();
@@ -1688,21 +1694,38 @@ app.post('/api/wompi/webhook', async (req, res) => {
                 // Recargas normales libres
                 else if (parts[0] === 'RECARGA' && parts[1]) {
                     const userId = parts[1];
-                    // Regla exacta: 15.000 COP = 1 Like
                     const likesToAdd = Math.floor(montoTotalCOP / 15000); 
                     
                     if (likesToAdd > 0) {
                         const client = await pool.connect();
                         try {
                             await client.query('BEGIN');
-                            await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE id = $2 OR user_id = $2', [likesToAdd, userId]);
                             
-                            const userRes = await client.query('SELECT username FROM users WHERE id = $1 OR user_id = $1', [userId]);
-                            if(userRes.rows[0]) {
+                            let username;
+                            try {
+                                await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE user_id = $2', [likesToAdd, userId]);
+                                const userRes = await client.query('SELECT username FROM users WHERE user_id = $1', [userId]);
+                                username = userRes.rows[0]?.username;
+                            } catch (colErr) {
+                                if (colErr.code === '42703') {
+                                    await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE id = $2', [likesToAdd, userId]);
+                                    const userRes = await client.query('SELECT username FROM users WHERE id = $1', [userId]);
+                                    username = userRes.rows[0]?.username;
+                                } else {
+                                    throw colErr;
+                                }
+                            }
+                            
+                            if(username) {
                                 await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
-                                    [userRes.rows[0].username, 'in', `Recarga de ${likesToAdd} Likes`, montoTotalCOP]);
+                                    [username, 'in', `Recarga de ${likesToAdd} Likes`, montoTotalCOP]);
                             }
                             await client.query('COMMIT');
+                            console.log(`✅ RECARGA DB EXITOSA: ${likesToAdd} likes para ${username}.`);
+                        } catch (e) {
+                            await client.query('ROLLBACK');
+                            console.error('❌ Error guardando Recarga en BD:', e.message);
+                            throw e;
                         } finally {
                             client.release();
                         }
@@ -1712,7 +1735,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
         }
         res.status(200).send('OK');
     } catch (error) {
-        console.error('❌ Error en Webhook:', error);
+        console.error('❌ Error general en Webhook:', error);
         res.status(500).send('Error');
     }
 });
