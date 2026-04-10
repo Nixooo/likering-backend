@@ -102,19 +102,115 @@
             gap: 25px;
         }
 
+        /* --- ESTILOS PREMIUM PARA EL MODAL DE RETIRO --- */
         .premium-withdraw-modal {
-            background: linear-gradient(180deg, #18181b 0%, #0a0a0b 100%);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: #111113; /* Fondo más oscuro y elegante */
+            border: 1px solid rgba(255,255,255,0.05);
             padding: 0; 
             overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
         }
 
         .withdraw-header {
-            background: rgba(0, 164, 230, 0.05);
-            padding: 30px 20px 20px;
+            background: linear-gradient(180deg, rgba(0, 164, 230, 0.08) 0%, transparent 100%);
+            padding: 35px 20px 20px;
             text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+
+        .withdraw-icon-bg {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, var(--plan-color-principal), #0056b3);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 15px 30px rgba(0, 164, 230, 0.3);
+            transform: rotate(-5deg);
+        }
+
+        .withdraw-amount-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px;
+            gap: 5px;
+        }
+
+        .amount-input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 3.5rem;
+            font-weight: 800;
+            width: 100%;
+            text-align: center;
+            outline: none;
+            font-family: inherit;
+            max-width: 250px;
+            transition: color 0.3s ease;
+        }
+
+        .amount-input:focus { color: var(--plan-color-principal); }
+
+        /* Calculadora en tiempo real */
+        .withdraw-summary {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            margin: 0 25px 25px;
+            padding: 15px 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .summary-row.total {
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            margin-top: 10px;
+            padding-top: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0;
+        }
+
+        .text-red { color: #ff375f; font-weight: 600; }
+        .text-green { color: #4cd964; font-weight: 600; }
+
+        /* Campos de formulario con íconos integrados */
+        .input-wrapper { position: relative; width: 100%; }
+        .input-wrapper i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            pointer-events: none;
+        }
+
+        .modern-input.with-icon, .modern-select.with-icon {
+            padding-left: 45px;
+        }
+
+        .btn-confirm:disabled {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.3);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        /* ---------------------------------------------- */
 
         .withdraw-icon-bg {
             width: 65px;
@@ -141,32 +237,12 @@
             color: var(--text-secondary);
         }
 
-        .withdraw-amount-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 25px 20px 5px;
-            gap: 5px;
-        }
-
         .currency-symbol {
             font-size: 2.5rem;
             font-weight: 800;
             color: var(--text-secondary);
         }
 
-        .amount-input {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 4rem;
-            font-weight: 800;
-            width: 100%;
-            text-align: center;
-            outline: none;
-            font-family: inherit;
-            max-width: 250px;
-        }
         
         .amount-input::placeholder { color: rgba(255,255,255,0.1); }
         .amount-input::-webkit-outer-spin-button,
@@ -983,33 +1059,50 @@
                 <div class="withdraw-icon-bg">
                     <i class="fas fa-university"></i>
                 </div>
-                <h3>Retirar a tu Banco</h3>
-                <p>Transferencia segura vía Wompi</p>
+                <h3>Retirar Fondos</h3>
+                <p>Transfiere el saldo a tu cuenta bancaria</p>
             </div>
 
             <div class="withdraw-amount-wrapper">
                 <span class="currency-symbol">$</span>
                 <input type="number" id="withdraw-amount" class="amount-input" placeholder="0">
             </div>
-            <p class="min-amount-text">Mínimo de retiro: $10.000 COP</p>
+            <p class="min-amount-text" style="margin-bottom: 15px;">Mínimo de retiro: $10.000 COP</p>
+
+            <div class="withdraw-summary" id="withdraw-summary" style="display: none;">
+                <div class="summary-row">
+                    <span>Comisión bancaria (Wompi)</span>
+                    <span class="text-red">-$3.200</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Llegará a tu cuenta</span>
+                    <span class="text-green" id="withdraw-net-amount">$0</span>
+                </div>
+            </div>
 
             <div class="withdraw-details-box">
                 <div class="form-field">
-                    <label><i class="fas fa-building"></i> Banco o Billetera</label>
-                    <select id="withdraw-method" class="modern-select">
-                        <option value="NEQUI">Nequi</option>
-                        <option value="BANCOLOMBIA">Ahorros Bancolombia</option>
-                        <option value="DAVIPLATA">Daviplata</option>
-                    </select>
+                    <label>Método de retiro</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-building"></i>
+                        <select id="withdraw-method" class="modern-select with-icon">
+                            <option value="NEQUI">Nequi</option>
+                            <option value="BANCOLOMBIA">Bancolombia</option>
+                            <option value="DAVIPLATA">Daviplata</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-field">
-                    <label><i class="fas fa-hashtag"></i> Número de cuenta / Celular</label>
-                    <input type="text" id="withdraw-destination" class="modern-input" placeholder="Ej: 3101234567">
+                    <label>Número de cuenta / Celular</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-hashtag"></i>
+                        <input type="text" id="withdraw-destination" class="modern-input with-icon" placeholder="Ej: 3101234567">
+                    </div>
                 </div>
 
                 <div class="doc-grid">
                     <div class="form-field">
-                        <label><i class="fas fa-id-card"></i> Tipo</label>
+                        <label>Tipo Doc.</label>
                         <select id="withdraw-doc-type" class="modern-select">
                             <option value="CC">CC</option>
                             <option value="CE">CE</option>
@@ -1017,15 +1110,15 @@
                         </select>
                     </div>
                     <div class="form-field">
-                        <label><i class="fas fa-fingerprint"></i> Documento</label>
+                        <label>Número de Documento</label>
                         <input type="text" id="withdraw-doc-number" class="modern-input" placeholder="1020304050">
                     </div>
                 </div>
 
                 <div class="modal-footer" style="margin-top: 25px; grid-template-columns: 1fr 2fr;">
                     <button class="btn-modal btn-cancel" data-close-modal="withdraw-modal">Cancelar</button>
-                    <button class="btn-modal btn-confirm" id="confirm-withdraw">
-                        <i class="fas fa-paper-plane"></i> Enviar a mi Banco
+                    <button class="btn-modal btn-confirm" id="confirm-withdraw" disabled>
+                        <i class="fas fa-paper-plane"></i> Retirar
                     </button>
                 </div>
             </div>
@@ -1377,6 +1470,44 @@
                 document.getElementById('withdraw-amount').value = '';
                 openModal('withdraw-modal');
             });
+
+
+
+
+
+            const withdrawInput = document.getElementById('withdraw-amount');
+            const withdrawSummary = document.getElementById('withdraw-summary');
+            const netAmountDisplay = document.getElementById('withdraw-net-amount');
+            const confirmBtn = document.getElementById('confirm-withdraw');
+
+            withdrawInput.addEventListener('input', (e) => {
+                const amount = parseInt(e.target.value) || 0;
+                const COMISION_WOMPI = 3200;
+
+                if (amount >= 10000) {
+                    withdrawSummary.style.display = 'block';
+                    const net = amount - COMISION_WOMPI;
+                    netAmountDisplay.textContent = formatCurrency(net > 0 ? net : 0);
+                    confirmBtn.disabled = false; // Habilita el botón si es mayor a 10k
+                } else {
+                    withdrawSummary.style.display = 'none';
+                    confirmBtn.disabled = true; // Bloquea el botón
+                }
+            });
+
+            // Resetea el modal al abrirlo
+            document.getElementById('withdraw-button').addEventListener('click', () => {
+                withdrawInput.value = '';
+                withdrawSummary.style.display = 'none';
+                confirmBtn.disabled = true;
+                openModal('withdraw-modal');
+            });
+
+
+
+
+
+
 
             document.querySelectorAll('[data-close-modal]').forEach(button => {
                 button.addEventListener('click', () => closeModal(button.getAttribute('data-close-modal')));
