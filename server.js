@@ -1629,10 +1629,9 @@ app.post('/api/public/reports', async (req, res) => {
 app.post('/api/wompi/webhook', async (req, res) => {
     try {
         const { event, data } = req.body;
-        const tx = data && data.transaction;
-        if (event && tx) console.log(`📩 Webhook recibido: ${event} ${tx.id} ${tx.status} ${tx.reference}`);
-
-        if (event === 'transaction.updated') {
+        
+        // 1. EVENTOS DE ENTRADA DE DINERO (COMPRAS Y RECARGAS)
+        if (event === 'transaction.updated' && data && data.transaction) {
             const transaction = data.transaction;
             const { status, reference, amount_in_cents } = transaction;
 
@@ -1660,38 +1659,31 @@ app.post('/api/wompi/webhook', async (req, res) => {
                         await client.query('BEGIN');
                         
                         let username;
-                        // Bloque de seguridad para manejar diferencias de columnas (user_id vs id)
                         try {
                             await client.query('UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE user_id = $3', [planId.toLowerCase(), likesToAdd, userId]);
                             const userRes = await client.query('SELECT username FROM users WHERE user_id = $1', [userId]);
                             username = userRes.rows[0]?.username;
                         } catch (colErr) {
-                            if (colErr.code === '42703') { // Error: column does not exist
+                            if (colErr.code === '42703') {
                                 await client.query('UPDATE users SET plan = $1, likes_disponibles = COALESCE(likes_disponibles, 0) + $2 WHERE id = $3', [planId.toLowerCase(), likesToAdd, userId]);
                                 const userRes = await client.query('SELECT username FROM users WHERE id = $1', [userId]);
                                 username = userRes.rows[0]?.username;
-                            } else {
-                                throw colErr;
-                            }
+                            } else { throw colErr; }
                         }
 
-                        // Guardamos el historial en la base de datos
                         if (username) {
                             await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
                                 [username, 'in', `Compra de Plan ${planId}`, montoTotalCOP]);
                         }
 
                         await client.query('COMMIT');
-                        console.log(`✅ PAGO DB EXITOSO: Plan ${planId} activado para ${username}.`);
                     } catch (e) {
                         await client.query('ROLLBACK');
-                        console.error('❌ Error guardando Plan en BD:', e.message);
                         throw e;
                     } finally {
                         client.release();
                     }
                 } 
-                // Recargas normales libres
                 else if (parts[0] === 'RECARGA' && parts[1]) {
                     const userId = parts[1];
                     const likesToAdd = Math.floor(montoTotalCOP / 15000); 
@@ -1700,7 +1692,6 @@ app.post('/api/wompi/webhook', async (req, res) => {
                         const client = await pool.connect();
                         try {
                             await client.query('BEGIN');
-                            
                             let username;
                             try {
                                 await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE user_id = $2', [likesToAdd, userId]);
@@ -1711,9 +1702,7 @@ app.post('/api/wompi/webhook', async (req, res) => {
                                     await client.query('UPDATE users SET likes_disponibles = COALESCE(likes_disponibles, 0) + $1 WHERE id = $2', [likesToAdd, userId]);
                                     const userRes = await client.query('SELECT username FROM users WHERE id = $1', [userId]);
                                     username = userRes.rows[0]?.username;
-                                } else {
-                                    throw colErr;
-                                }
+                                } else { throw colErr; }
                             }
                             
                             if(username) {
@@ -1721,14 +1710,66 @@ app.post('/api/wompi/webhook', async (req, res) => {
                                     [username, 'in', `Recarga de ${likesToAdd} Likes`, montoTotalCOP]);
                             }
                             await client.query('COMMIT');
-                            console.log(`✅ RECARGA DB EXITOSA: ${likesToAdd} likes para ${username}.`);
                         } catch (e) {
                             await client.query('ROLLBACK');
-                            console.error('❌ Error guardando Recarga en BD:', e.message);
                             throw e;
                         } finally {
                             client.release();
                         }
+                    }
+                }
+            }
+        }
+        // 2. NUEVO: EVENTOS DE SALIDA DE DINERO (RETIROS RECHAZADOS POR EL BANCO)
+        else if (event === 'transfer.updated' && data && data.transfer) {
+            const transfer = data.transfer;
+            
+            // Si el banco del usuario (Ej: Nequi) rechaza el depósito
+            if (transfer.status === 'FAILED' || transfer.status === 'ERROR') {
+                const parts = transfer.reference.split('_'); // Ej: RETIRO_123_1680000000
+                
+                if (parts[0] === 'RETIRO' && parts[1]) {
+                    const userId = parts[1];
+                    const montoNetoDevuelto = transfer.amount_in_cents / 100;
+                    
+                    // Reconstruimos la matemática: sumamos la comisión para saber el bruto y dividimos por 5000
+                    const COMISION_DISPERSION_WOMPI = 3200;
+                    const montoBruto = montoNetoDevuelto + COMISION_DISPERSION_WOMPI;
+                    const likesToRefund = Math.ceil(montoBruto / 5000);
+
+                    const client = await pool.connect();
+                    try {
+                        await client.query('BEGIN');
+                        
+                        let username;
+                        try {
+                            await client.query('UPDATE users SET likes_ganados = COALESCE(likes_ganados, 0) + $1 WHERE user_id = $2', [likesToRefund, userId]);
+                            const userRes = await client.query('SELECT username FROM users WHERE user_id = $1', [userId]);
+                            username = userRes.rows[0]?.username;
+                        } catch (colErr) {
+                            if (colErr.code === '42703') {
+                                await client.query('UPDATE users SET likes_ganados = COALESCE(likes_ganados, 0) + $1 WHERE id = $2', [likesToRefund, userId]);
+                                const userRes = await client.query('SELECT username FROM users WHERE id = $1', [userId]);
+                                username = userRes.rows[0]?.username;
+                            } else { throw colErr; }
+                        }
+
+                        if (username) {
+                            await client.query('INSERT INTO wallet_history (username, type, detail, amount) VALUES ($1, $2, $3, $4)', 
+                                [username, 'in', `Reembolso por retiro rechazado por el banco`, montoBruto]);
+                            
+                            // Notificamos al usuario
+                            await client.query('INSERT INTO notifications (username, message, avatar_url) VALUES ($1, $2, $3)', 
+                                [username, `Tu retiro de $${montoBruto} fue rechazado por el banco. Los likes fueron devueltos a tu cuenta.`, 'https://i.postimg.cc/FKgZRLrW/image.png']);
+                        }
+
+                        await client.query('COMMIT');
+                        console.log(`♻️ REEMBOLSO DB EXITOSO: ${likesToRefund} likes devueltos a ${username}.`);
+                    } catch (e) {
+                        await client.query('ROLLBACK');
+                        console.error('❌ Error procesando reembolso de retiro:', e.message);
+                    } finally {
+                        client.release();
                     }
                 }
             }
@@ -1834,15 +1875,17 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                 [username, 'out', `Retiro ${method} (Comisión: -$${COMISION_DISPERSION_WOMPI})`, amount]
             );
 
-            const WOMPI_PRIVATE_KEY = (process.env.WOMPI_PRIVATE_KEY || '').trim();
+            // --- NUEVA LÓGICA DE LLAVES PARA PAGOS A TERCEROS ---
+            // Usaremos una variable de entorno dedicada para Payouts. Si no existe, usamos la general por si estás en pruebas.
+            const WOMPI_PAYOUT_KEY = (process.env.WOMPI_PAYOUT_PRIVATE_KEY || process.env.WOMPI_PRIVATE_KEY || '').trim();
 
-            if (WOMPI_PRIVATE_KEY.startsWith('prv_test_')) {
+            if (WOMPI_PAYOUT_KEY.startsWith('prv_test_')) {
                 console.log(`🧪 MODO SANDBOX: Retiro simulado de $${montoNetoAlBanco} netos. Comisión: $${COMISION_DISPERSION_WOMPI}`);
             } else {
                 const wompiResponse = await fetch('https://production.wompi.co/v1/transfers', {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${WOMPI_PRIVATE_KEY}`,
+                        'Authorization': `Bearer ${WOMPI_PAYOUT_KEY}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
