@@ -421,11 +421,26 @@
             try {
                 const res = await API.getUserProfile(username);
                 if (res.success) {
+                    // --- BLOQUE DE SINCRONIZACIÓN ACTUALIZADO ---
+                    // 1. Sincronizar el localStorage con los datos frescos del servidor
+                    loggedInUser.likesDisponibles = res.data.likesDisponibles;
+                    loggedInUser.likesGanados = res.data.likesGanados;
+                    loggedInUser.plan = res.data.plan;
+                    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+
+                    // 2. Actualizar los contadores visuales del perfil
                     document.getElementById('followers-count').textContent = res.data.followers || '0';
                     document.getElementById('following-count').textContent = res.data.following || '0';
-                    document.getElementById('likes-count').textContent = res.data.likes || '0';
+                    document.getElementById('likes-count').textContent = res.data.likes || '0'; // Likes recibidos
+                    
+                    // 3. Forzar actualización del Badge del Plan y el color del tema
+                    document.getElementById('profile-bio').textContent = `PLAN ${res.data.plan.toUpperCase()}`;
+                    document.body.className = `plan-${res.data.plan.toLowerCase()}`;
+                    // --------------------------------------------
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("Error al sincronizar los datos del perfil:", e);
+            }
         }
 
         async function loadUserVideos(username) {

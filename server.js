@@ -1768,12 +1768,11 @@ app.post('/api/wallet/withdraw', async (req, res) => {
 
         const userId = user.user_id || user.id;
         
-        // MATEMÁTICA: 1 Like a retirar equivale a 5.000 COP
+        // 1 Like recibido equivale a 5.000 COP
         const VALOR_LIKE = 5000;
         const likesToDeduct = Math.ceil(amount / VALOR_LIKE);
 
-        // COSTO TRANSFERENCIA (Lo que Wompi cobra por enviar a Nequi/Bancos). Ejemplo: $3.200 COP
-        // Si retiras 10.000, te llegan 6.800. El creador asume el costo de dispersión.
+        // Comisión de la transacción (lo asume el creador)
         const COMISION_DISPERSION_WOMPI = 3200; 
         
         if (amount <= COMISION_DISPERSION_WOMPI) {
@@ -1787,30 +1786,23 @@ app.post('/api/wallet/withdraw', async (req, res) => {
             const balanceData = await client.query('SELECT likes_disponibles, likes_ganados FROM users WHERE user_id = $1 FOR UPDATE', [userId]);
             const likesDisponibles = parseInt(balanceData.rows[0]?.likes_disponibles) || 0;
             const likesGanados = parseInt(balanceData.rows[0]?.likes_ganados) || 0;
-            const totalLikesValidos = likesDisponibles + likesGanados;
 
-            if (totalLikesValidos < likesToDeduct) {
+            // --- NUEVA REGLA ESTRICTA ---
+            // Solo se puede retirar de los likes GANADOS.
+            if (likesGanados < likesToDeduct) {
                 await client.query('ROLLBACK');
-                return res.json({ success: false, message: `Saldo insuficiente. Necesitas al menos ${likesToDeduct} likes para retirar $${amount}` });
+                return res.json({ success: false, message: `Saldo insuficiente. Tienes ${likesGanados} likes recibidos, pero necesitas ${likesToDeduct} para retirar $${amount}` });
             }
 
-            let newGanados = likesGanados;
-            let newDisponibles = likesDisponibles;
-
-            if (likesGanados >= likesToDeduct) {
-                newGanados -= likesToDeduct;
-            } else {
-                const remainder = likesToDeduct - likesGanados;
-                newGanados = 0;
-                newDisponibles -= remainder;
-            }
+            // Descontamos ÚNICAMENTE de likes_ganados
+            const newGanados = likesGanados - likesToDeduct;
+            const newDisponibles = likesDisponibles; // Los disponibles (comprados) quedan intactos
 
             await client.query(
-                'UPDATE users SET likes_disponibles = $1, likes_ganados = $2 WHERE user_id = $3',
-                [newDisponibles, newGanados, userId]
+                'UPDATE users SET likes_ganados = $1 WHERE user_id = $2',
+                [newGanados, userId]
             );
 
-            // Registrar el retiro. Mostramos el bruto, pero enviamos el neto.
             const referenceId = `RETIRO_${userId}_${Date.now()}`;
             const montoNetoAlBanco = amount - COMISION_DISPERSION_WOMPI;
 
@@ -1831,7 +1823,7 @@ app.post('/api/wallet/withdraw', async (req, res) => {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        amount_in_cents: montoNetoAlBanco * 100, // <-- AQUÍ SE LE QUITA A ÉL LA COMISIÓN
+                        amount_in_cents: montoNetoAlBanco * 100,
                         currency: "COP",
                         reference: referenceId,
                         destination: {

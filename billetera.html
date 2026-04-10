@@ -1255,9 +1255,10 @@
             document.getElementById('likes-disponibles').textContent = disponibles;
             document.getElementById('likes-obtenidos').textContent = ganados;
             
-            // NUEVA MATEMÁTICA: 1 LIKE = $5.000 COP EN LA BILLETERA
-            const totalLikes = disponibles + ganados;
-            const dineroTotal = totalLikes * 5000; 
+            // --- NUEVA MATEMÁTICA VISUAL ---
+            // El usuario SOLO ve reflejado en dinero los likes que ha recibido (ganados).
+            // Los likes comprados (disponibles) se quedan como "munición" para dar a otros videos.
+            const dineroTotal = ganados * 5000; 
             
             const balanceElement = document.getElementById('balance-amount');
             if (balanceElement) balanceElement.textContent = formatCurrency(dineroTotal);
