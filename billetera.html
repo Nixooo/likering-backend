@@ -102,129 +102,145 @@
             gap: 25px;
         }
 
-        /* --- ESTILOS PREMIUM PARA EL MODAL DE RETIRO --- */
+
+        /* --- REDISEÑO TOTAL: MODAL DE RETIRO ÉLITE --- */
         .premium-withdraw-modal {
-            background: #111113; /* Fondo más oscuro y elegante */
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 0; 
+            background: #0f0f11 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 40px !important; 
+            padding: 0 !important;
             overflow: hidden;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
         }
 
         .withdraw-header {
-            background: linear-gradient(180deg, rgba(0, 164, 230, 0.08) 0%, transparent 100%);
-            padding: 35px 20px 20px;
+            background: linear-gradient(180deg, rgba(0, 210, 255, 0.12) 0%, transparent 100%) !important;
+            padding: 40px 20px 25px !important;
             text-align: center;
         }
 
+        .withdraw-header h3 {
+            font-size: 1.6rem !important;
+            font-weight: 800 !important;
+            letter-spacing: -0.5px;
+            color: white;
+        }
+
         .withdraw-icon-bg {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 20px;
-            background: linear-gradient(135deg, var(--plan-color-principal), #0056b3);
-            border-radius: 22px;
+            width: 80px !important;
+            height: 80px !important;
+            margin: 0 auto 20px !important;
+            background: linear-gradient(135deg, #00d2ff, #0072ff) !important;
+            border-radius: 28px !important;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            color: white;
-            box-shadow: 0 15px 30px rgba(0, 164, 230, 0.3);
-            transform: rotate(-5deg);
+            font-size: 2.2rem !important;
+            color: white !important;
+            box-shadow: 0 20px 40px rgba(0, 210, 255, 0.4) !important;
+            transform: rotate(-3deg);
         }
 
         .withdraw-amount-wrapper {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            padding: 10px 20px;
-            gap: 5px;
+            padding: 20px !important;
         }
 
         .amount-input {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 3.5rem;
-            font-weight: 800;
-            width: 100%;
-            text-align: center;
-            outline: none;
-            font-family: inherit;
-            max-width: 250px;
-            transition: color 0.3s ease;
+            background: transparent !important;
+            border: none !important;
+            color: white !important;
+            font-size: 4.5rem !important; 
+            font-weight: 900 !important;
+            width: 100% !important;
+            text-align: center !important;
+            outline: none !important;
+            margin-bottom: 5px !important;
         }
 
-        .amount-input:focus { color: var(--plan-color-principal); }
+        .amount-input::placeholder { color: rgba(255,255,255,0.05) !important; }
 
-        /* Calculadora en tiempo real */
         .withdraw-summary {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            margin: 0 25px 25px;
-            padding: 15px 20px;
-            animation: fadeIn 0.3s ease-out;
+            background: rgba(255, 255, 255, 0.03) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 24px !important;
+            margin: 10px 25px 30px !important;
+            padding: 20px !important;
         }
 
         .summary-row {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
+            font-size: 0.9rem !important;
+            color: var(--text-secondary) !important;
+            margin-bottom: 12px !important;
         }
 
         .summary-row.total {
-            border-top: 1px dashed rgba(255,255,255,0.1);
-            margin-top: 10px;
-            padding-top: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 0;
+            border-top: 1px solid rgba(255,255,255,0.1) !important;
+            margin-top: 12px !important;
+            padding-top: 15px !important;
+            font-size: 1.1rem !important;
+            font-weight: 800 !important;
+            color: white !important;
         }
 
-        .text-red { color: #ff375f; font-weight: 600; }
-        .text-green { color: #4cd964; font-weight: 600; }
+        .withdraw-details-box { padding: 0 30px 40px !important; }
 
-        /* Campos de formulario con íconos integrados */
-        .input-wrapper { position: relative; width: 100%; }
-        .input-wrapper i {
+        .modern-field-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modern-field-icon i {
             position: absolute;
             left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-secondary);
-            font-size: 1rem;
-            pointer-events: none;
-        }
-
-        .modern-input.with-icon, .modern-select.with-icon {
-            padding-left: 45px;
-        }
-
-        .btn-confirm:disabled {
-            background: rgba(255,255,255,0.1);
             color: rgba(255,255,255,0.3);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            font-size: 1.1rem;
+            z-index: 2;
         }
-        /* ---------------------------------------------- */
 
-        .withdraw-icon-bg {
-            width: 65px;
+        .modern-input, .modern-select {
+            width: 100% !important;
+            height: 60px !important;
+            background: #1a1a1e !important;
+            border: 1px solid rgba(255,255,255,0.05) !important;
+            border-radius: 20px !important;
+            padding: 0 20px 0 50px !important;
+            color: white !important;
+            font-size: 1rem !important;
+        }
+
+        .btn-withdraw-final {
+            width: 100%;
             height: 65px;
-            margin: 0 auto 15px;
-            background: linear-gradient(135deg, var(--plan-color-principal), #0056b3);
+            background: linear-gradient(90deg, #00d2ff, #0072ff);
+            border: none;
             border-radius: 20px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 15px 30px rgba(0, 114, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
-            color: white;
-            box-shadow: 0 10px 25px rgba(0, 164, 230, 0.4);
+            gap: 12px;
+            transition: all 0.3s ease;
         }
+
+        .btn-withdraw-final:disabled {
+            background: #222 !important;
+            color: #444 !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+        }
+
 
         .withdraw-header h3 {
             font-size: 1.4rem;
@@ -1057,73 +1073,65 @@
         <div class="modern-modal premium-withdraw-modal">
             <div class="withdraw-header">
                 <div class="withdraw-icon-bg">
-                    <i class="fas fa-university"></i>
+                    <i class="fas fa-wallet"></i>
                 </div>
-                <h3>Retirar Fondos</h3>
-                <p>Transfiere el saldo a tu cuenta bancaria</p>
+                <h3>Retirar Saldo</h3>
+                <p>Dinero real obtenido por tus likes</p>
             </div>
 
             <div class="withdraw-amount-wrapper">
-                <span class="currency-symbol">$</span>
                 <input type="number" id="withdraw-amount" class="amount-input" placeholder="0">
+                <p id="min-text" style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">Mínimo: $10.000 COP</p>
             </div>
-            <p class="min-amount-text" style="margin-bottom: 15px;">Mínimo de retiro: $10.000 COP</p>
 
             <div class="withdraw-summary" id="withdraw-summary" style="display: none;">
                 <div class="summary-row">
-                    <span>Comisión bancaria (Wompi)</span>
-                    <span class="text-red">-$3.200</span>
+                    <span>Likes a descontar</span>
+                    <span id="calc-likes" style="color: white; font-weight: 700;">0 Likes</span>
+                </div>
+                <div class="summary-row">
+                    <span>Comisión bancaria</span>
+                    <span style="color: #ff375f;">-$3.200</span>
                 </div>
                 <div class="summary-row total">
-                    <span>Llegará a tu cuenta</span>
-                    <span class="text-green" id="withdraw-net-amount">$0</span>
+                    <span>Recibirás neto</span>
+                    <span id="withdraw-net-amount" style="color: #4cd964;">$0</span>
                 </div>
             </div>
 
             <div class="withdraw-details-box">
-                <div class="form-field">
-                    <label>Método de retiro</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-building"></i>
-                        <select id="withdraw-method" class="modern-select with-icon">
-                            <option value="NEQUI">Nequi</option>
-                            <option value="BANCOLOMBIA">Bancolombia</option>
-                            <option value="DAVIPLATA">Daviplata</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-field">
-                    <label>Número de cuenta / Celular</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-hashtag"></i>
-                        <input type="text" id="withdraw-destination" class="modern-input with-icon" placeholder="Ej: 3101234567">
-                    </div>
+                <div class="modern-field-icon">
+                    <i class="fas fa-university"></i>
+                    <select id="withdraw-method" class="modern-select">
+                        <option value="NEQUI">Nequi</option>
+                        <option value="BANCOLOMBIA">Bancolombia</option>
+                        <option value="DAVIPLATA">Davilplata</option>
+                    </select>
                 </div>
 
-                <div class="doc-grid">
-                    <div class="form-field">
-                        <label>Tipo Doc.</label>
-                        <select id="withdraw-doc-type" class="modern-select">
-                            <option value="CC">CC</option>
-                            <option value="CE">CE</option>
-                            <option value="NIT">NIT</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label>Número de Documento</label>
-                        <input type="text" id="withdraw-doc-number" class="modern-input" placeholder="1020304050">
-                    </div>
+                <div class="modern-field-icon">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" id="withdraw-destination" class="modern-input" placeholder="Número de cuenta o celular">
                 </div>
 
-                <div class="modal-footer" style="margin-top: 25px; grid-template-columns: 1fr 2fr;">
-                    <button class="btn-modal btn-cancel" data-close-modal="withdraw-modal">Cancelar</button>
-                    <button class="btn-modal btn-confirm" id="confirm-withdraw" disabled>
-                        <i class="fas fa-paper-plane"></i> Retirar
+                <div class="doc-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 20px;">
+                    <select id="withdraw-doc-type" class="modern-select" style="padding-left: 15px;">
+                        <option value="CC">CC</option>
+                        <option value="CE">CE</option>
+                    </select>
+                    <input type="text" id="withdraw-doc-number" class="modern-input" style="padding-left: 15px;" placeholder="Documento">
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn-modal btn-cancel" style="flex: 1; height: 65px; border-radius: 20px;" data-close-modal="withdraw-modal">Cerrar</button>
+                    <button class="btn-withdraw-final" id="confirm-withdraw" disabled>
+                        Retirar <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
 
 
 
@@ -1475,27 +1483,47 @@
 
 
 
+            // --- LÓGICA DE RETIRO ÉLITE ---
             const withdrawInput = document.getElementById('withdraw-amount');
             const withdrawSummary = document.getElementById('withdraw-summary');
             const netAmountDisplay = document.getElementById('withdraw-net-amount');
+            const calcLikesDisplay = document.getElementById('calc-likes');
             const confirmBtn = document.getElementById('confirm-withdraw');
+            const minText = document.getElementById('min-text');
 
             withdrawInput.addEventListener('input', (e) => {
                 const amount = parseInt(e.target.value) || 0;
-                const COMISION_WOMPI = 3200;
+                const COMISION = 3200;
+                const VALOR_LIKE = 5000;
 
                 if (amount >= 10000) {
                     withdrawSummary.style.display = 'block';
-                    const net = amount - COMISION_WOMPI;
+                    const net = amount - COMISION;
                     netAmountDisplay.textContent = formatCurrency(net > 0 ? net : 0);
-                    confirmBtn.disabled = false; // Habilita el botón si es mayor a 10k
+                    
+                    const likesNeeded = Math.ceil(amount / VALOR_LIKE);
+                    calcLikesDisplay.textContent = `${likesNeeded} Likes`;
+
+                    // Validación contra likesGanados
+                    const user = JSON.parse(localStorage.getItem('loggedInUser'));
+                    if (user && user.likesGanados >= likesNeeded) {
+                        confirmBtn.disabled = false;
+                        minText.style.color = '#4cd964';
+                        minText.innerHTML = '<i class="fas fa-check"></i> Saldo suficiente';
+                    } else {
+                        confirmBtn.disabled = true;
+                        minText.style.color = '#ff375f';
+                        minText.innerHTML = '<i class="fas fa-times"></i> Likes recibidos insuficientes';
+                    }
                 } else {
                     withdrawSummary.style.display = 'none';
-                    confirmBtn.disabled = true; // Bloquea el botón
+                    confirmBtn.disabled = true;
+                    minText.style.color = 'rgba(255,255,255,0.4)';
+                    minText.textContent = 'Mínimo: $10.000 COP';
                 }
             });
 
-            // Resetea el modal al abrirlo
+            // Reset al abrir
             document.getElementById('withdraw-button').addEventListener('click', () => {
                 withdrawInput.value = '';
                 withdrawSummary.style.display = 'none';
