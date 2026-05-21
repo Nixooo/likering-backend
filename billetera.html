@@ -1432,6 +1432,28 @@
             updateWalletUI(loggedInUser);
             renderPlans();
 
+            // ==============================================================
+            // ESCUDO GOOGLE PLAY: Ocultar Wompi si es la App Nativa (TWA/PWA)
+            // ==============================================================
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+            
+            if (isStandalone) {
+                const buyButtons = document.querySelectorAll('.btn-buy-plan');
+                buyButtons.forEach(btn => {
+                    btn.removeAttribute('onclick'); // Remueve la llamada a openWompiCheckout
+                    btn.innerHTML = '<i class="fas fa-globe"></i> Comprar desde la Web';
+                    btn.style.background = 'var(--glass-bg)';
+                    btn.style.color = 'var(--text-primary)';
+                    btn.style.border = '1px solid var(--plan-color-principal)';
+                    
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        showAlertModal('Aviso de Google Play', 'Por políticas de Google, las recargas y compras de planes premium solo se pueden realizar desde nuestra página web oficial en tu navegador.');
+                    });
+                });
+            }
+            // ==============================================================
+
             // OBTENER DATOS FRESCOS DESDE EL SERVIDOR (Evita el bug de la recarga)
             try {
                 // 1. Sincronizar Balances

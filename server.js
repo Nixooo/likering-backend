@@ -49,8 +49,11 @@ app.post('/api/wompi/generate-signature', (req, res) => {
 });
 // ===================================================================
 
-// Servir archivos estáticos (frontend)
-app.use(express.static('.'));
+// Exponer explícitamente la carpeta .well-known para la validación de Google Play
+app.use('/.well-known', express.static('.well-known'));
+
+// Servir el resto de archivos estáticos (frontend), permitiendo archivos ocultos si es necesario
+app.use(express.static('.', { dotfiles: 'allow' }));
 
 // Configuración de PostgreSQL (Aiven)
 const pool = new Pool({

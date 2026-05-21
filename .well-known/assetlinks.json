@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.likering.oficial",
+        "sha256_cert_fingerprints": ["26:0F:DF:EF:07:75:04:70:64:45:2D:0C:D2:11:9D:9E:AD:81:C4:40:EA:60:EF:30:64:A7:03:00:A1:E0:D4:13"]
+      }
+    }]
